@@ -23,6 +23,13 @@
         th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
         th { background-color: #f8f9fa; color: #555; font-weight: bold; }
         tr:hover { background-color: #f1f3f4; }
+
+        #ejercicio_id, #pred_ejercicio_id, #grafica_ejercicio_id {
+        max-width: 100%; /* Que no exceda el ancho de la tarjeta */
+        width: 100%;     /* Que ocupe todo el espacio disponible */
+        white-space: nowrap; /* Evita que el texto salte de línea dentro del select */
+        text-overflow: ellipsis; /* Pone los tres puntos "..." si el texto es muy largo */
+        }
     </style>
 </head>
 <body>
