@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Entrenamiento Inteligente</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; margin-bottom: 20px; box-sizing: border-box; }
+        h2 { margin-top: 0; color: #1a73e8; text-align: center; font-size: 1.2rem; }
+        label { display: block; margin-top: 10px; font-weight: 500; color: #555; font-size: 0.9rem; }
+        input { width: 100%; padding: 10px; margin: 5px 0 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #1557b0; }
+        .prediccion-box { background-color: #e8f0fe; padding: 15px; border-radius: 8px; border-left: 5px solid #1a73e8; margin-top: 15px; display: none; }
+        #mensaje, #mensaje-rec { text-align: center; margin-top: 10px; font-weight: bold; font-size: 0.9rem; }
+        .exito { color: #28a745; }
+        .error { color: #dc3545; }
+        
+        /* Estilos para la nueva tabla de historial */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #555; font-weight: bold; }
+        tr:hover { background-color: #f1f3f4; }
+    </style>
+</head>
+<body>
+    <div id="pantalla-login" class="card" style="margin-top: 10vh; display: none;">
+        <h2>🦅 SEAFIT - Acceso</h2>
+        <label>Selecciona tu perfil de atleta:</label>
+        <select id="login_usuario_id"></select>
+        <button onclick="iniciarSesion()" style="margin-top: 15px; background-color: #34a853;">Entrar al Sistema</button>
+    </div>
+
+    <div id="pantalla-biometria" class="card" style="margin-top: 5vh; max-width: 400px; display: none;">
+        <h2>🦅 Control de Biometría</h2>
+        <p id="msj-biometria" style="color: #dc3545; font-weight: bold; text-align: center; font-size: 0.9rem;"></p>
+        
+        <label>Peso Corporal (kg) *Obligatorio:</label>
+        <input type="number" id="bio_peso" placeholder="Ej: 75.5" step="0.1">
+        
+        <label>Porcentaje de Grasa (%) *Opcional:</label>
+        <input type="number" id="bio_grasa" placeholder="Ej: 15.2" step="0.1">
+        
+        <label>Cintura (cm) *Opcional:</label>
+        <input type="number" id="bio_cintura" placeholder="Ej: 80">
+        
+        <label>Brazo (cm) *Opcional:</label>
+        <input type="number" id="bio_brazo" placeholder="Ej: 35">
+        
+        <label>Pierna (cm) *Opcional:</label>
+        <input type="number" id="bio_pierna" placeholder="Ej: 60">
+        
+        <button onclick="enviarBiometria()" style="background-color: #fbbc04; color: #333; margin-top: 15px;">Guardar y Desbloquear</button>
+        <div id="mensaje-bio" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+        
+        <button onclick="cerrarSesion()" style="background-color: transparent; color: #dc3545; border: 1px solid #dc3545; margin-top: 10px;">Cerrar Sesión</button>
+    </div>
+
+    <div id="dashboard-principal" style="display: none; width: 100%; display: flex; flex-direction: column; align-items: center;">
+        
+        <button onclick="cerrarSesion()" style="background-color: #dc3545; max-width: 400px; margin-bottom: 20px;">🚪 Cerrar Sesión</button>
+
+        <div class="card">
+            <h2>🏋️ Registrar Serie</h2>
+            <label>ID Ejercicio:</label>
+            <select id="ejercicio_id" onchange="actualizarSugerencia()"></select>
+            <label>Serie #:</label>
+            <input type="number" id="num_serie" placeholder="Ej: 1" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
+            
+            <div id="meta-dinamica" style="background-color: #e8f0fe; padding: 12px; border-radius: 8px; margin: 10px 0; display: none; font-size: 0.9rem; border-left: 4px solid #1a73e8;">
+                <span style="color: #1a73e8; font-weight: bold;">🎯 Sugerencia del motor:</span>
+                <div id="meta-texto" style="margin-top: 5px; color: #333; line-height: 1.4;"></div>
+            </div>
+
+            <label>Peso a registrar (kg):</label>
+            <input type="number" id="peso" placeholder="Ej: 140" step="0.5">
+            <label>Reps logradas:</label>
+            <input type="number" id="reps" placeholder="Ej: 8">
+            <button onclick="enviarSerie()">Guardar Serie</button>
+            <div id="mensaje"></div>
+        </div>
+
+        <div class="card">
+            <h2>🌙 Recuperación de Hoy</h2>
+            <label>Horas de sueño:</label>
+            <input type="number" id="sueno" placeholder="Ej: 7.5" step="0.1">
+            <label>Carbs Pre-entreno (g):</label>
+            <input type="number" id="carbs" placeholder="Ej: 50">
+            <label>Calorías totales de las últimas 24h:</label>
+            <input type="number" id="calorias" placeholder="Ej: 2500">
+            <button onclick="enviarRecuperacion()" style="background-color: #34a853;">Guardar Recuperación</button>
+            <div id="mensaje-rec"></div>
+        </div>
+
+        <div class="card">
+            <h2>🤖 Consultar Objetivo</h2>
+            <label>¿Qué ejercicio vas a hacer?</label>
+            <select id="pred_ejercicio_id"></select>
+            <label>¿Qué número de serie vas a realizar?</label>
+            <input type="number" id="pred_num_serie" value="1" placeholder="Ej: 1">
+            <button onclick="obtenerPrediccion()" style="background-color: #fbbc04; color: #333;">Calcular Peso de Hoy</button>
+            <div id="prediccion-resultado" class="prediccion-box">
+                <p id="pred-texto" style="font-weight: bold; margin-bottom: 5px;"></p>
+                <p id="pred-objetivo" style="font-size: 1.2rem; color: #1a73e8; margin: 10px 0;"></p>
+                <small id="pred-info" style="color: #666;"></small>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📈 Mi Progreso (Sobrecarga)</h2>
+            <label>Selecciona el ejercicio a graficar:</label>
+            <select id="grafica_ejercicio_id" onchange="dibujarGrafica()"></select>
+            <div style="position: relative; height:40vh; width:100%; margin-top: 15px;">
+                <canvas id="miCanvasGrafica"></canvas>
+            </div>
+            <button onclick="generarReporte()" style="margin-top: 20px; background-color: #0f9d58;">🧠 Analizar Último Progreso</button>
+            <div id="panel-insights" style="background-color: #e6f4ea; padding: 15px; border-radius: 8px; border-left: 5px solid #0f9d58; margin-top: 15px; display: none;">
+                <p id="texto-insight" style="font-weight: 500; color: #137333; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Mis Series Recientes</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha/Hora</th>
+                        <th>Ej. ID</th>
+                        <th>Serie</th>
+                        <th>Peso</th>
+                        <th>Reps</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-historial-cuerpo"></tbody>
+            </table>
+        </div>
+
+    <div class="card" style="border: 2px solid #673ab7;">
+            <h2 style="color: #673ab7;">🦅 Veredicto Semanal SEAFIT</h2>
+            <p style="text-align: center; font-size: 0.9rem; color: #555;">Evalúa si tus hábitos de los últimos 7 días están alineados con tu meta principal.</p>
+            
+            <button onclick="obtenerReporteSemanal()" style="background-color: #673ab7; margin-top: 10px;">📊 Generar Reporte Semanal</button>
+            
+            <div id="panel-semanal" style="background-color: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 5px solid #673ab7; margin-top: 15px; display: none;">
+                <p id="texto-semanal" style="color: #4a148c; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
+            </div>
+        </div> 
+        
+        <div class="card" style="border: 2px solid #1a73e8;">
+            <h2 style="color: #1a73e8;">📈 Tendencia Global de Progreso</h2>
+            <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">
+                Evolución histórica suavizada mediante interpolación.
+            </p>
+            <div style="position: relative; height: 40vh; width: 100%;">
+                <canvas id="graficaTendenciaGlobal"></canvas>
+            </div>
+            <button onclick="cargarTendenciaGlobal()" style="margin-top: 15px;">🔄 Actualizar Tendencia</button>
+        </div>
+    </div>
+    <script>
+        const API_BASE = window.location.origin + "/api";
+        let diccionarioEjercicios = {}; 
+        let miGraficaDeLineas = null;
+        let miGraficaTendencia = null; // Control para la gráfica global
+
+        // 1. INICIALIZACIÓN Y ENRUTAMIENTO (Login vs Dashboard)
+        window.onload = function() {
+            // Buscamos si el navegador ya recuerda quién inició sesión
+            const usuarioLogueado = localStorage.getItem("seafit_usuario_id");
+            
+            if (usuarioLogueado) {
+                iniciarDashboard(); // Si ya entraste antes, te pasa directo
+            } else {
+                mostrarPantallaLogin(); // Si eres nuevo o saliste, te pide acceso
+            }
+        };  
+
+        // 2. FUNCIONES DE ACCESO
+        async function mostrarPantallaLogin() {
+            document.getElementById("dashboard-principal").style.display = "none";
+            document.getElementById("pantalla-login").style.display = "block";
+            
+            try {
+                const res = await fetch(`${API_BASE}/usuarios`);
+                const usuarios = await res.json();
+                const selectLogin = document.getElementById("login_usuario_id");
+                
+                selectLogin.innerHTML = "";
+                if (usuarios.length === 0) {
+                    selectLogin.innerHTML = "<option>No hay usuarios en la BD</option>";
+                    return;
+                }
+                usuarios.forEach(user => {
+                    selectLogin.innerHTML += `<option value="${user.id}">${user.nombre}</option>`;
+                });
+            } catch (e) { console.error("Error cargando usuarios en login:", e); }
+        }
+
+        function iniciarSesion() {
+            const selectLogin = document.getElementById("login_usuario_id");
+            if(selectLogin.value) {
+                // Guardamos el ID en la memoria persistente del navegador
+                localStorage.setItem("seafit_usuario_id", selectLogin.value);
+                iniciarDashboard();
+            }
+        }
+
+        function cerrarSesion() {
+            // Borramos la memoria y recargamos la página
+            localStorage.removeItem("seafit_usuario_id");
+            location.reload(); 
+        }
+
+        // 3. CARGA DEL ENTORNO DE TRABAJO (Solo ocurre si hay login)
+        async function iniciarDashboard() {
+            document.getElementById("pantalla-login").style.display = "none";
+            const usr_id = obtenerUsuarioActivo();
+
+            if (!usr_id) return;
+
+            try {
+                // El frontend le pregunta al backend si el usuario tiene permiso
+                const res = await fetch(`${API_BASE}/biometria/estado/${usr_id}`);
+                const estado = await res.json();
+
+                if (estado.requiere_pesaje) {
+                    // SE ACTIVA EL BLOQUEO: Ocultamos dashboard, mostramos biometría
+                    document.getElementById("dashboard-principal").style.display = "none";
+                    document.getElementById("pantalla-biometria").style.display = "block";
+                    document.getElementById("msj-biometria").innerText = estado.mensaje;
+                } else {
+                    // LUZ VERDE: Todo al día, cargamos el gimnasio
+                    document.getElementById("pantalla-biometria").style.display = "none";
+                    document.getElementById("dashboard-principal").style.display = "flex";
+                    
+                    await cargarEjercicios();
+                    cargarHistorialEnVivo();
+                    actualizarSugerencia(); 
+                    dibujarGrafica(); 
+                }
+            } catch (e) {
+                console.error("Error validando el estado de biometría:", e);
+            }
+        }
+
+        // NUEVA FUNCIÓN: Guardar datos corporales y liberar el sistema
+        async function enviarBiometria() {
+            const resDiv = document.getElementById("mensaje-bio");
+            const usr_id = obtenerUsuarioActivo();
+            const peso = parseFloat(document.getElementById("bio_peso").value);
+            
+            if (isNaN(peso)) {
+                resDiv.innerHTML = "❌ El peso es obligatorio para continuar.";
+                resDiv.className = "error";
+                return;
+            }
+
+            const datos = {
+                usuario_id: parseInt(usr_id),
+                peso_corporal: peso,
+                porcentaje_grasa: parseFloat(document.getElementById("bio_grasa").value) || null,
+                perimetro_cintura: parseFloat(document.getElementById("bio_cintura").value) || null,
+                perimetro_brazo: parseFloat(document.getElementById("bio_brazo").value) || null,
+                perimetro_pierna: parseFloat(document.getElementById("bio_pierna").value) || null
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/biometria/registrar`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+
+                if (res.ok) {
+                    resDiv.innerHTML = "✅ ¡Datos registrados! Desbloqueando...";
+                    resDiv.className = "exito";
+                    
+                    // Esperamos 1 segundo para que el usuario lea el mensaje y recargamos el acceso
+                    setTimeout(() => {
+                        document.getElementById("mensaje-bio").innerHTML = ""; // Limpiar mensaje
+                        iniciarDashboard();
+                    }, 1500);
+                } else {
+                    resDiv.innerHTML = "❌ Error al guardar datos en el servidor.";
+                    resDiv.className = "error";
+                }
+            } catch (e) {
+                resDiv.innerHTML = "❌ Error de conexión.";
+            }
+        }
+
+        // --- LAS FUNCIONES BASE AHORA LEEN DE LOCALSTORAGE ---
+        function obtenerUsuarioActivo() {
+            return localStorage.getItem("seafit_usuario_id");
+        }
+
+        async function cargarEjercicios() {
+            try {
+                const res = await fetch(`${API_BASE}/ejercicios`);
+                const ejercicios = await res.json();
+                
+                const selectRegistro = document.getElementById("ejercicio_id");
+                const selectPrediccion = document.getElementById("pred_ejercicio_id");
+                const selectGrafica = document.getElementById("grafica_ejercicio_id"); 
+                
+                selectRegistro.innerHTML = "";
+                selectPrediccion.innerHTML = "";
+                selectGrafica.innerHTML = ""; 
+                
+                if (ejercicios.length === 0) return;
+
+                ejercicios.forEach(ej => {
+                    const opcion = `<option value="${ej.id}">${ej.nombre} (${ej.grupo_muscular})</option>`;
+                    selectRegistro.innerHTML += opcion;
+                    selectPrediccion.innerHTML += opcion;
+                    selectGrafica.innerHTML += opcion; 
+                    diccionarioEjercicios[ej.id] = ej.nombre;
+                });
+            } catch (e) { console.error("Error catálogo:", e); }
+        }
+
+        async function cargarHistorialEnVivo() {
+            const cuerpoTabla = document.getElementById("tabla-historial-cuerpo");
+            const usr_id = obtenerUsuarioActivo(); 
+
+            if (!usr_id) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/historial/${usr_id}`);
+                const series = await res.json();
+                
+                cuerpoTabla.innerHTML = ""; 
+                if (series.length === 0) {
+                    // Cambiamos el colspan a 5 porque ahora la tabla tiene 5 columnas
+                    cuerpoTabla.innerHTML = "<tr><td colspan='5' style='color:#888;'>Sin series registradas aún.</td></tr>";
+                    return;
+                }
+
+                series.reverse().forEach(serie => {
+                    // NUEVO: Convertimos la fecha de la base de datos a formato local de México
+                    const fechaFormateada = new Date(serie.fecha).toLocaleString('es-MX', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    cuerpoTabla.innerHTML += `
+                        <tr>
+                            <td style="color: #666; font-size: 0.85rem; font-weight: 500;">${fechaFormateada}</td>
+                            <td><strong>${diccionarioEjercicios[serie.ejercicio_id] || serie.ejercicio_id}</strong></td>
+                            <td>Serie ${serie.numero_serie}</td>
+                            <td>${serie.peso_kg} kg</td>
+                            <td>${serie.repeticiones}</td>
+                        </tr>
+                    `;
+                });
+            } catch (e) { console.error("Error historial:", e); }
+        }
+
+        async function enviarSerie() {
+            const resDiv = document.getElementById("mensaje");
+            const inputSerie = document.getElementById("num_serie");
+            const usr_id = obtenerUsuarioActivo();
+            
+            const datos = {
+                usuario_id: parseInt(usr_id),
+                ejercicio_id: parseInt(document.getElementById("ejercicio_id").value),
+                numero_serie: parseInt(inputSerie.value),
+                peso_kg: parseFloat(document.getElementById("peso").value),
+                repeticiones: parseInt(document.getElementById("reps").value)
+            };
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/registrar-serie`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                const data = await res.json();
+                
+                if (!res.ok) { 
+                    let mensajeError = data.detail;
+                    if (Array.isArray(data.detail)) mensajeError = "Datos inválidos.";
+                    resDiv.innerHTML = "❌ " + mensajeError; 
+                    resDiv.className = "error"; 
+                } else { 
+                    resDiv.innerHTML = "✅ Serie guardada"; 
+                    resDiv.className = "exito";
+                    inputSerie.value = datos.numero_serie + 1;
+                    cargarHistorialEnVivo();
+                    actualizarSugerencia(); 
+                    dibujarGrafica(); 
+                }
+            } catch (e) { resDiv.innerHTML = "❌ Error de conexión"; }
+        }
+
+        async function enviarRecuperacion() {
+            const resDiv = document.getElementById("mensaje-rec");
+            const usr_id = obtenerUsuarioActivo();
+            const sueno = document.getElementById("sueno").value;
+            const carbs = document.getElementById("carbs").value;
+            const calorias = document.getElementById("calorias").value;
+
+            const url = `${API_BASE}/recuperacion?usuario_id=${usr_id}&horas_sueno=${sueno}&carbohidratos_pre=${carbs}&calorias_ayer=${calorias}`;
+            
+            try {
+                const res = await fetch(url, { method: "POST" });
+                if (res.ok) {
+                    resDiv.innerHTML = "✅ Datos listos";
+                    resDiv.className = "exito";
+                } else {
+                    resDiv.innerHTML = "❌ Error";
+                    resDiv.className = "error";
+                }
+            } catch (e) { resDiv.innerHTML = "❌ Error"; }
+        }
+
+        async function obtenerPrediccion() {
+            const usr_id = obtenerUsuarioActivo();
+            const ej_id = document.getElementById("pred_ejercicio_id").value;
+            const num_serie = document.getElementById("pred_num_serie").value; 
+            
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/prediccion/${usr_id}/${ej_id}/${num_serie}`);
+                const data = await res.json();
+                
+                const resBox = document.getElementById("prediccion-resultado");
+                resBox.style.display = "block";
+                document.getElementById("pred-texto").innerText = data.recomendacion_algoritmo || "Aviso:";
+                document.getElementById("pred-objetivo").innerText = data.objetivo_hoy || data.mensaje;
+                
+                if(data.puntaje_recuperacion) {
+                    document.getElementById("pred-info").innerText = `Readiness: ${data.puntaje_recuperacion} | Serie: #${data.numero_serie}`;
+                } else {
+                    document.getElementById("pred-info").innerText = "";
+                }
+            } catch (e) {}
+        }
+
+        async function actualizarSugerencia() {
+            const usr_id = obtenerUsuarioActivo();
+            const ej_id = document.getElementById("ejercicio_id").value;
+            const num_serie = document.getElementById("num_serie").value;
+            
+            const divMeta = document.getElementById("meta-dinamica");
+            const textoMeta = document.getElementById("meta-texto");
+
+            if (!usr_id || !ej_id || !num_serie) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/prediccion/${usr_id}/${ej_id}/${num_serie}`);
+                const data = await res.json();
+
+                if (data.objetivo_hoy) {
+                    divMeta.style.display = "block";
+                    textoMeta.innerHTML = data.objetivo_hoy.replace(/\n/g, '<br>');
+                } else {
+                    divMeta.style.display = "none";
+                }
+            } catch (e) { divMeta.style.display = "none"; }
+        }
+
+        async function dibujarGrafica() {
+            const usr_id = obtenerUsuarioActivo();
+            const ej_id = parseInt(document.getElementById("grafica_ejercicio_id").value);
+            
+            if (!usr_id || isNaN(ej_id)) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/historial/${usr_id}`);
+                const historialCompleto = await res.json();
+
+                const datosFiltrados = historialCompleto.filter(
+                    registro => registro.ejercicio_id === ej_id && registro.numero_serie === 1
+                );
+
+                datosFiltrados.reverse(); 
+                const etiquetasX = datosFiltrados.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
+                const datosY_Peso = datosFiltrados.map(r => r.peso_kg);
+                const datosY_Reps = datosFiltrados.map(r => r.repeticiones);
+
+                const ctx = document.getElementById('miCanvasGrafica').getContext('2d');
+
+                if (miGraficaDeLineas) miGraficaDeLineas.destroy();
+                etiquetasX.reverse();
+                datosY_Peso.reverse();
+                datosY_Reps.reverse();
+                miGraficaDeLineas = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: etiquetasX,
+                        datasets: [
+                            {
+                                label: 'Peso (kg)',
+                                data: datosY_Peso,
+                                yAxisID: 'y',
+                                borderColor: '#1a73e8',
+                                backgroundColor: '#1a73e8',
+                                borderWidth: 3,
+                                pointRadius: 5,
+                                tension: 0.3
+                            },
+                            {
+                                label: 'Reps',
+                                data: datosY_Reps,
+                                yAxisID: 'y1',
+                                borderColor: '#34a853',
+                                backgroundColor: '#34a853',
+                                borderWidth: 3,
+                                pointRadius: 5,
+                                borderDash: [5, 5],
+                                tension: 0.3
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Kilos' } },
+                            y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Reps' }, grid: { drawOnChartArea: false }, min: 0 }
+                        }
+                    }
+                });
+            } catch (e) { console.error("Error dibujando la gráfica:", e); }
+        }
+
+        async function generarReporte() {
+            const usr_id = obtenerUsuarioActivo();
+            const ej_id = parseInt(document.getElementById("grafica_ejercicio_id").value);
+            const panelInsights = document.getElementById("panel-insights");
+            const textoInsight = document.getElementById("texto-insight");
+
+            if (!usr_id || isNaN(ej_id)) return;
+
+            try {
+                textoInsight.innerHTML = "Analizando...";
+                panelInsights.style.display = "block";
+
+                const res = await fetch(`${API_BASE}/analisis/correlacion/${usr_id}/${ej_id}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    textoInsight.innerHTML = `⚠️ ${data.error}`;
+                } else {
+                    textoInsight.innerHTML = `
+                        <strong>📊 Datos de Recuperación:</strong><br>
+                        ${data.desglose_numerico}
+                        <hr style="border:0; border-top: 1px solid #c2e7d9; margin: 10px 0;">
+                        <strong>🧠 Conclusión:</strong><br>
+                        ${data.analisis_ia}
+                    `;
+                }
+            } catch (e) { textoInsight.innerHTML = "❌ Error."; }
+        }
+
+        // 11. OBTENER REPORTE SEMANAL HOLÍSTICO Y GENERAR GRÁFICA
+        async function obtenerReporteSemanal() {
+            const usr_id = obtenerUsuarioActivo();
+            const panelSemanal = document.getElementById("panel-semanal");
+            const textoSemanal = document.getElementById("texto-semanal");
+
+            if (!usr_id) return;
+
+            try {
+                textoSemanal.innerHTML = "Correlacionando volumen de entrenamiento, nutrición y descanso...";
+                panelSemanal.style.display = "block";
+
+                const res = await fetch(`${API_BASE}/analisis/semanal/${usr_id}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    textoSemanal.innerHTML = `⚠️ ${data.error}`;
+                } else {
+                    textoSemanal.innerHTML = data.analisis_semanal;
+                }
+            } catch (e) {
+                textoSemanal.innerHTML = "❌ Error al conectar con el motor analítico.";
+            }
+        }
+
+        async function cargarTendenciaGlobal() {
+            const usr_id = obtenerUsuarioActivo();
+            if (!usr_id) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/biometria/historico/${usr_id}`);
+                const data = await res.json();
+
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+
+                const ctx = document.getElementById('graficaTendenciaGlobal').getContext('2d');
+                if (miGraficaTendencia) miGraficaTendencia.destroy();
+
+                miGraficaTendencia = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.fechas,
+                        datasets: [
+                            {
+                                label: 'Peso Corporal (kg)',
+                                data: data.peso,
+                                borderColor: '#1a73e8', // Azul SEAFIT
+                                backgroundColor: '#1a73e8',
+                                borderWidth: 3,
+                                cubicInterpolationMode: 'monotone', // Curvas suaves
+                                tension: 0.4,
+                                pointRadius: 4,
+                                spanGaps: true // Conecta los puntos si el usuario no se pesó un día
+                            },
+                            {
+                                label: 'Cintura (cm)',
+                                data: data.cintura,
+                                borderColor: '#34a853', // Verde
+                                backgroundColor: '#34a853',
+                                borderWidth: 3,
+                                borderDash: [5, 5], // Línea punteada
+                                cubicInterpolationMode: 'monotone',
+                                tension: 0.4,
+                                pointRadius: 4,
+                                spanGaps: true // Conecta los puntos si dejó el campo vacío
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        scales: {
+                            y: { 
+                                display: true, 
+                                title: { display: true, text: 'Métricas' },
+                                grid: { color: '#e0e0e0' } // Cuadrícula clara
+                            },
+                            x: { 
+                                grid: { display: false } 
+                            }
+                        }
+                    }
+                });
+            } catch (e) { console.error("Error cargando tendencia global:", e); }
+        }
+    </script>
+</body>
+</html>
