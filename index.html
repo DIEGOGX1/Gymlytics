@@ -312,13 +312,16 @@
                 if (ejercicios.length === 0) return;
 
                 ejercicios.forEach(ej => {
-                    const opcion = `<option value="${ej.id}">${ej.nombre} (${ej.grupo_muscular})</option>`;
+                    let nombreCorto = ej.nombre.length > 30 ? ej.nombre.substring(0, 30) + "..." : ej.nombre;
+                    const opcion = `<option value="${ej.id}" title="${ej.nombre}">${nombreCorto} (${ej.grupo_muscular})</option>`;
                     selectRegistro.innerHTML += opcion;
                     selectPrediccion.innerHTML += opcion;
                     selectGrafica.innerHTML += opcion; 
                     diccionarioEjercicios[ej.id] = ej.nombre;
+                    
                 });
             } catch (e) { console.error("Error catálogo:", e); }
+
         }
 
         async function cargarHistorialEnVivo() {
