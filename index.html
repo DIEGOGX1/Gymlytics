@@ -70,14 +70,14 @@
         <button onclick="cerrarSesion()" style="background-color: #dc3545; max-width: 400px; margin-bottom: 20px;">🚪 Cerrar Sesión</button>
 
         <div class="card">
-            <h2>🏋️ Registrar Serie</h2>
+            <h2>REGISTRAR SERIE</h2>
             <label>ID Ejercicio:</label>
             <select id="ejercicio_id" onchange="actualizarSugerencia()"></select>
-            <label>Serie #:</label>
+            <label>Número de serie</label>
             <input type="number" id="num_serie" placeholder="Ej: 1" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
             
             <div id="meta-dinamica" style="background-color: #e8f0fe; padding: 12px; border-radius: 8px; margin: 10px 0; display: none; font-size: 0.9rem; border-left: 4px solid #1a73e8;">
-                <span style="color: #1a73e8; font-weight: bold;">🎯 Sugerencia del motor:</span>
+                <span style="color: #1a73e8; font-weight: bold;">Sugerencia de serie a realizar:</span>
                 <div id="meta-texto" style="margin-top: 5px; color: #333; line-height: 1.4;"></div>
             </div>
 
@@ -90,7 +90,7 @@
         </div>
 
         <div class="card">
-            <h2>🌙 Recuperación de Hoy</h2>
+            <h2>RECUPERACIÓN PARA HOY</h2>
             <label>Horas de sueño:</label>
             <input type="number" id="sueno" placeholder="Ej: 7.5" step="0.1">
             <label>Carbs Pre-entreno (g):</label>
@@ -102,12 +102,12 @@
         </div>
 
         <div class="card">
-            <h2>🤖 Consultar Objetivo</h2>
+            <h2>CONSULTAR OBJETIVO</h2>
             <label>¿Qué ejercicio vas a hacer?</label>
             <select id="pred_ejercicio_id"></select>
             <label>¿Qué número de serie vas a realizar?</label>
             <input type="number" id="pred_num_serie" value="1" placeholder="Ej: 1">
-            <button onclick="obtenerPrediccion()" style="background-color: #fbbc04; color: #333;">Calcular Peso de Hoy</button>
+            <button onclick="obtenerPrediccion()" style="background-color: #fbbc04; color: #333;">Calcular Peso para Hoy</button>
             <div id="prediccion-resultado" class="prediccion-box">
                 <p id="pred-texto" style="font-weight: bold; margin-bottom: 5px;"></p>
                 <p id="pred-objetivo" style="font-size: 1.2rem; color: #1a73e8; margin: 10px 0;"></p>
@@ -116,20 +116,20 @@
         </div>
 
         <div class="card">
-            <h2>📈 Mi Progreso (Sobrecarga)</h2>
+            <h2>MI PROGRESO (SOBRECARGA)</h2>
             <label>Selecciona el ejercicio a graficar:</label>
             <select id="grafica_ejercicio_id" onchange="dibujarGrafica()"></select>
             <div style="position: relative; height:40vh; width:100%; margin-top: 15px;">
                 <canvas id="miCanvasGrafica"></canvas>
             </div>
-            <button onclick="generarReporte()" style="margin-top: 20px; background-color: #0f9d58;">🧠 Analizar Último Progreso</button>
+            <button onclick="generarReporte()" style="margin-top: 20px; background-color: #0f9d58;">Analizar Último Progreso</button>
             <div id="panel-insights" style="background-color: #e6f4ea; padding: 15px; border-radius: 8px; border-left: 5px solid #0f9d58; margin-top: 15px; display: none;">
                 <p id="texto-insight" style="font-weight: 500; color: #137333; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
             </div>
         </div>
 
         <div class="card">
-            <h2>📋 Mis Series Recientes</h2>
+            <h2>HISTORIAL DE SERIES</h2>
             <table>
                 <thead>
                     <tr>
@@ -145,10 +145,10 @@
         </div>
 
     <div class="card" style="border: 2px solid #673ab7;">
-            <h2 style="color: #673ab7;">🦅 Veredicto Semanal SEAFIT</h2>
+            <h2 style="color: #673ab7;">VEREDICTO SEMANAL</h2>
             <p style="text-align: center; font-size: 0.9rem; color: #555;">Evalúa si tus hábitos de los últimos 7 días están alineados con tu meta principal.</p>
             
-            <button onclick="obtenerReporteSemanal()" style="background-color: #673ab7; margin-top: 10px;">📊 Generar Reporte Semanal</button>
+            <button onclick="obtenerReporteSemanal()" style="background-color: #673ab7; margin-top: 10px;">Generar Reporte Semanal</button>
             
             <div id="panel-semanal" style="background-color: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 5px solid #673ab7; margin-top: 15px; display: none;">
                 <p id="texto-semanal" style="color: #4a148c; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
@@ -156,14 +156,14 @@
         </div> 
         
         <div class="card" style="border: 2px solid #1a73e8;">
-            <h2 style="color: #1a73e8;">📈 Tendencia Global de Progreso</h2>
+            <h2 style="color: #1a73e8;">ANÁLISIS SEMANAL BIOMÉTRICO</h2>
             <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">
-                Evolución histórica suavizada mediante interpolación.
+                Evolución en datos biométricos representados gráficamente.
             </p>
             <div style="position: relative; height: 40vh; width: 100%;">
                 <canvas id="graficaTendenciaGlobal"></canvas>
             </div>
-            <button onclick="cargarTendenciaGlobal()" style="margin-top: 15px;">🔄 Actualizar Tendencia</button>
+            <button onclick="cargarTendenciaGlobal()" style="margin-top: 15px;">Actualizar Tendencia</button>
         </div>
     </div>
     <script>
