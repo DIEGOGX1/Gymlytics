@@ -105,8 +105,35 @@ class DatosSerieRecepcion(BaseModel):
     peso_kg: float
     repeticiones: int
 
-# Crear las tablas nuevas en la base de datos
+def sembrar_datos_iniciales(db: Session):
+    # Verificar si ya existen ejercicios
+    if db.query(Ejercicio).first() is None:
+        ejercicios_base = [
+            Ejercicio(nombre="Sentadilla Libre", grupo_muscular="Pierna"),
+            Ejercicio(nombre="Press Banca", grupo_muscular="Pecho"),
+            Ejercicio(nombre="Peso Muerto", grupo_muscular="Espalda"),
+            Ejercicio(nombre="Press Militar", grupo_muscular="Hombro"),
+            Ejercicio(nombre="Curl Bíceps", grupo_muscular="Bíceps")
+        ]
+        db.bulk_save_objects(ejercicios_base)
+        db.commit()
+        print("Datos maestros cargados correctamente.")
+
+    # Verificar si ya existen usuarios
+    if db.query(Usuario).first() is None:
+        usuario_base = Usuario(nombre="Diego Gaxiola", meta="Hipertrofia")
+        db.add(usuario_base)
+        db.commit()
+        print("Usuario inicial cargado.")
+
+
+# Crear las tablas
 Base.metadata.create_all(bind=engine)
+
+# Sembrar datos (Ejecuta la función justo después de crear las tablas)
+db_inicial = SessionLocal()
+sembrar_datos_iniciales(db_inicial)
+db_inicial.close()
 
 # ==========================================
 # 3. RUTAS DE LA API (Endpoints)
