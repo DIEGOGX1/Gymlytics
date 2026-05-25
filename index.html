@@ -175,71 +175,46 @@
 
         // 1. INICIALIZACIÓN Y ENRUTAMIENTO (Login vs Dashboard)
         window.onload = function() {
-            // Buscamos si el navegador ya recuerda quién inició sesión
-            const usuarioLogueado = localStorage.getItem("seafit_usuario_id");
+            // CORREGIDO: Unificamos la llave a gymlytics_user
+            const usuarioLogueado = localStorage.getItem("gymlytics_user"); 
             
             if (usuarioLogueado) {
-                iniciarDashboard(); // Si ya entraste antes, te pasa directo
+                iniciarDashboard(); 
             } else {
-                mostrarPantallaLogin(); // Si eres nuevo o saliste, te pide acceso
+                mostrarPantallaLogin(); 
             }
-        };  
+        };
 
         // 2. FUNCIONES DE ACCESO
-        async function mostrarPantallaLogin() {
-            document.getElementById("dashboard").style.display = "none";
+        function mostrarPantallaLogin() {
+            // CORREGIDO: Usamos los IDs exactos del HTML actual y borramos el fetch viejo
+            document.getElementById("dashboard-principal").style.display = "none";
             document.getElementById("login-caja").style.display = "block";
-            
-            try {
-                const res = await fetch(`${API_BASE}/usuarios`);
-                const usuarios = await res.json();
-                const selectLogin = document.getElementById("login_usuario_id");
-                
-                selectLogin.innerHTML = "";
-                if (usuarios.length === 0) {
-                    selectLogin.innerHTML = "<option>No hay usuarios en la BD</option>";
-                    return;
-                }
-                usuarios.forEach(user => {
-                    selectLogin.innerHTML += `<option value="${user.id}">${user.nombre}</option>`;
-                });
-            } catch (e) { console.error("Error cargando usuarios en login:", e); }
-        }
-
-        function iniciarSesion() {
-            const selectLogin = document.getElementById("login_usuario_id");
-            if(selectLogin.value) {
-                // Guardamos el ID en la memoria persistente del navegador
-                localStorage.setItem("seafit_usuario_id", selectLogin.value);
-                iniciarDashboard();
-            }
         }
 
         function cerrarSesion() {
-            // Borramos la memoria y recargamos la página
-            localStorage.removeItem("seafit_usuario_id");
+            // CORREGIDO: Borramos la llave correcta
+            localStorage.removeItem("gymlytics_user"); 
             location.reload(); 
         }
 
         // 3. CARGA DEL ENTORNO DE TRABAJO (Solo ocurre si hay login)
         async function iniciarDashboard() {
-            document.getElementById("pantalla-login").style.display = "none";
+            // CORREGIDO: Ocultamos el login-caja (el ID real)
+            document.getElementById("login-caja").style.display = "none";
             const usr_id = obtenerUsuarioActivo();
 
             if (!usr_id) return;
 
             try {
-                // El frontend le pregunta al backend si el usuario tiene permiso
                 const res = await fetch(`${API_BASE}/biometria/estado/${usr_id}`);
                 const estado = await res.json();
 
                 if (estado.requiere_pesaje) {
-                    // SE ACTIVA EL BLOQUEO: Ocultamos dashboard, mostramos biometría
                     document.getElementById("dashboard-principal").style.display = "none";
                     document.getElementById("pantalla-biometria").style.display = "block";
                     document.getElementById("msj-biometria").innerText = estado.mensaje;
                 } else {
-                    // LUZ VERDE: Todo al día, cargamos el gimnasio
                     document.getElementById("pantalla-biometria").style.display = "none";
                     document.getElementById("dashboard-principal").style.display = "flex";
                     
@@ -251,6 +226,12 @@
             } catch (e) {
                 console.error("Error validando el estado de biometría:", e);
             }
+        }
+
+        // --- LAS FUNCIONES BASE AHORA LEEN DE LOCALSTORAGE ---
+        function obtenerUsuarioActivo() {
+            // CORREGIDO: Leemos la llave correcta
+            return localStorage.getItem("gymlytics_user"); 
         }
 
         // NUEVA FUNCIÓN: Guardar datos corporales y liberar el sistema
