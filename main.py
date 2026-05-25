@@ -153,7 +153,7 @@ class LoginRequest(BaseModel):
     nombre: str
     contrasena: str
 
-@app.post("/login")
+@app.post("/api/login")
 def iniciar_sesion(req: LoginRequest, db: Session = Depends(get_db)):
     # Buscamos que coincida el nombre Y la contraseña
     usuario = db.query(Usuario).filter(

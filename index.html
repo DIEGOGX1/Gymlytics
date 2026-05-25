@@ -187,8 +187,8 @@
 
         // 2. FUNCIONES DE ACCESO
         async function mostrarPantallaLogin() {
-            document.getElementById("dashboard-principal").style.display = "none";
-            document.getElementById("pantalla-login").style.display = "block";
+            document.getElementById("dashboard").style.display = "none";
+            document.getElementById("login-caja").style.display = "block";
             
             try {
                 const res = await fetch(`${API_BASE}/usuarios`);
