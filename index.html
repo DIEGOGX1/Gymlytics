@@ -103,42 +103,6 @@
             <button onclick="cerrarSesion()" style="background-color: #dc3545; width: auto; padding: 8px 15px; margin: 0; font-size: 0.9rem;">🚪 Salir</button>
         </div>
 
-        <div id="vista-grupos-musculares" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%;">
-            <h2>Selecciona el Grupo Muscular</h2>
-            <div id="contenedor-tarjetas-grupos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;"></div>
-        </div>
-
-        <div id="vista-lista-ejercicios" style="display: none; width: 100%; flex-direction: column; align-items: center;">
-            <button onclick="volverAGrupos()" style="background-color: #6c757d; margin-bottom: 15px;">⬅️ Volver a Músculos</button>
-            <h2 id="titulo-grupo-seleccionado" style="color: #1a73e8;"></h2>
-            <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
-        </div>
-
-        <div id="vista-tracking-ejercicio" style="display: none; width: 100%; flex-direction: column; align-items: center;">
-            <button onclick="volverAEjercicios()" style="background-color: #6c757d; margin-bottom: 15px;">⬅️ Cambiar Ejercicio</button>
-            <h2 id="titulo-ejercicio-activo" style="background-color: #1a73e8; color: white; padding: 10px; border-radius: 8px; width: 100%; text-align: center;"></h2>
-            
-        </div>
-        <div class="card">
-            <h2>REGISTRAR SERIE</h2>
-            <label>ID Ejercicio:</label>
-            <select id="ejercicio_id" onchange="actualizarSugerencia()"></select>
-            <label>Número de serie</label>
-            <input type="number" id="num_serie" placeholder="Ej: 1" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
-            
-            <div id="meta-dinamica" style="background-color: #e8f0fe; padding: 12px; border-radius: 8px; margin: 10px 0; display: none; font-size: 0.9rem; border-left: 4px solid #1a73e8;">
-                <span style="color: #1a73e8; font-weight: bold;">Sugerencia de serie a realizar:</span>
-                <div id="meta-texto" style="margin-top: 5px; color: #333; line-height: 1.4;"></div>
-            </div>
-
-            <label>Peso a registrar (kg):</label>
-            <input type="number" id="peso" placeholder="Ej: 140" step="0.5">
-            <label>Reps logradas:</label>
-            <input type="number" id="reps" placeholder="Ej: 8">
-            <button onclick="enviarSerie()">Guardar Serie</button>
-            <div id="mensaje"></div>
-        </div>
-
         <div class="card">
             <h2>RECUPERACIÓN PARA HOY</h2>
             <label>Horas de sueño:</label>
@@ -151,55 +115,82 @@
             <div id="mensaje-rec"></div>
         </div>
 
-        <div class="card">
-            <h2>CONSULTAR OBJETIVO</h2>
-            <label>¿Qué ejercicio vas a hacer?</label>
-            <select id="pred_ejercicio_id"></select>
-            <label>¿Qué número de serie vas a realizar?</label>
-            <input type="number" id="pred_num_serie" value="1" placeholder="Ej: 1">
-            <button onclick="obtenerPrediccion()" style="background-color: #fbbc04; color: #333;">Calcular Peso para Hoy</button>
-            <div id="prediccion-resultado" class="prediccion-box">
-                <p id="pred-texto" style="font-weight: bold; margin-bottom: 5px;"></p>
-                <p id="pred-objetivo" style="font-size: 1.2rem; color: #1a73e8; margin: 10px 0;"></p>
-                <small id="pred-info" style="color: #666;"></small>
+        <div id="vista-grupos-musculares" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%;">
+            <h2>Selecciona el Grupo Muscular</h2>
+            <div id="contenedor-tarjetas-grupos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;"></div>
+        </div>
+
+        <div id="vista-lista-ejercicios" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+            <button onclick="volverAGrupos()" style="background-color: #6c757d; margin-bottom: 15px; max-width: 400px;">⬅️ Volver a Músculos</button>
+            <h2 id="titulo-grupo-seleccionado" style="color: #1a73e8;"></h2>
+            <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
+        </div>
+
+        <div id="vista-tracking-ejercicio" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+            <button onclick="volverAEjercicios()" style="background-color: #6c757d; margin-bottom: 15px; max-width: 400px;">⬅️ Cambiar Ejercicio</button>
+            <h2 id="titulo-ejercicio-activo" style="background-color: #1a73e8; color: white; padding: 10px; border-radius: 8px; width: 100%; max-width: 400px; text-align: center;"></h2>
+            
+            <div class="card">
+                <h2>REGISTRAR SERIE</h2>
+                <label>Número de serie</label>
+                <input type="number" id="num_serie" placeholder="Ej: 1" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
+                
+                <div id="meta-dinamica" style="background-color: #e8f0fe; padding: 12px; border-radius: 8px; margin: 10px 0; display: none; font-size: 0.9rem; border-left: 4px solid #1a73e8;">
+                    <span style="color: #1a73e8; font-weight: bold;">Sugerencia de serie a realizar:</span>
+                    <div id="meta-texto" style="margin-top: 5px; color: #333; line-height: 1.4;"></div>
+                </div>
+
+                <label>Peso a registrar (kg):</label>
+                <input type="number" id="peso" placeholder="Ej: 140" step="0.5">
+                <label>Reps logradas:</label>
+                <input type="number" id="reps" placeholder="Ej: 8">
+                <button onclick="enviarSerie()">Guardar Serie</button>
+                <div id="mensaje"></div>
+            </div>
+
+            <div class="card">
+                <h2>CONSULTAR OBJETIVO</h2>
+                <label>¿Qué número de serie vas a realizar?</label>
+                <input type="number" id="pred_num_serie" value="1" placeholder="Ej: 1">
+                <button onclick="obtenerPrediccion()" style="background-color: #fbbc04; color: #333;">Calcular Peso para Hoy</button>
+                <div id="prediccion-resultado" class="prediccion-box">
+                    <p id="pred-texto" style="font-weight: bold; margin-bottom: 5px;"></p>
+                    <p id="pred-objetivo" style="font-size: 1.2rem; color: #1a73e8; margin: 10px 0;"></p>
+                    <small id="pred-info" style="color: #666;"></small>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>MI PROGRESO (SOBRECARGA)</h2>
+                <div style="position: relative; height:40vh; width:100%; margin-top: 15px;">
+                    <canvas id="miCanvasGrafica"></canvas>
+                </div>
+                <button onclick="generarReporte()" style="margin-top: 20px; background-color: #0f9d58;">Analizar Último Progreso</button>
+                <div id="panel-insights" style="background-color: #e6f4ea; padding: 15px; border-radius: 8px; border-left: 5px solid #0f9d58; margin-top: 15px; display: none;">
+                    <p id="texto-insight" style="font-weight: 500; color: #137333; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>HISTORIAL DE SERIES</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Serie</th>
+                            <th>Peso</th>
+                            <th>Reps</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-historial-cuerpo"></tbody>
+                </table>
             </div>
         </div>
 
-        <div class="card">
-            <h2>MI PROGRESO (SOBRECARGA)</h2>
-            <label>Selecciona el ejercicio a graficar:</label>
-            <select id="grafica_ejercicio_id" onchange="dibujarGrafica()"></select>
-            <div style="position: relative; height:40vh; width:100%; margin-top: 15px;">
-                <canvas id="miCanvasGrafica"></canvas>
-            </div>
-            <button onclick="generarReporte()" style="margin-top: 20px; background-color: #0f9d58;">Analizar Último Progreso</button>
-            <div id="panel-insights" style="background-color: #e6f4ea; padding: 15px; border-radius: 8px; border-left: 5px solid #0f9d58; margin-top: 15px; display: none;">
-                <p id="texto-insight" style="font-weight: 500; color: #137333; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>HISTORIAL DE SERIES</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha/Hora</th>
-                        <th>Ej. ID</th>
-                        <th>Serie</th>
-                        <th>Peso</th>
-                        <th>Reps</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-historial-cuerpo"></tbody>
-            </table>
-        </div>
-
-    <div class="card" style="border: 2px solid #673ab7;">
+        <div class="card" style="border: 2px solid #673ab7;">
             <h2 style="color: #673ab7;">VEREDICTO SEMANAL</h2>
             <p style="text-align: center; font-size: 0.9rem; color: #555;">Evalúa si tus hábitos de los últimos 7 días están alineados con tu meta principal.</p>
-            
             <button onclick="obtenerReporteSemanal()" style="background-color: #673ab7; margin-top: 10px;">Generar Reporte Semanal</button>
-            
             <div id="panel-semanal" style="background-color: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 5px solid #673ab7; margin-top: 15px; display: none;">
                 <p id="texto-semanal" style="color: #4a148c; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
             </div>
@@ -207,9 +198,7 @@
         
         <div class="card" style="border: 2px solid #1a73e8;">
             <h2 style="color: #1a73e8;">ANÁLISIS SEMANAL BIOMÉTRICO</h2>
-            <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">
-                Evolución en datos biométricos representados gráficamente.
-            </p>
+            <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">Evolución en datos biométricos representados gráficamente.</p>
             <div style="position: relative; height: 40vh; width: 100%;">
                 <canvas id="graficaTendenciaGlobal"></canvas>
             </div>
@@ -335,7 +324,6 @@
 
         // 3. CARGA DEL ENTORNO DE TRABAJO (Solo ocurre si hay login)
         async function iniciarDashboard() {
-            // CORREGIDO: Ocultamos el login-caja (el ID real)
             document.getElementById("login-caja").style.display = "none";
             const usr_id = obtenerUsuarioActivo();
 
@@ -343,34 +331,29 @@
 
             try {
                 const res = await fetch(`${API_BASE}/biometria/estado/${usr_id}`);
-                
-                // NUEVO GUARDIA: Si el servidor falla (ej. Error 500), bloqueamos el acceso por seguridad
                 if (!res.ok) {
                     document.getElementById("dashboard-principal").style.display = "none";
                     document.getElementById("pantalla-biometria").style.display = "none";
                     document.getElementById("msj-biometria").innerText = "Error crítico de conexión con la base de datos.";
-                    return; // Detiene la función aquí mismo
+                    return; 
                 }
 
                 const estado = await res.json();
 
                 if (estado.requiere_pesaje) {
-                    // SE ACTIVA EL BLOQUEO
                     document.getElementById("dashboard-principal").style.display = "none";
                     document.getElementById("pantalla-biometria").style.display = "block";
                     document.getElementById("msj-biometria").innerText = estado.mensaje;
                 } else {
-                    // LUZ VERDE
                     document.getElementById("pantalla-biometria").style.display = "none";
                     document.getElementById("dashboard-principal").style.display = "flex";
                     
                     const nombreUsr = localStorage.getItem("gymlytics_nombre") || "Atleta";
                     document.getElementById("bienvenida-usuario").innerText = "🦅 Hola, " + nombreUsr;
                     
-                    await cargarEjercicios();
-                    cargarHistorialEnVivo();
-                    actualizarSugerencia(); 
-                    dibujarGrafica(); 
+                    // CORREGIDO: Iniciamos con las tarjetas de músculos y la gráfica global
+                    await cargarEjerciciosAgrupados(); 
+                    cargarTendenciaGlobal(); 
                 }
             } catch (e) {
                 console.error("Error validando el estado de biometría:", e);
@@ -464,64 +447,33 @@
             }
         }
 
-        async function cargarEjercicios() {
-            try {
-                const res = await fetch(`${API_BASE}/ejercicios`);
-                const ejercicios = await res.json();
-                
-                const selectRegistro = document.getElementById("ejercicio_id");
-                const selectPrediccion = document.getElementById("pred_ejercicio_id");
-                const selectGrafica = document.getElementById("grafica_ejercicio_id"); 
-                
-                selectRegistro.innerHTML = "";
-                selectPrediccion.innerHTML = "";
-                selectGrafica.innerHTML = ""; 
-                
-                if (ejercicios.length === 0) return;
-
-                ejercicios.forEach(ej => {
-                    let nombreCorto = ej.nombre.length > 30 ? ej.nombre.substring(0, 30) + "..." : ej.nombre;
-                    const opcion = `<option value="${ej.id}" title="${ej.nombre}">${nombreCorto} (${ej.grupo_muscular})</option>`;
-                    selectRegistro.innerHTML += opcion;
-                    selectPrediccion.innerHTML += opcion;
-                    selectGrafica.innerHTML += opcion; 
-                    diccionarioEjercicios[ej.id] = ej.nombre;
-                    
-                });
-            } catch (e) { console.error("Error catálogo:", e); }
-
-        }
-
         async function cargarHistorialEnVivo() {
             const cuerpoTabla = document.getElementById("tabla-historial-cuerpo");
             const usr_id = obtenerUsuarioActivo(); 
 
-            if (!usr_id) return;
+            if (!usr_id || !ejercicioActivoID) return;
 
             try {
                 const res = await fetch(`${API_BASE}/entrenamiento/historial/${usr_id}`);
                 const series = await res.json();
                 
+                // CORREGIDO: Filtramos para mostrar solo el historial del ejercicio seleccionado
+                const seriesFiltradas = series.filter(s => s.ejercicio_id === ejercicioActivoID);
+
                 cuerpoTabla.innerHTML = ""; 
-                if (series.length === 0) {
-                    // Cambiamos el colspan a 5 porque ahora la tabla tiene 5 columnas
-                    cuerpoTabla.innerHTML = "<tr><td colspan='5' style='color:#888;'>Sin series registradas aún.</td></tr>";
+                if (seriesFiltradas.length === 0) {
+                    cuerpoTabla.innerHTML = "<tr><td colspan='4' style='color:#888;'>Sin series registradas aún.</td></tr>";
                     return;
                 }
 
-                series.reverse().forEach(serie => {
-                    // NUEVO: Convertimos la fecha de la base de datos a formato local de México
+                seriesFiltradas.reverse().forEach(serie => {
                     const fechaFormateada = new Date(serie.fecha).toLocaleString('es-MX', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit'
+                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
                     });
 
                     cuerpoTabla.innerHTML += `
                         <tr>
                             <td style="color: #666; font-size: 0.85rem; font-weight: 500;">${fechaFormateada}</td>
-                            <td><strong>${diccionarioEjercicios[serie.ejercicio_id] || serie.ejercicio_id}</strong></td>
                             <td>Serie ${serie.numero_serie}</td>
                             <td>${serie.peso_kg} kg</td>
                             <td>${serie.repeticiones}</td>
@@ -536,15 +488,15 @@
             const inputSerie = document.getElementById("num_serie");
             const usr_id = obtenerUsuarioActivo();
             
-            // NUEVO: Bloqueamos el botón temporalmente
             const btnGuardar = document.querySelector("button[onclick='enviarSerie()']");
             btnGuardar.disabled = true;
             btnGuardar.innerText = "⏳ Guardando...";
             resDiv.innerHTML = "";
             
+            // CORREGIDO: Usa el ID global en vez del viejo select
             const datos = {
                 usuario_id: parseInt(usr_id),
-                ejercicio_id: parseInt(document.getElementById("ejercicio_id").value),
+                ejercicio_id: ejercicioActivoID,
                 numero_serie: parseInt(inputSerie.value),
                 peso_kg: parseFloat(document.getElementById("peso").value),
                 repeticiones: parseInt(document.getElementById("reps").value)
@@ -574,7 +526,6 @@
             } catch (e) { 
                 resDiv.innerHTML = "❌ Error de conexión"; 
             } finally {
-                // NUEVO: Desbloqueamos el botón pase lo que pase
                 btnGuardar.disabled = false;
                 btnGuardar.innerText = "Guardar Serie";
             }
@@ -620,11 +571,12 @@
 
         async function obtenerPrediccion() {
             const usr_id = obtenerUsuarioActivo();
-            const ej_id = document.getElementById("pred_ejercicio_id").value;
             const num_serie = document.getElementById("pred_num_serie").value; 
             
+            if(!ejercicioActivoID) return;
+
             try {
-                const res = await fetch(`${API_BASE}/entrenamiento/prediccion/${usr_id}/${ej_id}/${num_serie}`);
+                const res = await fetch(`${API_BASE}/entrenamiento/prediccion/${usr_id}/${ejercicioActivoID}/${num_serie}`);
                 const data = await res.json();
                 
                 const resBox = document.getElementById("prediccion-resultado");
@@ -642,16 +594,15 @@
 
         async function actualizarSugerencia() {
             const usr_id = obtenerUsuarioActivo();
-            const ej_id = document.getElementById("ejercicio_id").value;
             const num_serie = document.getElementById("num_serie").value;
             
             const divMeta = document.getElementById("meta-dinamica");
             const textoMeta = document.getElementById("meta-texto");
 
-            if (!usr_id || !ej_id || !num_serie) return;
+            if (!usr_id || !ejercicioActivoID || !num_serie) return;
 
             try {
-                const res = await fetch(`${API_BASE}/entrenamiento/prediccion/${usr_id}/${ej_id}/${num_serie}`);
+                const res = await fetch(`${API_BASE}/entrenamiento/prediccion/${usr_id}/${ejercicioActivoID}/${num_serie}`);
                 const data = await res.json();
 
                 if (data.objetivo_hoy) {
@@ -665,16 +616,15 @@
 
         async function dibujarGrafica() {
             const usr_id = obtenerUsuarioActivo();
-            const ej_id = parseInt(document.getElementById("grafica_ejercicio_id").value);
             
-            if (!usr_id || isNaN(ej_id)) return;
+            if (!usr_id || !ejercicioActivoID) return;
 
             try {
                 const res = await fetch(`${API_BASE}/entrenamiento/historial/${usr_id}`);
                 const historialCompleto = await res.json();
 
                 const datosFiltrados = historialCompleto.filter(
-                    registro => registro.ejercicio_id === ej_id && registro.numero_serie === 1
+                    registro => registro.ejercicio_id === ejercicioActivoID && registro.numero_serie === 1
                 );
 
                 datosFiltrados.reverse(); 
@@ -730,17 +680,16 @@
 
         async function generarReporte() {
             const usr_id = obtenerUsuarioActivo();
-            const ej_id = parseInt(document.getElementById("grafica_ejercicio_id").value);
             const panelInsights = document.getElementById("panel-insights");
             const textoInsight = document.getElementById("texto-insight");
 
-            if (!usr_id || isNaN(ej_id)) return;
+            if (!usr_id || !ejercicioActivoID) return;
 
             try {
                 textoInsight.innerHTML = "Analizando...";
                 panelInsights.style.display = "block";
 
-                const res = await fetch(`${API_BASE}/analisis/correlacion/${usr_id}/${ej_id}`);
+                const res = await fetch(`${API_BASE}/analisis/correlacion/${usr_id}/${ejercicioActivoID}`);
                 const data = await res.json();
 
                 if (data.error) {
