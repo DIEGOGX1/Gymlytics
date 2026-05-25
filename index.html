@@ -426,6 +426,14 @@
             const carbs = document.getElementById("carbs").value;
             const calorias = document.getElementById("calorias").value;
 
+            // 1. ESCUDO: Atrapamos el botón que ejecutó la función y lo bloqueamos
+            // Buscamos el botón por la acción onclick. Si tu botón tiene un ID, puedes usar getElementById.
+            const btnGuardar = document.querySelector("button[onclick='enviarRecuperacion()']");
+            if (btnGuardar) {
+                btnGuardar.disabled = true;
+                btnGuardar.innerText = "⏳ Guardando...";
+            }
+
             const url = `${API_BASE}/recuperacion?usuario_id=${usr_id}&horas_sueno=${sueno}&carbohidratos_pre=${carbs}&calorias_ayer=${calorias}`;
             
             try {
@@ -434,10 +442,19 @@
                     resDiv.innerHTML = "✅ Datos listos";
                     resDiv.className = "exito";
                 } else {
-                    resDiv.innerHTML = "❌ Error";
+                    resDiv.innerHTML = "❌ Error al guardar";
                     resDiv.className = "error";
                 }
-            } catch (e) { resDiv.innerHTML = "❌ Error"; }
+            } catch (e) { 
+                resDiv.innerHTML = "❌ Error de conexión"; 
+                resDiv.className = "error";
+            } finally {
+                // 2. DESBLOQUEO: Pase lo que pase (éxito o error), volvemos a encender el botón
+                if (btnGuardar) {
+                    btnGuardar.disabled = false;
+                    btnGuardar.innerText = "Guardar"; // Pon aquí el texto original de tu botón
+                }
+            }
         }
 
         async function obtenerPrediccion() {
