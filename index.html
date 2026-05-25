@@ -66,7 +66,7 @@
         <button onclick="cerrarSesion()" style="background-color: transparent; color: #dc3545; border: 1px solid #dc3545; margin-top: 10px;">Cerrar Sesión</button>
     </div>
 
-    <div id="dashboard-principal" style="display: none; width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <div id="dashboard-principal" style="display: none; width: 100%; flex-direction: column; align-items: center;">
         
         <button onclick="cerrarSesion()" style="background-color: #dc3545; max-width: 400px; margin-bottom: 20px;">🚪 Cerrar Sesión</button>
 
@@ -208,15 +208,29 @@
 
             try {
                 const res = await fetch(`${API_BASE}/biometria/estado/${usr_id}`);
+                
+                // NUEVO GUARDIA: Si el servidor falla (ej. Error 500), bloqueamos el acceso por seguridad
+                if (!res.ok) {
+                    document.getElementById("dashboard-principal").style.display = "none";
+                    document.getElementById("pantalla-biometria").style.display = "none";
+                    document.getElementById("msj-biometria").innerText = "Error crítico de conexión con la base de datos.";
+                    return; // Detiene la función aquí mismo
+                }
+
                 const estado = await res.json();
 
                 if (estado.requiere_pesaje) {
+                    // SE ACTIVA EL BLOQUEO
                     document.getElementById("dashboard-principal").style.display = "none";
                     document.getElementById("pantalla-biometria").style.display = "block";
                     document.getElementById("msj-biometria").innerText = estado.mensaje;
                 } else {
+                    // LUZ VERDE
                     document.getElementById("pantalla-biometria").style.display = "none";
                     document.getElementById("dashboard-principal").style.display = "flex";
+                    
+                    const nombreUsr = localStorage.getItem("gymlytics_nombre") || "Atleta";
+                    document.getElementById("bienvenida-usuario").innerText = "🦅 Hola, " + nombreUsr;
                     
                     await cargarEjercicios();
                     cargarHistorialEnVivo();
