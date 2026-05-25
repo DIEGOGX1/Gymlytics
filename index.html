@@ -294,10 +294,6 @@
             }
         }
 
-        // --- LAS FUNCIONES BASE AHORA LEEN DE LOCALSTORAGE ---
-        function obtenerUsuarioActivo() {
-            return localStorage.getItem("seafit_usuario_id");
-        }
         async function ejecutarLogin() {
             const usr = document.getElementById("login_usuario").value;
             const pass = document.getElementById("login_pass").value;
