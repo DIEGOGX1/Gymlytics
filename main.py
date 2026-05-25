@@ -10,9 +10,11 @@ from pydantic import BaseModel
 from typing import Optional
 from pydantic import BaseModel
 # Definir el horario
+# Definir el horario
 def obtener_hora_mexico():
     zona_mx = ZoneInfo("America/Mexico_City")
-    return datetime.datetime.now(zona_mx)
+    # Extraemos la hora exacta de México y la volvemos "ingenua" para que Postgres no la cambie a UTC
+    return datetime.datetime.now(zona_mx).replace(tzinfo=None)
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA BASE DE DATOS

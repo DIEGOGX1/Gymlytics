@@ -375,6 +375,12 @@
             const inputSerie = document.getElementById("num_serie");
             const usr_id = obtenerUsuarioActivo();
             
+            // NUEVO: Bloqueamos el botón temporalmente
+            const btnGuardar = document.querySelector("button[onclick='enviarSerie()']");
+            btnGuardar.disabled = true;
+            btnGuardar.innerText = "⏳ Guardando...";
+            resDiv.innerHTML = "";
+            
             const datos = {
                 usuario_id: parseInt(usr_id),
                 ejercicio_id: parseInt(document.getElementById("ejercicio_id").value),
@@ -382,6 +388,7 @@
                 peso_kg: parseFloat(document.getElementById("peso").value),
                 repeticiones: parseInt(document.getElementById("reps").value)
             };
+            
             try {
                 const res = await fetch(`${API_BASE}/entrenamiento/registrar-serie`, {
                     method: "POST",
@@ -403,7 +410,13 @@
                     actualizarSugerencia(); 
                     dibujarGrafica(); 
                 }
-            } catch (e) { resDiv.innerHTML = "❌ Error de conexión"; }
+            } catch (e) { 
+                resDiv.innerHTML = "❌ Error de conexión"; 
+            } finally {
+                // NUEVO: Desbloqueamos el botón pase lo que pase
+                btnGuardar.disabled = false;
+                btnGuardar.innerText = "Guardar Serie";
+            }
         }
 
         async function enviarRecuperacion() {
