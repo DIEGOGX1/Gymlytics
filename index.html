@@ -318,6 +318,7 @@
                     const data = await res.json();
                     // Guardamos el ID en el almacenamiento del navegador
                     localStorage.setItem("gymlytics_user", data.usuario_id);
+                    localStorage.setItem("gymlytics_nombre", data.nombre);
                     // Recargamos la página para que el dashboard detecte al usuario
                     location.reload(); 
                 } else {
