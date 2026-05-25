@@ -32,6 +32,7 @@ class Usuario(Base):
     __tablename__ = "usuarios"
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, index=True)
+    contrasena = Column(String) # <--- NUEVO CAMPO
     meta = Column(String)
 
 class Biometria(Base):
@@ -148,7 +149,24 @@ def get_db():
         yield db
     finally:
         db.close()
+class LoginRequest(BaseModel):
+    nombre: str
+    contrasena: str
 
+@app.post("/login")
+def iniciar_sesion(req: LoginRequest, db: Session = Depends(get_db)):
+    # Buscamos que coincida el nombre Y la contraseña
+    usuario = db.query(Usuario).filter(
+        Usuario.nombre == req.nombre, 
+        Usuario.contrasena == req.contrasena
+    ).first()
+
+    if not usuario:
+        # Si no coinciden, lanzamos un error 401 (No autorizado)
+        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+
+    # Si todo está bien, le devolvemos su ID y nombre
+    return {"usuario_id": usuario.id, "nombre": usuario.nombre}
 # ==========================================
 # CONFIGURACIÓN DE CORS (El puente al Front-End)
 # ==========================================
@@ -704,3 +722,4 @@ def biometria_historico(usuario_id: int, db: Session = Depends(get_db)):
         "brazo": [r.perimetro_brazo for r in registros],
         "pierna": [r.perimetro_pierna for r in registros]
     }
+

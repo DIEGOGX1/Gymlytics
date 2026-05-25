@@ -33,11 +33,12 @@
     </style>
 </head>
 <body>
-    <div id="pantalla-login" class="card" style="margin-top: 10vh; display: none;">
-        <h2>🦅 SEAFIT - Acceso</h2>
-        <label>Selecciona tu perfil de atleta:</label>
-        <select id="login_usuario_id"></select>
-        <button onclick="iniciarSesion()" style="margin-top: 15px; background-color: #34a853;">Entrar al Sistema</button>
+    <div id="login-caja" class="card">
+        <h2>Acceso a Gymlytics</h2>
+        <input type="text" id="login_usuario" placeholder="Usuario (Ej. Diego Gaxiola)">
+        <input type="password" id="login_pass" placeholder="Contraseña">
+        <button id="btn-login" onclick="ejecutarLogin()">Entrar</button>
+        <div id="login-error" style="color: red; margin-top: 10px;"></div>
     </div>
 
     <div id="pantalla-biometria" class="card" style="margin-top: 5vh; max-width: 400px; display: none;">
@@ -301,6 +302,39 @@
         // --- LAS FUNCIONES BASE AHORA LEEN DE LOCALSTORAGE ---
         function obtenerUsuarioActivo() {
             return localStorage.getItem("seafit_usuario_id");
+        }
+        async function ejecutarLogin() {
+            const usr = document.getElementById("login_usuario").value;
+            const pass = document.getElementById("login_pass").value;
+            const btn = document.getElementById("btn-login");
+            const errorDiv = document.getElementById("login-error");
+
+            btn.disabled = true;
+            btn.innerText = "Verificando...";
+            errorDiv.innerText = "";
+
+            try {
+                const res = await fetch(`${API_BASE}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nombre: usr, contrasena: pass })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    // Guardamos el ID en el almacenamiento del navegador
+                    localStorage.setItem("gymlytics_user", data.usuario_id);
+                    // Recargamos la página para que el dashboard detecte al usuario
+                    location.reload(); 
+                } else {
+                    errorDiv.innerText = "❌ Usuario o contraseña incorrectos.";
+                }
+            } catch (e) {
+                errorDiv.innerText = "❌ Error al conectar con el servidor.";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Entrar";
+            }
         }
 
         async function cargarEjercicios() {
