@@ -30,6 +30,36 @@
         white-space: nowrap; /* Evita que el texto salte de línea dentro del select */
         text-overflow: ellipsis; /* Pone los tres puntos "..." si el texto es muy largo */
         }
+
+        .tarjeta-seleccion {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            width: 45%; /* Para que quepan 2 por fila en móvil */
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .tarjeta-seleccion:hover {
+            border-color: #1a73e8;
+            background-color: #f8fbff;
+            transform: translateY(-2px);
+        }
+        .tarjeta-icono {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .tarjeta-titulo {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -73,6 +103,22 @@
             <button onclick="cerrarSesion()" style="background-color: #dc3545; width: auto; padding: 8px 15px; margin: 0; font-size: 0.9rem;">🚪 Salir</button>
         </div>
 
+        <div id="vista-grupos-musculares" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%;">
+            <h2>Selecciona el Grupo Muscular</h2>
+            <div id="contenedor-tarjetas-grupos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;"></div>
+        </div>
+
+        <div id="vista-lista-ejercicios" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+            <button onclick="volverAGrupos()" style="background-color: #6c757d; margin-bottom: 15px;">⬅️ Volver a Músculos</button>
+            <h2 id="titulo-grupo-seleccionado" style="color: #1a73e8;"></h2>
+            <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
+        </div>
+
+        <div id="vista-tracking-ejercicio" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+            <button onclick="volverAEjercicios()" style="background-color: #6c757d; margin-bottom: 15px;">⬅️ Cambiar Ejercicio</button>
+            <h2 id="titulo-ejercicio-activo" style="background-color: #1a73e8; color: white; padding: 10px; border-radius: 8px; width: 100%; text-align: center;"></h2>
+            
+        </div>
         <div class="card">
             <h2>REGISTRAR SERIE</h2>
             <label>ID Ejercicio:</label>
@@ -175,6 +221,92 @@
         let diccionarioEjercicios = {}; 
         let miGraficaDeLineas = null;
         let miGraficaTendencia = null; // Control para la gráfica global
+        // Variable global para saber qué estamos haciendo
+        let ejercicioActivoID = null;
+        let grupoActivoNombre = null;
+        let ejerciciosGlobales = []; // Guardaremos todo el catálogo aquí
+
+        // 1. Agrupar la base de datos
+        async function cargarEjerciciosAgrupados() {
+            try {
+                const res = await fetch(`${API_BASE}/ejercicios`);
+                ejerciciosGlobales = await res.json();
+                
+                // Creamos una lista única de los músculos principales (Ej: Si dice "Pecho - Alto", nos quedamos con "Pecho")
+                const gruposUnicos = [...new Set(ejerciciosGlobales.map(ej => ej.grupo_muscular.split(" - ")[0]))];
+                
+                dibujarTarjetasGrupos(gruposUnicos);
+            } catch (e) { console.error("Error catálogo:", e); }
+        }
+
+        // 2. Dibujar la Vista 1 (Músculos)
+        function dibujarTarjetasGrupos(grupos) {
+            const contenedor = document.getElementById("contenedor-tarjetas-grupos");
+            contenedor.innerHTML = "";
+            
+            // Diccionario temporal de iconos emoji (puedes cambiarlo por imágenes después)
+            const iconos = { "Pecho": "🦾", "Espalda": "🪽", "Pierna": "🦵", "Cuádriceps": "🦵", "Glúteo": "🍑", "Femoral": "🦵", "Hombro": "🥥", "Bíceps": "💪", "Tríceps": "🐎", "Core": "🍫", "Pantorrilla": "🦿" };
+
+            grupos.forEach(grupo => {
+                const icono = iconos[grupo] || "🏋️";
+                contenedor.innerHTML += `
+                    <div class="tarjeta-seleccion" onclick="seleccionarGrupo('${grupo}')">
+                        <div class="tarjeta-icono">${icono}</div>
+                        <div class="tarjeta-titulo">${grupo}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // 3. Viajar a la Vista 2 (Lista de ejercicios de ese músculo)
+        function seleccionarGrupo(grupoNombre) {
+            grupoActivoNombre = grupoNombre;
+            
+            // Filtramos del catálogo global solo los que empiecen con ese grupo
+            const ejerciciosDelGrupo = ejerciciosGlobales.filter(ej => ej.grupo_muscular.startsWith(grupoNombre));
+            
+            document.getElementById("titulo-grupo-seleccionado").innerText = `Ejercicios de ${grupoNombre}`;
+            const contenedor = document.getElementById("contenedor-tarjetas-ejercicios");
+            contenedor.innerHTML = "";
+            
+            ejerciciosDelGrupo.forEach(ej => {
+                contenedor.innerHTML += `
+                    <div class="tarjeta-seleccion" style="width: 100%; flex-direction: row; justify-content: flex-start; padding: 15px;" onclick="seleccionarEjercicio(${ej.id}, '${ej.nombre}')">
+                        <div class="tarjeta-titulo" style="text-align: left;">${ej.nombre} <br><small style="color: #666; font-weight: normal;">${ej.grupo_muscular}</small></div>
+                    </div>
+                `;
+            });
+
+            document.getElementById("vista-grupos-musculares").style.display = "none";
+            document.getElementById("vista-lista-ejercicios").style.display = "flex";
+        }
+
+        // 4. Viajar a la Vista 3 (El Tracking)
+        function seleccionarEjercicio(id, nombre) {
+            ejercicioActivoID = id; // Guardamos el ID globalmente
+            
+            document.getElementById("titulo-ejercicio-activo").innerText = nombre;
+            
+            document.getElementById("vista-lista-ejercicios").style.display = "none";
+            document.getElementById("vista-tracking-ejercicio").style.display = "flex";
+            
+            // Aquí mandas llamar tus funciones de siempre, pero ahora usarán la variable ejercicioActivoID
+            // en lugar de leer el valor de un <select>
+            actualizarSugerencia();
+            cargarHistorialEnVivo();
+            dibujarGrafica();
+        }
+
+        // Botones de retroceso
+        function volverAGrupos() {
+            document.getElementById("vista-lista-ejercicios").style.display = "none";
+            document.getElementById("vista-grupos-musculares").style.display = "flex";
+        }
+
+        function volverAEjercicios() {
+            document.getElementById("vista-tracking-ejercicio").style.display = "none";
+            document.getElementById("vista-lista-ejercicios").style.display = "flex";
+        }
 
         // 1. INICIALIZACIÓN Y ENRUTAMIENTO (Login vs Dashboard)
         window.onload = function() {
