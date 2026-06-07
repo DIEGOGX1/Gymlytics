@@ -149,7 +149,7 @@
         <div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
             <h2 style="text-align: center;">¿Qué parte del cuerpo vas a entrenar hoy?</h2>
             <div id="contenedor-botones-musculos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
-            
+            <button onclick="volverAlLobby()" style="background-color: #6c757d; margin-bottom: 10px; width: 92%; border-radius: 12px;">⬅️ Volver al Inicio</button>
             <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">🛑 Terminar Sesión y Ver Resumen</button>
         </div>
         <div id="vista-decision-plantilla" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;" class="card">
@@ -312,7 +312,8 @@
         // Botones de retroceso
         function volverAGrupos() {
             document.getElementById("vista-lista-ejercicios").style.display = "none";
-            document.getElementById("vista-grupos-musculares").style.display = "flex";
+            // CORREGIDO: Ahora apunta al ID correcto del nuevo diseño
+            document.getElementById("vista-pregunta-musculo").style.display = "flex";
         }
 
         function volverAEjercicios() {
@@ -1184,6 +1185,23 @@
                     options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { type: 'linear', display: true, position: 'left' }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, min: 0 } } }
                 });
             } catch (e) { console.error("Error dibujando la gráfica aislada:", e); }
+        }
+
+        function volverAlLobby() {
+            // 1. Apagamos todas las pantallas de los módulos
+            document.getElementById("vista-pregunta-musculo").style.display = "none";
+            document.getElementById("vista-lista-ejercicios").style.display = "none";
+            document.getElementById("vista-asistente-tracking").style.display = "none";
+            document.getElementById("vista-decision-plantilla").style.display = "none";
+            
+            // 2. Apagamos la bandera de consulta por si veníamos de ahí
+            modoConsulta = false;
+
+            // 3. Volvemos a encender el lobby y las tarjetas principales
+            document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
+            document.getElementById("tarjeta-recuperacion").style.display = "block";
+            document.getElementById("tarjeta-veredicto").style.display = "block";
+            document.getElementById("tarjeta-grafica").style.display = "block";
         }
     </script>
 </body>
