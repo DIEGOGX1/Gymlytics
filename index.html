@@ -238,7 +238,8 @@
         function seleccionarGrupo(grupoNombre) {
             grupoActivoNombre = grupoNombre;
             
-            const ejerciciosDelGrupo = ejerciciosGlobales.filter(ej => ej.grupo_muscular.startsWith(grupoNombre));
+            // ESCUDO: Prevenimos que ejercicios sin músculo (null) rompan el filtro
+            const ejerciciosDelGrupo = ejerciciosGlobales.filter(ej => (ej.grupo_muscular || "").startsWith(grupoNombre));
             
             document.getElementById("titulo-grupo-seleccionado").innerText = `Elige tu ejercicio de ${grupoNombre}`;
             const contenedor = document.getElementById("contenedor-tarjetas-ejercicios");
@@ -247,12 +248,11 @@
             ejerciciosDelGrupo.forEach(ej => {
                 contenedor.innerHTML += `
                     <div class="tarjeta-seleccion" style="width: 100%; flex-direction: row; justify-content: flex-start; padding: 15px;" onclick="iniciarEjercicioManual(${ej.id}, '${ej.nombre}')">
-                        <div class="tarjeta-titulo" style="text-align: left;">${ej.nombre} <br><small style="color: #666; font-weight: normal;">${ej.grupo_muscular}</small></div>
+                        <div class="tarjeta-titulo" style="text-align: left;">${ej.nombre} <br><small style="color: #666; font-weight: normal;">${ej.grupo_muscular || "General"}</small></div>
                     </div>
                 `;
             });
 
-            // Ocultamos las preguntas y mostramos el catálogo
             document.getElementById("vista-pregunta-musculo").style.display = "none";
             document.getElementById("vista-lista-ejercicios").style.display = "flex";
         }
@@ -815,8 +815,8 @@
             const contenedor = document.getElementById("contenedor-botones-musculos");
             contenedor.innerHTML = "";
             
-            // MAGIA: Sacamos los músculos automáticamente de la base de datos (Resuelve el bug de Pecho vs Pectoral)
-            const gruposUnicos = [...new Set(ejerciciosGlobales.map(ej => ej.grupo_muscular.split(" - ")[0]))];
+            // ESCUDO: Evita que un valor nulo en la DB rompa la creación de botones
+            const gruposUnicos = [...new Set(ejerciciosGlobales.map(ej => (ej.grupo_muscular || "General").split(" - ")[0]))];
             
             gruposUnicos.forEach(m => {
                 contenedor.innerHTML += `<button onclick="evaluarUltimaRutina('${m}')" style="width: 45%; background: white; color: #333; border: 2px solid #e0e0e0; font-size: 0.9rem; padding: 15px; border-radius: 12px;">${m}</button>`;
@@ -900,7 +900,8 @@
             const inputSerie = document.getElementById("num_serie");
             const usr_id = obtenerUsuarioActivo();
             
-            const pesoCapturado = float = parseFloat(document.getElementById("peso").value);
+            // CORRECCIÓN: Sintaxis limpia para leer el peso y las repeticiones
+            const pesoCapturado = parseFloat(document.getElementById("peso").value);
             const repsCapturadas = parseInt(document.getElementById("reps").value);
 
             if (!usr_id || isNaN(pesoCapturado) || isNaN(repsCapturadas)) {
@@ -931,10 +932,8 @@
                     resDiv.innerHTML = "✅ Serie guardada con éxito"; 
                     resDiv.className = "exito";
                     
-                    // Acumulación global de la sesión entera
                     resumenSesion.total_series++;
                     
-                    // Acumulación específica del ejercicio activo
                     resumenSesion.ejercicios[ejercicioActivoID].series++;
                     if (pesoCapturado > resumenSesion.ejercicios[ejercicioActivoID].max_peso) {
                         resumenSesion.ejercicios[ejercicioActivoID].max_peso = pesoCapturado;
@@ -952,7 +951,6 @@
             } catch (e) { resDiv.innerHTML = "❌ Error de conexión."; }
             finally { btnGuardar.disabled = false; }
         }
-
         // 4. FLUJO DINÁMICO SIN ALERTAS MOLESTAS (Regresa a menús de elección)
         async function preguntarSiguientePaso() {
             // Evaluamos cargas contra la sesión pasada antes de apagar la pantalla
