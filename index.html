@@ -129,7 +129,9 @@
         <div id="vista-tracking-ejercicio" style="display: none; width: 100%; max-width: 400px; margin-bottom: 30px; flex-direction: column; align-items: center;">
             <button onclick="volverAEjercicios()" style="background-color: #6c757d; margin-bottom: 15px; width: 100%;">⬅️ Cambiar Ejercicio</button>
             <h2 id="titulo-ejercicio-activo" style="background-color: #1a73e8; color: white; padding: 10px; border-radius: 8px; width: 100%; text-align: center;"></h2>
-            
+            <div style="background-color: #f1f3f4; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 15px; width: 100%; text-align: center;">
+                🔥 Series completadas hoy: <span id="contador-series-hoy" style="color: #e53935; font-size: 1rem;">0</span>
+            </div>
             <div class="card">
                 <h2>REGISTRAR SERIE</h2>
                 <label>Número de serie</label>
@@ -275,7 +277,10 @@
             ejercicioActivoID = id; // Guardamos el ID globalmente
             
             document.getElementById("titulo-ejercicio-activo").innerText = nombre;
-            
+            // NUEVO: Limpiar campos de registro
+            document.getElementById("peso").value = "";
+            document.getElementById("reps").value = "";
+            document.getElementById("num_serie").value = "1";
             document.getElementById("vista-lista-ejercicios").style.display = "none";
             document.getElementById("vista-tracking-ejercicio").style.display = "flex";
             
@@ -521,7 +526,8 @@
                     inputSerie.value = datos.numero_serie + 1;
                     cargarHistorialEnVivo();
                     actualizarSugerencia(); 
-                    dibujarGrafica(); 
+                    dibujarGrafica();
+                    actualizarConteoSeriesDia(); 
                 }
             } catch (e) { 
                 resDiv.innerHTML = "❌ Error de conexión"; 
@@ -530,7 +536,21 @@
                 btnGuardar.innerText = "Guardar Serie";
             }
         }
+        async function actualizarConteoSeriesDia() {
+            const usr_id = obtenerUsuarioActivo();
+            if (!usr_id) return;
 
+            try {
+                // Usamos la ruta que ya tenías programada en tu backend
+                const res = await fetch(`${API_BASE}/entrenamiento/analisis/series-hoy/${usr_id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("contador-series-hoy").innerText = data.total_series_dia;
+                }
+            } catch (e) {
+                console.error("Error al obtener el conteo de series:", e);
+            }
+        }
         async function enviarRecuperacion() {
             const resDiv = document.getElementById("mensaje-rec");
             const usr_id = obtenerUsuarioActivo();
