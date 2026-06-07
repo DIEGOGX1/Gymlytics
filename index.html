@@ -140,7 +140,7 @@
             
             <div class="card" style="margin-top: 10px;">
                 <div style="background-color: #f1f3f4; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 15px; width: 100%; text-align: center; box-sizing: border-box;">
-                    🔥 Series completadas en esta sesión: <span id="asistente-conteo-series" style="color: #e53935; font-size: 1rem;">0</span>
+                    🔥 Series totales hoy: <span id="asistente-conteo-series" style="color: #e53935; font-size: 1rem;">0</span>
                 </div>
 
                 <h2>REGISTRAR SERIE</h2>
@@ -160,8 +160,16 @@
                 <div id="mensaje"></div>
             </div>
 
-            <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-                <button onclick="preguntarSiguientePaso()" style="background-color: #fbbc04; color: #333; font-weight: bold;">⏭️ Terminar Ejercicio</button>
+            <div class="card" style="margin-top: 10px;">
+                <h2 style="color: #34a853;">📈 MI PROGRESO (SOBRECARGA)</h2>
+                <div style="position: relative; height:35vh; width:100%; margin-top: 15px;">
+                    <canvas id="miCanvasGrafica"></canvas>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px;">
+                <button onclick="preguntarSiguientePaso()" style="background-color: #fbbc04; color: #333; font-weight: bold; padding: 15px;">⏭️ Terminar Ejercicio Actual</button>
+                <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px;">🛑 Terminar Sesión Completa</button>
             </div>
         </div>
 
@@ -813,13 +821,14 @@
         function dibujarBotonesMusculosWizard() {
             const contenedor = document.getElementById("contenedor-botones-musculos");
             contenedor.innerHTML = "";
-            const musculos = ["Pecho", "Espalda", "Cuádriceps", "Glúteo", "Femoral", "Hombro", "Bíceps", "Tríceps", "Core", "Pantorrilla"];
             
-            musculos.forEach(m => {
+            // MAGIA: Sacamos los músculos automáticamente de la base de datos (Resuelve el bug de Pecho vs Pectoral)
+            const gruposUnicos = [...new Set(ejerciciosGlobales.map(ej => ej.grupo_muscular.split(" - ")[0]))];
+            
+            gruposUnicos.forEach(m => {
                 contenedor.innerHTML += `<button onclick="evaluarUltimaRutina('${m}')" style="width: 45%; background: white; color: #333; border: 2px solid #e0e0e0; font-size: 0.9rem; padding: 15px; border-radius: 12px;">${m}</button>`;
             });
         }
-
         // 2. Preguntar al Backend si recuerda qué hicimos la última vez
         async function evaluarUltimaRutina(grupoMuscular) {
             grupoActivoNombre = grupoMuscular; 
@@ -868,14 +877,20 @@
             ejercicioActivoID = ejActual.id;
             
             document.getElementById("asistente-ejercicio-titulo").innerText = `🏋️ Ejercicio ${indiceEjercicioActual + 1}/${ejerciciosDeLaSesion.length}: ${ejActual.nombre}`;
+            
+            // LIMPIEZA ABSOLUTA DE MEMORIA Y CAMPOS PARA EVITAR BUGS DE SERIES REPETIDAS
             document.getElementById("num_serie").value = "1";
             document.getElementById("peso").value = "";
             document.getElementById("reps").value = "";
-            document.getElementById("asistente-conteo-series").innerText = "0";
+            document.getElementById("mensaje").innerHTML = ""; 
+            document.getElementById("mensaje").className = "";
+            
+            document.getElementById("asistente-conteo-series").innerText = resumenSesion.total_series;
             
             document.getElementById("vista-asistente-tracking").style.display = "flex";
             
             actualizarSugerencia();
+            dibujarGrafica(); // ENCENDEMOS LA GRÁFICA NUEVAMENTE
         }
 
         // 3. Modificación del guardado: Inyectar el token de sesión
@@ -908,15 +923,14 @@
                     resDiv.innerHTML = "✅ Serie guardada con éxito"; 
                     resDiv.className = "exito";
                     
-                    // Sumamos a las métricas del resumen del día
                     resumenSesion.total_series++;
                     resumenSesion.por_musculo[grupoActivoNombre] = (resumenSesion.por_musculo[grupoActivoNombre] || 0) + 1;
                     
-                    // Actualizamos el contador numérico de la tarjeta
-                    document.getElementById("asistente-conteo-series").innerText = parseInt(document.getElementById("asistente-conteo-series").innerText) + 1;
+                    document.getElementById("asistente-conteo-series").innerText = resumenSesion.total_series;
                     
                     inputSerie.value = datos.numero_serie + 1;
                     actualizarSugerencia(); 
+                    dibujarGrafica(); // <-- SE ACTUALIZA LA GRÁFICA EN VIVO
                 } else {
                     const data = await res.json();
                     resDiv.innerHTML = "❌ " + (data.detail || "Error.");
@@ -927,18 +941,15 @@
 
         // 4. Sistema de compuertas dinámicas al acabar el ejercicio
         async function preguntarSiguientePaso() {
-            // Guardamos datos de este ejercicio antes de movernos para analizar sobrecarga
             await registrarProgresoCargaResumen();
-
             document.getElementById("vista-asistente-tracking").style.display = "none";
             
             indiceEjercicioActual++;
             if(indiceEjercicioActual < ejerciciosDeLaSesion.length) {
-                // Hay más ejercicios programados en la rutina
-                lanzarAsistenteEjercicio();
+                lanzarAsistenteEjercicio(); // Si hay más, pasa al siguiente auto
             } else {
-                // Llegamos al final de la rutina propuesta, preguntamos qué hacer
-                const cambiar = confirm("¿Deseas agregar y entrenar otro grupo muscular diferente en esta misma sesión?");
+                // Si ya no hay más en la rutina de ese músculo, le preguntamos amablemente
+                const cambiar = confirm("✅ Has completado todos los ejercicios sugeridos para este músculo.\n\nDa clic en [Aceptar] si quieres entrenar otro músculo distinto.\nDa clic en [Cancelar] para TERMINAR LA SESIÓN y ver tu resumen.");
                 if(cambiar) {
                     document.getElementById("vista-pregunta-musculo").style.display = "flex";
                 } else {
