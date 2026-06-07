@@ -121,26 +121,24 @@
 
         <div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
             <h2 style="text-align: center;">¿Qué parte del cuerpo vas a entrenar hoy?</h2>
-            <div id="contenedor-botones-musculos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
+            <div id="contenedor-botones-musculos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
+            
+            <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">🛑 Terminar Sesión y Ver Resumen</button>
         </div>
 
-        <div id="vista-decision-plantilla" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;" class="card">
-            <h2 style="color: #673ab7;">📋 Rutina Sugerida Detectada</h2>
-            <p id="texto-sugerencia-rutina" style="font-size: 0.9rem; color: #555; text-align: center;"></p>
-            <div id="lista-ejercicios-sugeridos" style="width: 100%; margin: 15px 0; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px;"></div>
-            <button onclick="aceptarRutinaSugerida()" style="background-color: #673ab7; margin-bottom: 10px;">Aceptar Rutina</button>
-            <button onclick="rechazarYBuscarManualmente()" style="background-color: transparent; color: #666; border: 1px solid #ccc;">Elegir ejercicios manualmente</button>
-        </div>
         <div id="vista-lista-ejercicios" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
             <h2 id="titulo-grupo-seleccionado" style="color: #1a73e8; text-align: center;"></h2>
-            <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
+            <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
+            
+            <button onclick="volverAGrupos()" style="background-color: #6c757d; margin-bottom: 10px; width: 100%;">⬅️ Volver a Músculos</button>
+            <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 100%;">🛑 Terminar Sesión y Ver Resumen</button>
         </div>
         <div id="vista-asistente-tracking" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
             <h2 id="asistente-ejercicio-titulo" style="background-color: #1a73e8; color: white; padding: 12px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box;"></h2>
             
             <div class="card" style="margin-top: 10px;">
                 <div style="background-color: #f1f3f4; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 15px; width: 100%; text-align: center; box-sizing: border-box;">
-                    🔥 Series totales hoy: <span id="asistente-conteo-series" style="color: #e53935; font-size: 1rem;">0</span>
+                    🔥 Series totales acumuladas: <span id="asistente-conteo-series" style="color: #e53935; font-size: 1rem;">0</span>
                 </div>
 
                 <h2>REGISTRAR SERIE</h2>
@@ -167,12 +165,10 @@
                 </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 10px;">
+            <div style="width: 100%; margin-top: 10px;">
                 <button onclick="preguntarSiguientePaso()" style="background-color: #fbbc04; color: #333; font-weight: bold; padding: 15px;">⏭️ Terminar Ejercicio Actual</button>
-                <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px;">🛑 Terminar Sesión Completa</button>
             </div>
         </div>
-
         <div id="vista-resumen-final" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;" class="card">
             <h2 style="color: #34a853; font-size: 1.5rem;">🎉 ¡Entrenamiento Concluido!</h2>
             <p style="text-align: center; color: #666; font-weight: 500;">Tu esfuerzo de hoy ha sido procesado por el sistema.</p>
@@ -223,12 +219,10 @@
         let indiceEjercicioActual = 0;     // En qué ejercicio de la lista vamos
         let historialCargasAnteriores = {}; // Para comparar si subiste o bajaste pesos
         
-        // Contadores en caliente para el resumen final
+        // Estructura mejorada para acumular múltiples ejercicios de forma limpia
         let resumenSesion = {
             total_series: 0,
-            por_musculo: {},
-            aumentaron: [],
-            disminuyeron: []
+            ejercicios: {} // Almacenará { id_ejercicio: { nombre, grupo, series, max_peso, delta } }
         };
 
         // 1. Descargar el catálogo a la memoria global sin dibujar la vista antigua
@@ -800,15 +794,14 @@
         }
         // 1. Iniciar Flujo y Generar sesión temporal por tiempo
         function comenzarEntrenamiento() {
-            // MODO ENFOQUE: Ocultamos las tarjetas generales
             document.getElementById("tarjeta-recuperacion").style.display = "none";
             document.getElementById("tarjeta-veredicto").style.display = "none";
             document.getElementById("tarjeta-grafica").style.display = "none";
-            // Generamos un ID único usando la estampa de tiempo de México
+
             sesionActivaID = "SES-" + Date.now();
             
-            // Reiniciamos contadores limpios por si acaso
-            resumenSesion = { total_series: 0, por_musculo: {}, aumentaron: [], disminuyeron: [] };
+            // Inicialización limpia
+            resumenSesion = { total_series: 0, ejercicios: {} };
             ejerciciosDeLaSesion = [];
             indiceEjercicioActual = 0;
 
@@ -871,45 +864,60 @@
             seleccionarGrupo(grupoActivoNombre); 
         }
 
-        // Esta función reemplaza a seleccionarEjercicio antigua para el flujo secuencial
+        // 2. DETECTAR EL EJERCICIO ACTIVO E INICIALIZAR EN BITÁCORA
         function lanzarAsistenteEjercicio() {
             const ejActual = ejerciciosDeLaSesion[indiceEjercicioActual];
             ejercicioActivoID = ejActual.id;
             
-            document.getElementById("asistente-ejercicio-titulo").innerText = `🏋️ Ejercicio ${indiceEjercicioActual + 1}/${ejerciciosDeLaSesion.length}: ${ejActual.nombre}`;
+            document.getElementById("asistente-ejercicio-titulo").innerText = `🏋️ Ejercicio: ${ejActual.nombre}`;
             
-            // LIMPIEZA ABSOLUTA DE MEMORIA Y CAMPOS PARA EVITAR BUGS DE SERIES REPETIDAS
             document.getElementById("num_serie").value = "1";
             document.getElementById("peso").value = "";
             document.getElementById("reps").value = "";
             document.getElementById("mensaje").innerHTML = ""; 
-            document.getElementById("mensaje").className = "";
             
             document.getElementById("asistente-conteo-series").innerText = resumenSesion.total_series;
-            
             document.getElementById("vista-asistente-tracking").style.display = "flex";
             
+            // Si el ejercicio no existe en la bitácora de hoy, lo damos de alta
+            if (!resumenSesion.ejercicios[ejercicioActivoID]) {
+                resumenSesion.ejercicios[ejercicioActivoID] = {
+                    nombre: ejActual.nombre,
+                    grupo: grupoActivoNombre,
+                    series: 0,
+                    max_peso: 0,
+                    delta: "Estable o Consolidado 📊"
+                };
+            }
+            
             actualizarSugerencia();
-            dibujarGrafica(); // ENCENDEMOS LA GRÁFICA NUEVAMENTE
+            dibujarGrafica();
         }
 
-        // 3. Modificación del guardado: Inyectar el token de sesión
+        // 3. REGISTRAR SERIE ACUMULANDO EN EL HISTORIAL TEMPORAL
         async function enviarSerieAsistente() {
             const resDiv = document.getElementById("mensaje");
             const inputSerie = document.getElementById("num_serie");
             const usr_id = obtenerUsuarioActivo();
             
+            const pesoCapturado = float = parseFloat(document.getElementById("peso").value);
+            const repsCapturadas = parseInt(document.getElementById("reps").value);
+
+            if (!usr_id || isNaN(pesoCapturado) || isNaN(repsCapturadas)) {
+                resDiv.innerHTML = "❌ Por favor llena los campos de peso y repeticiones.";
+                return;
+            }
+
             const btnGuardar = document.querySelector("button[onclick='enviarSerieAsistente()']");
             btnGuardar.disabled = true;
-            resDiv.innerHTML = "";
             
             const datos = {
                 usuario_id: parseInt(usr_id),
                 ejercicio_id: ejercicioActivoID,
-                sesion_id: sesionActivaID, // MÁGICO: Vinculamos la serie a la sesión de hoy
+                sesion_id: sesionActivaID, 
                 numero_serie: parseInt(inputSerie.value),
-                peso_kg: parseFloat(document.getElementById("peso").value),
-                repeticiones: parseInt(document.getElementById("reps").value)
+                peso_kg: pesoCapturado,
+                repeticiones: repsCapturadas
             };
             
             try {
@@ -923,90 +931,109 @@
                     resDiv.innerHTML = "✅ Serie guardada con éxito"; 
                     resDiv.className = "exito";
                     
+                    // Acumulación global de la sesión entera
                     resumenSesion.total_series++;
-                    resumenSesion.por_musculo[grupoActivoNombre] = (resumenSesion.por_musculo[grupoActivoNombre] || 0) + 1;
+                    
+                    // Acumulación específica del ejercicio activo
+                    resumenSesion.ejercicios[ejercicioActivoID].series++;
+                    if (pesoCapturado > resumenSesion.ejercicios[ejercicioActivoID].max_peso) {
+                        resumenSesion.ejercicios[ejercicioActivoID].max_peso = pesoCapturado;
+                    }
                     
                     document.getElementById("asistente-conteo-series").innerText = resumenSesion.total_series;
-                    
                     inputSerie.value = datos.numero_serie + 1;
+                    
                     actualizarSugerencia(); 
-                    dibujarGrafica(); // <-- SE ACTUALIZA LA GRÁFICA EN VIVO
+                    dibujarGrafica(); 
                 } else {
                     const data = await res.json();
-                    resDiv.innerHTML = "❌ " + (data.detail || "Error.");
+                    resDiv.innerHTML = "❌ " + (data.detail || "Error al registrar.");
                 }
             } catch (e) { resDiv.innerHTML = "❌ Error de conexión."; }
             finally { btnGuardar.disabled = false; }
         }
 
-        // 4. Sistema de compuertas dinámicas al acabar el ejercicio
+        // 4. FLUJO DINÁMICO SIN ALERTAS MOLESTAS (Regresa a menús de elección)
         async function preguntarSiguientePaso() {
+            // Evaluamos cargas contra la sesión pasada antes de apagar la pantalla
             await registrarProgresoCargaResumen();
+            
             document.getElementById("vista-asistente-tracking").style.display = "none";
             
             indiceEjercicioActual++;
             if(indiceEjercicioActual < ejerciciosDeLaSesion.length) {
-                lanzarAsistenteEjercicio(); // Si hay más, pasa al siguiente auto
+                // Sigue la secuencia automática si venía de una rutina sugerida completa
+                lanzarAsistenteEjercicio();
             } else {
-                // Si ya no hay más en la rutina de ese músculo, le preguntamos amablemente
-                const cambiar = confirm("✅ Has completado todos los ejercicios sugeridos para este músculo.\n\nDa clic en [Aceptar] si quieres entrenar otro músculo distinto.\nDa clic en [Cancelar] para TERMINAR LA SESIÓN y ver tu resumen.");
-                if(cambiar) {
-                    document.getElementById("vista-pregunta-musculo").style.display = "flex";
-                } else {
-                    finalizarSesiónTotal();
-                }
+                // Si terminó un ejercicio manual o la plantilla concluyó, vuelve al selector.
+                // Desde ahí el usuario decidirá si selecciona otro músculo o presiona "Terminar Sesión"
+                document.getElementById("vista-pregunta-musculo").style.display = "flex";
             }
         }
 
-        // Analiza de forma analítica instantánea el peso de hoy comparado con el endpoint de correlación
+        // Analiza el delta y lo guarda directamente en la tarjeta de ese ejercicio
         async function registrarProgresoCargaResumen() {
             const usr_id = obtenerUsuarioActivo();
-            const ejActual = ejerciciosDeLaSesion[indiceEjercicioActual];
+            if (!usr_id || !ejercicioActivoID) return;
             try {
                 const res = await fetch(`${API_BASE}/analisis/correlacion/${usr_id}/${ejercicioActivoID}`);
                 if(res.ok) {
                     const data = await res.json();
-                    if(data.estadisticas) {
-                        if(data.estadisticas.peso_delta > 0 || data.estadisticas.reps_delta > 0) {
-                            resumenSesion.aumentaron.push(ejActual.nombre);
-                        } else if(data.estadisticas.peso_delta < 0 || data.estadisticas.reps_delta < 0) {
-                            resumenSesion.disminuyeron.push(ejActual.nombre);
+                    if(data.estadisticas && resumenSesion.ejercicios[ejercicioActivoID]) {
+                        const pDelta = data.estadisticas.peso_delta;
+                        const rDelta = data.estadisticas.reps_delta;
+
+                        if(pDelta > 0 || rDelta > 0) {
+                            resumenSesion.ejercicios[ejercicioActivoID].delta = "Aumentó Carga 🔼";
+                        } else if(pDelta < 0 || rDelta < 0) {
+                            resumenSesion.ejercicios[ejercicioActivoID].delta = "Disminuyó Carga 🔽";
+                        } else {
+                            resumenSesion.ejercicios[ejercicioActivoID].delta = "Estable o Consolidado 📊";
                         }
                     }
                 }
             } catch(e){}
         }
 
-        // 5. Dibujar la pantalla de la victoria final con todas las estadísticas solicitadas
+        // 5. RENDERIZADO COMPLETO DEL RESUMEN HISTÓRICO DE LA SESIÓN
         function finalizarSesiónTotal() {
             document.getElementById("vista-asistente-tracking").style.display = "none";
             document.getElementById("vista-pregunta-musculo").style.display = "none";
+            document.getElementById("vista-lista-ejercicios").style.display = "none";
+            document.getElementById("vista-decision-plantilla").style.display = "none";
             
             document.getElementById("resumen-total-series").innerText = resumenSesion.total_series;
             
-            // Desglose de series por músculo
             const divMusculos = document.getElementById("resumen-desglose-musculos");
-            divMusculos.innerHTML = "";
-            for (const [musculo, series] of Object.entries(resumenSesion.por_musculo)) {
-                divMusculos.innerHTML += `• Enfoque en <strong>${musculo}</strong>: ${series} series efectivas.<br>`;
-            }
-            
-            // Análisis directo de cargas
             const divCargas = document.getElementById("resumen-analisis-cargas");
+            
+            divMusculos.innerHTML = "";
             divCargas.innerHTML = "";
             
-            if(resumenSesion.aumentaron.length > 0) {
-                divCargas.innerHTML += `<span style="color:#2e7d32;">🔼 <strong>Subiste carga/reps en:</strong></span><br> <small>${resumenSesion.aumentaron.join(', ')}</small><br><br>`;
+            const listaEjerciciosHechos = Object.values(resumenSesion.ejercicios);
+
+            if(listaEjerciciosHechos.length === 0) {
+                divMusculos.innerHTML = "No registraste series en esta sesión.";
+                divCargas.innerHTML = "Sin datos de sobrecarga para evaluar hoy.";
+                document.getElementById("vista-resumen-final").style.display = "flex";
+                return;
             }
-            if(resumenSesion.disminuyeron.length > 0) {
-                divCargas.innerHTML += `<span style="color:#c62828;">🔽 <strong>Bajaste rendimiento en:</strong></span><br> <small>${resumenSesion.disminuyeron.join(', ')}</small><br><br>`;
-            }
-            if(resumenSesion.aumentaron.length === 0 && resumenSesion.disminuyeron.length === 0) {
-                divCargas.innerHTML += `• Mantuviste tus cargas estables e idénticas a la sesión pasada en todos los ejercicios. ¡Buena consolidación de fuerza!`;
-            }
+            
+            // Recorremos la bitácora completa de los ejercicios entrenados hoy
+            listaEjerciciosHechos.forEach(ej => {
+                // Impresión detallada de series y peso máximo alcanzado
+                divMusculos.innerHTML += `• <strong>${ej.nombre}</strong> (${ej.grupo}): <strong>${ej.series}</strong> series efectivas. Máx: <strong>${ej.max_peso} kg</strong>.<br>`;
+                
+                // Color dinámico según desempeño analítico
+                let estiloColor = "color: #555;";
+                if(ej.delta.includes("🔼")) estiloColor = "color: #2e7d32; font-weight: bold;";
+                if(ej.delta.includes("🔽")) estiloColor = "color: #c62828; font-weight: bold;";
+                
+                divCargas.innerHTML += `• ${ej.nombre}: <span style="${estiloColor}">${ej.delta}</span><br>`;
+            });
 
             document.getElementById("vista-resumen-final").style.display = "flex";
-        }   
+        }
     </script>
 </body>
 </html>
