@@ -103,7 +103,7 @@
             <button onclick="cerrarSesion()" style="background-color: #dc3545; width: auto; padding: 8px 15px; margin: 0; font-size: 0.9rem;">🚪 Salir</button>
         </div>
 
-        <div class="card">
+        <div class="card" id="tarjeta-recuperacion">
             <h2>RECUPERACIÓN PARA HOY</h2>
             <label>Horas de sueño:</label>
             <input type="number" id="sueno" placeholder="Ej: 7.5" step="0.1">
@@ -131,7 +131,10 @@
             <button onclick="aceptarRutinaSugerida()" style="background-color: #673ab7; margin-bottom: 10px;">Aceptar Rutina</button>
             <button onclick="rechazarYBuscarManualmente()" style="background-color: transparent; color: #666; border: 1px solid #ccc;">Elegir ejercicios manualmente</button>
         </div>
-
+        <div id="vista-lista-ejercicios" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
+            <h2 id="titulo-grupo-seleccionado" style="color: #1a73e8; text-align: center;"></h2>
+            <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
+        </div>
         <div id="vista-asistente-tracking" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
             <h2 id="asistente-ejercicio-titulo" style="background-color: #1a73e8; color: white; padding: 12px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box;"></h2>
             
@@ -179,7 +182,7 @@
             <button onclick="location.reload()" style="background-color: #1a73e8; margin-top: 15px;">Ir al Panel General e Historial</button>
         </div>
 
-        <div class="card" style="border: 2px solid #673ab7;">
+        <div class="card" id="tarjeta-veredicto" style="border: 2px solid #673ab7;">
             <h2 style="color: #673ab7;">VEREDICTO SEMANAL</h2>
             <p style="text-align: center; font-size: 0.9rem; color: #555;">Evalúa si tus hábitos de los últimos 7 días están alineados con tu meta principal.</p>
             <button onclick="obtenerReporteSemanal()" style="background-color: #673ab7; margin-top: 10px;">Generar Reporte Semanal</button>
@@ -188,7 +191,7 @@
             </div>
         </div> 
         
-        <div class="card" style="border: 2px solid #1a73e8;">
+        <div class="card" id="tarjeta-grafica" style="border: 2px solid #1a73e8;">
             <h2 style="color: #1a73e8;">ANÁLISIS SEMANAL BIOMÉTRICO</h2>
             <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">Evolución en datos biométricos representados gráficamente.</p>
             <div style="position: relative; height: 40vh; width: 100%;">
@@ -252,46 +255,37 @@
             });
         }
 
-        // 3. Viajar a la Vista 2 (Lista de ejercicios de ese músculo)
+        // 3. Viajar a la Selección Manual (Si no hay rutina sugerida)
         function seleccionarGrupo(grupoNombre) {
             grupoActivoNombre = grupoNombre;
             
-            // Filtramos del catálogo global solo los que empiecen con ese grupo
             const ejerciciosDelGrupo = ejerciciosGlobales.filter(ej => ej.grupo_muscular.startsWith(grupoNombre));
             
-            document.getElementById("titulo-grupo-seleccionado").innerText = `Ejercicios de ${grupoNombre}`;
+            document.getElementById("titulo-grupo-seleccionado").innerText = `Elige tu ejercicio de ${grupoNombre}`;
             const contenedor = document.getElementById("contenedor-tarjetas-ejercicios");
             contenedor.innerHTML = "";
             
             ejerciciosDelGrupo.forEach(ej => {
                 contenedor.innerHTML += `
-                    <div class="tarjeta-seleccion" style="width: 100%; flex-direction: row; justify-content: flex-start; padding: 15px;" onclick="seleccionarEjercicio(${ej.id}, '${ej.nombre}')">
+                    <div class="tarjeta-seleccion" style="width: 100%; flex-direction: row; justify-content: flex-start; padding: 15px;" onclick="iniciarEjercicioManual(${ej.id}, '${ej.nombre}')">
                         <div class="tarjeta-titulo" style="text-align: left;">${ej.nombre} <br><small style="color: #666; font-weight: normal;">${ej.grupo_muscular}</small></div>
                     </div>
                 `;
             });
 
-            document.getElementById("vista-grupos-musculares").style.display = "none";
+            // Ocultamos las preguntas y mostramos el catálogo
+            document.getElementById("vista-pregunta-musculo").style.display = "none";
             document.getElementById("vista-lista-ejercicios").style.display = "flex";
         }
 
-        // 4. Viajar a la Vista 3 (El Tracking)
-        function seleccionarEjercicio(id, nombre) {
-            ejercicioActivoID = id; // Guardamos el ID globalmente
+        // 4. Iniciar el Asistente con el ejercicio manual
+        function iniciarEjercicioManual(id, nombre) {
+            // Engañamos al asistente para que crea que esta es nuestra "rutina"
+            ejerciciosDeLaSesion = [{ id: id, nombre: nombre }];
+            indiceEjercicioActual = 0;
             
-            document.getElementById("titulo-ejercicio-activo").innerText = nombre;
-            // NUEVO: Limpiar campos de registro
-            document.getElementById("peso").value = "";
-            document.getElementById("reps").value = "";
-            document.getElementById("num_serie").value = "1";
             document.getElementById("vista-lista-ejercicios").style.display = "none";
-            document.getElementById("vista-tracking-ejercicio").style.display = "flex";
-            
-            // Aquí mandas llamar tus funciones de siempre, pero ahora usarán la variable ejercicioActivoID
-            // en lugar de leer el valor de un <select>
-            actualizarSugerencia();
-            cargarHistorialEnVivo();
-            dibujarGrafica();
+            lanzarAsistenteEjercicio();
         }
 
         // Botones de retroceso
@@ -820,6 +814,10 @@
         }
         // 1. Iniciar Flujo y Generar sesión temporal por tiempo
         function comenzarEntrenamiento() {
+            // MODO ENFOQUE: Ocultamos las tarjetas generales
+            document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-veredicto").style.display = "none";
+            document.getElementById("tarjeta-grafica").style.display = "none";
             // Generamos un ID único usando la estampa de tiempo de México
             sesionActivaID = "SES-" + Date.now();
             
