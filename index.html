@@ -341,7 +341,6 @@
                 }
 
                 const estado = await res.json();
-
                 if (estado.requiere_pesaje) {
                     document.getElementById("dashboard-principal").style.display = "none";
                     document.getElementById("pantalla-biometria").style.display = "block";
@@ -353,7 +352,9 @@
                     const nombreUsr = localStorage.getItem("gymlytics_nombre") || "Atleta";
                     document.getElementById("bienvenida-usuario").innerText = "🦅 Hola, " + nombreUsr;
                     
-                    // CORREGIDO: Iniciamos con las tarjetas de músculos y la gráfica global
+                    // LÍNEA RESTAURADA: Descargamos el catálogo de ejercicios de forma invisible
+                    await cargarEjerciciosAgrupados(); 
+                    
                     document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
                     cargarTendenciaGlobal(); 
                 }
