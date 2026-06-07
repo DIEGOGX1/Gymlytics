@@ -115,30 +115,37 @@
             <div id="mensaje-rec"></div>
         </div>
 
-<div id="vista-grupos-musculares" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; width: 100%; max-width: 400px; margin-bottom: 30px;">
-            <h2>Selecciona el Grupo Muscular</h2>
-            <div id="contenedor-tarjetas-grupos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;"></div>
+        <div id="vista-lobby-entrenamiento" style="display: flex; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
+            <button onclick="comenzarEntrenamiento()" style="background-color: #34a853; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">🚀 Comenzar Entrenamiento</button>
         </div>
 
-        <div id="vista-lista-ejercicios" style="display: none; width: 100%; max-width: 400px; margin-bottom: 30px; flex-direction: column; align-items: center;">
-            <button onclick="volverAGrupos()" style="background-color: #6c757d; margin-bottom: 15px; width: 100%;">⬅️ Volver a Músculos</button>
-            <h2 id="titulo-grupo-seleccionado" style="color: #1a73e8;"></h2>
-            <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
+        <div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
+            <h2 style="text-align: center;">¿Qué parte del cuerpo vas a entrenar hoy?</h2>
+            <div id="contenedor-botones-musculos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center;"></div>
         </div>
 
-        <div id="vista-tracking-ejercicio" style="display: none; width: 100%; max-width: 400px; margin-bottom: 30px; flex-direction: column; align-items: center;">
-            <button onclick="volverAEjercicios()" style="background-color: #6c757d; margin-bottom: 15px; width: 100%;">⬅️ Cambiar Ejercicio</button>
-            <h2 id="titulo-ejercicio-activo" style="background-color: #1a73e8; color: white; padding: 10px; border-radius: 8px; width: 100%; text-align: center;"></h2>
-            <div style="background-color: #f1f3f4; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 15px; width: 100%; text-align: center;">
-                🔥 Series completadas hoy: <span id="contador-series-hoy" style="color: #e53935; font-size: 1rem;">0</span>
-            </div>
-            <div class="card">
+        <div id="vista-decision-plantilla" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;" class="card">
+            <h2 style="color: #673ab7;">📋 Rutina Sugerida Detectada</h2>
+            <p id="texto-sugerencia-rutina" style="font-size: 0.9rem; color: #555; text-align: center;"></p>
+            <div id="lista-ejercicios-sugeridos" style="width: 100%; margin: 15px 0; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px;"></div>
+            <button onclick="aceptarRutinaSugerida()" style="background-color: #673ab7; margin-bottom: 10px;">Aceptar Rutina</button>
+            <button onclick="rechazarYBuscarManualmente()" style="background-color: transparent; color: #666; border: 1px solid #ccc;">Elegir ejercicios manualmente</button>
+        </div>
+
+        <div id="vista-asistente-tracking" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
+            <h2 id="asistente-ejercicio-titulo" style="background-color: #1a73e8; color: white; padding: 12px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box;"></h2>
+            
+            <div class="card" style="margin-top: 10px;">
+                <div style="background-color: #f1f3f4; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 15px; width: 100%; text-align: center; box-sizing: border-box;">
+                    🔥 Series completadas en esta sesión: <span id="asistente-conteo-series" style="color: #e53935; font-size: 1rem;">0</span>
+                </div>
+
                 <h2>REGISTRAR SERIE</h2>
                 <label>Número de serie</label>
-                <input type="number" id="num_serie" placeholder="Ej: 1" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
+                <input type="number" id="num_serie" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
                 
                 <div id="meta-dinamica" style="background-color: #e8f0fe; padding: 12px; border-radius: 8px; margin: 10px 0; display: none; font-size: 0.9rem; border-left: 4px solid #1a73e8;">
-                    <span style="color: #1a73e8; font-weight: bold;">Sugerencia de serie a realizar:</span>
+                    <span style="color: #1a73e8; font-weight: bold;">Objetivo Sugerido:</span>
                     <div id="meta-texto" style="margin-top: 5px; color: #333; line-height: 1.4;"></div>
                 </div>
 
@@ -146,47 +153,30 @@
                 <input type="number" id="peso" placeholder="Ej: 140" step="0.5">
                 <label>Reps logradas:</label>
                 <input type="number" id="reps" placeholder="Ej: 8">
-                <button onclick="enviarSerie()">Guardar Serie</button>
+                <button onclick="enviarSerieAsistente()" style="background-color: #1a73e8;">Guardar Serie</button>
                 <div id="mensaje"></div>
             </div>
 
-            <div class="card">
-                <h2>CONSULTAR OBJETIVO</h2>
-                <label>¿Qué número de serie vas a realizar?</label>
-                <input type="number" id="pred_num_serie" value="1" placeholder="Ej: 1">
-                <button onclick="obtenerPrediccion()" style="background-color: #fbbc04; color: #333;">Calcular Peso para Hoy</button>
-                <div id="prediccion-resultado" class="prediccion-box">
-                    <p id="pred-texto" style="font-weight: bold; margin-bottom: 5px;"></p>
-                    <p id="pred-objetivo" style="font-size: 1.2rem; color: #1a73e8; margin: 10px 0;"></p>
-                    <small id="pred-info" style="color: #666;"></small>
-                </div>
+            <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
+                <button onclick="preguntarSiguientePaso()" style="background-color: #fbbc04; color: #333; font-weight: bold;">⏭️ Terminar Ejercicio</button>
+            </div>
+        </div>
+
+        <div id="vista-resumen-final" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;" class="card">
+            <h2 style="color: #34a853; font-size: 1.5rem;">🎉 ¡Entrenamiento Concluido!</h2>
+            <p style="text-align: center; color: #666; font-weight: 500;">Tu esfuerzo de hoy ha sido procesado por el sistema.</p>
+            
+            <div style="background: #f1f8e9; padding: 15px; border-radius: 10px; width: 100%; box-sizing: border-box; margin: 10px 0; border-left: 5px solid #4caf50;">
+                <p style="margin: 5px 0;"><strong>💪 Total de Series:</strong> <span id="resumen-total-series">0</span> series efectivas</p>
+                <div id="resumen-desglose-musculos" style="font-size: 0.9rem; color: #555; margin-top: 10px; padding-left: 10px;"></div>
             </div>
 
-            <div class="card">
-                <h2>MI PROGRESO (SOBRECARGA)</h2>
-                <div style="position: relative; height:40vh; width:100%; margin-top: 15px;">
-                    <canvas id="miCanvasGrafica"></canvas>
-                </div>
-                <button onclick="generarReporte()" style="margin-top: 20px; background-color: #0f9d58;">Analizar Último Progreso</button>
-                <div id="panel-insights" style="background-color: #e6f4ea; padding: 15px; border-radius: 8px; border-left: 5px solid #0f9d58; margin-top: 15px; display: none;">
-                    <p id="texto-insight" style="font-weight: 500; color: #137333; font-size: 0.95rem; margin: 0; line-height: 1.5;"></p>
-                </div>
+            <div style="background: #fff8e1; padding: 15px; border-radius: 10px; width: 100%; box-sizing: border-box; margin: 10px 0; border-left: 5px solid #ffb300; font-size: 0.9rem;">
+                <h4 style="margin: 0 0 8px 0; color: #b78103;">📊 Análisis de Sobrecarga Directa:</h4>
+                <div id="resumen-analisis-cargas"></div>
             </div>
 
-            <div class="card">
-                <h2>HISTORIAL DE SERIES</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Serie</th>
-                            <th>Peso</th>
-                            <th>Reps</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-historial-cuerpo"></tbody>
-                </table>
-            </div>
+            <button onclick="location.reload()" style="background-color: #1a73e8; margin-top: 15px;">Ir al Panel General e Historial</button>
         </div>
 
         <div class="card" style="border: 2px solid #673ab7;">
@@ -216,6 +206,19 @@
         let ejercicioActivoID = null;
         let grupoActivoNombre = null;
         let ejerciciosGlobales = []; // Guardaremos todo el catálogo aquí
+        // --- VARIABLES DE ESTADO DEL ASISTENTE DE ENTRENAMIENTO ---
+        let sesionActivaID = null;         // Guardará el ID único de la sesión de hoy
+        let ejerciciosDeLaSesion = [];     // Lista de ejercicios elegidos para hoy
+        let indiceEjercicioActual = 0;     // En qué ejercicio de la lista vamos
+        let historialCargasAnteriores = {}; // Para comparar si subiste o bajaste pesos
+        
+        // Contadores en caliente para el resumen final
+        let resumenSesion = {
+            total_series: 0,
+            por_musculo: {},
+            aumentaron: [],
+            disminuyeron: []
+        };
 
         // 1. Agrupar la base de datos
         async function cargarEjerciciosAgrupados() {
@@ -357,7 +360,7 @@
                     document.getElementById("bienvenida-usuario").innerText = "🦅 Hola, " + nombreUsr;
                     
                     // CORREGIDO: Iniciamos con las tarjetas de músculos y la gráfica global
-                    await cargarEjerciciosAgrupados(); 
+                    document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
                     cargarTendenciaGlobal(); 
                 }
             } catch (e) {
@@ -815,6 +818,208 @@
                 });
             } catch (e) { console.error("Error cargando tendencia global:", e); }
         }
+        // 1. Iniciar Flujo y Generar sesión temporal por tiempo
+        function comenzarEntrenamiento() {
+            // Generamos un ID único usando la estampa de tiempo de México
+            sesionActivaID = "SES-" + Date.now();
+            
+            // Reiniciamos contadores limpios por si acaso
+            resumenSesion = { total_series: 0, por_musculo: {}, aumentaron: [], disminuyeron: [] };
+            ejerciciosDeLaSesion = [];
+            indiceEjercicioActual = 0;
+
+            document.getElementById("vista-lobby-entrenamiento").style.display = "none";
+            document.getElementById("vista-pregunta-musculo").style.display = "flex";
+            
+            dibujarBotonesMusculosWizard();
+        }
+
+        function dibujarBotonesMusculosWizard() {
+            const contenedor = document.getElementById("contenedor-botones-musculos");
+            contenedor.innerHTML = "";
+            const musculos = ["Pecho", "Espalda", "Cuádriceps", "Glúteo", "Femoral", "Hombro", "Bíceps", "Tríceps", "Core", "Pantorrilla"];
+            
+            musculos.forEach(m => {
+                contenedor.innerHTML += `<button onclick="evaluarUltimaRutina('${m}')" style="width: 45%; background: white; color: #333; border: 2px solid #e0e0e0; font-size: 0.9rem; padding: 15px; border-radius: 12px;">${m}</button>`;
+            });
+        }
+
+        // 2. Preguntar al Backend si recuerda qué hicimos la última vez
+        async function evaluarUltimaRutina(grupoMuscular) {
+            grupoActivoNombre = grupoMuscular; 
+            const usr_id = obtenerUsuarioActivo();
+            
+            document.getElementById("vista-pregunta-musculo").style.display = "none";
+            
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/ultima-rutina/${usr_id}/${grupoMuscular}`);
+                const data = await res.json();
+                
+                if(data.ejercicios && data.ejercicios.length > 0) {
+                    document.getElementById("texto-sugerencia-rutina").innerText = `Para ${grupoMuscular}, tu último entrenamiento tuvo estos ejercicios de forma secuencial:`;
+                    const listaDiv = document.getElementById("lista-ejercicios-sugeridos");
+                    listaDiv.innerHTML = "";
+                    
+                    ejerciciosDeLaSesion = data.ejercicios; // Cargamos la plantilla directamente
+                    
+                    data.ejercicios.forEach(ej => {
+                        listaDiv.innerHTML += `• <strong>${ej.nombre}</strong><br>`;
+                    });
+                    
+                    document.getElementById("vista-decision-plantilla").style.display = "flex";
+                } else {
+                    // Si el backend responde vacío, saltamos directo al catálogo manual
+                    rechazarYBuscarManualmente();
+                }
+            } catch(e) { rechazarYBuscarManualmente(); }
+        }
+
+        function aceptarRutinaSugerida() {
+            document.getElementById("vista-decision-plantilla").style.display = "none";
+            indiceEjercicioActual = 0;
+            lanzarAsistenteEjercicio();
+        }
+
+        function rechazarYBuscarManualmente() {
+            document.getElementById("vista-decision-plantilla").style.display = "none";
+            // Reutilizamos el catálogo filtrado que ya tenías programado
+            seleccionarGrupo(grupoActivoNombre); 
+        }
+
+        // Esta función reemplaza a seleccionarEjercicio antigua para el flujo secuencial
+        function lanzarAsistenteEjercicio() {
+            const ejActual = ejerciciosDeLaSesion[indiceEjercicioActual];
+            ejercicioActivoID = ejActual.id;
+            
+            document.getElementById("asistente-ejercicio-titulo").innerText = `🏋️ Ejercicio ${indiceEjercicioActual + 1}/${ejerciciosDeLaSesion.length}: ${ejActual.nombre}`;
+            document.getElementById("num_serie").value = "1";
+            document.getElementById("peso").value = "";
+            document.getElementById("reps").value = "";
+            document.getElementById("asistente-conteo-series").innerText = "0";
+            
+            document.getElementById("vista-asistente-tracking").style.display = "flex";
+            
+            actualizarSugerencia();
+        }
+
+        // 3. Modificación del guardado: Inyectar el token de sesión
+        async function enviarSerieAsistente() {
+            const resDiv = document.getElementById("mensaje");
+            const inputSerie = document.getElementById("num_serie");
+            const usr_id = obtenerUsuarioActivo();
+            
+            const btnGuardar = document.querySelector("button[onclick='enviarSerieAsistente()']");
+            btnGuardar.disabled = true;
+            resDiv.innerHTML = "";
+            
+            const datos = {
+                usuario_id: parseInt(usr_id),
+                ejercicio_id: ejercicioActivoID,
+                sesion_id: sesionActivaID, // MÁGICO: Vinculamos la serie a la sesión de hoy
+                numero_serie: parseInt(inputSerie.value),
+                peso_kg: parseFloat(document.getElementById("peso").value),
+                repeticiones: parseInt(document.getElementById("reps").value)
+            };
+            
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/registrar-serie`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(datos)
+                });
+                
+                if (res.ok) { 
+                    resDiv.innerHTML = "✅ Serie guardada con éxito"; 
+                    resDiv.className = "exito";
+                    
+                    // Sumamos a las métricas del resumen del día
+                    resumenSesion.total_series++;
+                    resumenSesion.por_musculo[grupoActivoNombre] = (resumenSesion.por_musculo[grupoActivoNombre] || 0) + 1;
+                    
+                    // Actualizamos el contador numérico de la tarjeta
+                    document.getElementById("asistente-conteo-series").innerText = parseInt(document.getElementById("asistente-conteo-series").innerText) + 1;
+                    
+                    inputSerie.value = datos.numero_serie + 1;
+                    actualizarSugerencia(); 
+                } else {
+                    const data = await res.json();
+                    resDiv.innerHTML = "❌ " + (data.detail || "Error.");
+                }
+            } catch (e) { resDiv.innerHTML = "❌ Error de conexión."; }
+            finally { btnGuardar.disabled = false; }
+        }
+
+        // 4. Sistema de compuertas dinámicas al acabar el ejercicio
+        async function preguntarSiguientePaso() {
+            // Guardamos datos de este ejercicio antes de movernos para analizar sobrecarga
+            await registrarProgresoCargaResumen();
+
+            document.getElementById("vista-asistente-tracking").style.display = "none";
+            
+            indiceEjercicioActual++;
+            if(indiceEjercicioActual < ejerciciosDeLaSesion.length) {
+                // Hay más ejercicios programados en la rutina
+                lanzarAsistenteEjercicio();
+            } else {
+                // Llegamos al final de la rutina propuesta, preguntamos qué hacer
+                const cambiar = confirm("¿Deseas agregar y entrenar otro grupo muscular diferente en esta misma sesión?");
+                if(cambiar) {
+                    document.getElementById("vista-pregunta-musculo").style.display = "flex";
+                } else {
+                    finalizarSesiónTotal();
+                }
+            }
+        }
+
+        // Analiza de forma analítica instantánea el peso de hoy comparado con el endpoint de correlación
+        async function registrarProgresoCargaResumen() {
+            const usr_id = obtenerUsuarioActivo();
+            const ejActual = ejerciciosDeLaSesion[indiceEjercicioActual];
+            try {
+                const res = await fetch(`${API_BASE}/analisis/correlacion/${usr_id}/${ejercicioActivoID}`);
+                if(res.ok) {
+                    const data = await res.json();
+                    if(data.estadisticas) {
+                        if(data.estadisticas.peso_delta > 0 || data.estadisticas.reps_delta > 0) {
+                            resumenSesion.aumentaron.push(ejActual.nombre);
+                        } else if(data.estadisticas.peso_delta < 0 || data.estadisticas.reps_delta < 0) {
+                            resumenSesion.disminuyeron.push(ejActual.nombre);
+                        }
+                    }
+                }
+            } catch(e){}
+        }
+
+        // 5. Dibujar la pantalla de la victoria final con todas las estadísticas solicitadas
+        function finalizarSesiónTotal() {
+            document.getElementById("vista-asistente-tracking").style.display = "none";
+            document.getElementById("vista-pregunta-musculo").style.display = "none";
+            
+            document.getElementById("resumen-total-series").innerText = resumenSesion.total_series;
+            
+            // Desglose de series por músculo
+            const divMusculos = document.getElementById("resumen-desglose-musculos");
+            divMusculos.innerHTML = "";
+            for (const [musculo, series] of Object.entries(resumenSesion.por_musculo)) {
+                divMusculos.innerHTML += `• Enfoque en <strong>${musculo}</strong>: ${series} series efectivas.<br>`;
+            }
+            
+            // Análisis directo de cargas
+            const divCargas = document.getElementById("resumen-analisis-cargas");
+            divCargas.innerHTML = "";
+            
+            if(resumenSesion.aumentaron.length > 0) {
+                divCargas.innerHTML += `<span style="color:#2e7d32;">🔼 <strong>Subiste carga/reps en:</strong></span><br> <small>${resumenSesion.aumentaron.join(', ')}</small><br><br>`;
+            }
+            if(resumenSesion.disminuyeron.length > 0) {
+                divCargas.innerHTML += `<span style="color:#c62828;">🔽 <strong>Bajaste rendimiento en:</strong></span><br> <small>${resumenSesion.disminuyeron.join(', ')}</small><br><br>`;
+            }
+            if(resumenSesion.aumentaron.length === 0 && resumenSesion.disminuyeron.length === 0) {
+                divCargas.innerHTML += `• Mantuviste tus cargas estables e idénticas a la sesión pasada en todos los ejercicios. ¡Buena consolidación de fuerza!`;
+            }
+
+            document.getElementById("vista-resumen-final").style.display = "flex";
+        }   
     </script>
 </body>
 </html>

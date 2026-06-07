@@ -80,7 +80,7 @@ class RegistroSerie(Base):
     id = Column(Integer, primary_key=True, index=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     ejercicio_id = Column(Integer, ForeignKey("ejercicios.id"))
-    
+    sesion_id = Column(String, index=True, nullable=True)
     # OPTIMIZACIÓN: Añadimos index=True para acelerar los reportes temporales
     fecha = Column(DateTime, default=obtener_hora_mexico, index=True)
     
@@ -107,7 +107,7 @@ class DatosSerieRecepcion(BaseModel):
     numero_serie: int
     peso_kg: float
     repeticiones: int
-
+    sesion_id: str
 def sembrar_datos_iniciales(db: Session):
     # Verificar si ya existen ejercicios
     if db.query(Ejercicio).first() is None:
@@ -292,6 +292,38 @@ def calcular_series_musculo_hoy(usuario_id: int, db: Session = Depends(get_db)):
         "total_series_dia": len(series_hoy),
         "desglose_por_musculo": conteo_musculos,
         "mensaje_sistema": "Métrica de hipertrofia calculada correctamente."
+    }
+
+@app.get("/api/entrenamiento/ultima-rutina/{usuario_id}/{grupo_muscular}")
+def obtener_ultima_rutina_musculo(usuario_id: int, grupo_muscular: str, db: Session = Depends(get_db)):
+    # 1. Buscar todas las series del usuario para ese músculo
+    series_historicas = db.query(RegistroSerie).join(Ejercicio).filter(
+        RegistroSerie.usuario_id == usuario_id,
+        Ejercicio.grupo_muscular.startswith(grupo_muscular)
+    ).order_by(RegistroSerie.fecha.desc()).all()
+
+    if not series_historicas:
+        return {"mensaje": "No hay rutinas previas. Elige tus ejercicios manualmente.", "ejercicios": []}
+
+    # 2. Identificar cuál fue la "Última Sesión" de ese músculo
+    ultima_sesion_id = series_historicas[0].sesion_id
+    
+    if not ultima_sesion_id:
+        return {"mensaje": "Historial antiguo sin ID de sesión.", "ejercicios": []}
+
+    # 3. Extraer solo los ejercicios únicos que se hicieron en esa sesión específica
+    ejercicios_sesion = []
+    ids_vistos = set()
+    
+    for serie in series_historicas:
+        if serie.sesion_id == ultima_sesion_id and serie.ejercicio_id not in ids_vistos:
+            ejercicio = db.query(Ejercicio).filter(Ejercicio.id == serie.ejercicio_id).first()
+            ejercicios_sesion.append({"id": ejercicio.id, "nombre": ejercicio.nombre})
+            ids_vistos.add(serie.ejercicio_id)
+
+    return {
+        "mensaje": "Rutina sugerida basada en tu última sesión.",
+        "ejercicios": ejercicios_sesion
     }
 
 # --- MÓDULO DE PREDICCIÓN Y RECUPERACIÓN ---
