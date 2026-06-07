@@ -125,7 +125,13 @@
             
             <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">🛑 Terminar Sesión y Ver Resumen</button>
         </div>
-
+        <div id="vista-decision-plantilla" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;" class="card">
+            <h2 style="color: #673ab7;">📋 Rutina Sugerida Detectada</h2>
+            <p id="texto-sugerencia-rutina" style="font-size: 0.9rem; color: #555; text-align: center;"></p>
+            <div id="lista-ejercicios-sugeridos" style="width: 100%; margin: 15px 0; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px;"></div>
+            <button onclick="aceptarRutinaSugerida()" style="background-color: #673ab7; margin-bottom: 10px;">Aceptar Rutina</button>
+            <button onclick="rechazarYBuscarManualmente()" style="background-color: transparent; color: #666; border: 1px solid #ccc;">Elegir ejercicios manualmente</button>
+        </div>
         <div id="vista-lista-ejercicios" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
             <h2 id="titulo-grupo-seleccionado" style="color: #1a73e8; text-align: center;"></h2>
             <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
@@ -859,7 +865,12 @@
         }
 
         function rechazarYBuscarManualmente() {
-            document.getElementById("vista-decision-plantilla").style.display = "none";
+            // ESCUDO: Verificamos que la caja exista antes de ocultarla
+            const vistaPlantilla = document.getElementById("vista-decision-plantilla");
+            if (vistaPlantilla) {
+                vistaPlantilla.style.display = "none";
+            }
+            
             // Reutilizamos el catálogo filtrado que ya tenías programado
             seleccionarGrupo(grupoActivoNombre); 
         }
