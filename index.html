@@ -223,36 +223,13 @@
             disminuyeron: []
         };
 
-        // 1. Agrupar la base de datos
+        // 1. Descargar el catálogo a la memoria global sin dibujar la vista antigua
         async function cargarEjerciciosAgrupados() {
             try {
                 const res = await fetch(`${API_BASE}/ejercicios`);
                 ejerciciosGlobales = await res.json();
-                
-                // Creamos una lista única de los músculos principales (Ej: Si dice "Pecho - Alto", nos quedamos con "Pecho")
-                const gruposUnicos = [...new Set(ejerciciosGlobales.map(ej => ej.grupo_muscular.split(" - ")[0]))];
-                
-                dibujarTarjetasGrupos(gruposUnicos);
+                // Ya no llamamos a dibujarTarjetasGrupos() porque el asistente tiene su propia vista
             } catch (e) { console.error("Error catálogo:", e); }
-        }
-
-        // 2. Dibujar la Vista 1 (Músculos)
-        function dibujarTarjetasGrupos(grupos) {
-            const contenedor = document.getElementById("contenedor-tarjetas-grupos");
-            contenedor.innerHTML = "";
-            
-            // Diccionario temporal de iconos emoji (puedes cambiarlo por imágenes después)
-            const iconos = { "Pecho": "🦾", "Espalda": "🪽", "Pierna": "🦵", "Cuádriceps": "🦵", "Glúteo": "🍑", "Femoral": "🦵", "Hombro": "🥥", "Bíceps": "💪", "Tríceps": "🐎", "Core": "🍫", "Pantorrilla": "🦿" };
-
-            grupos.forEach(grupo => {
-                const icono = iconos[grupo] || "🏋️";
-                contenedor.innerHTML += `
-                    <div class="tarjeta-seleccion" onclick="seleccionarGrupo('${grupo}')">
-                        <div class="tarjeta-icono">${icono}</div>
-                        <div class="tarjeta-titulo">${grupo}</div>
-                    </div>
-                `;
-            });
         }
 
         // 3. Viajar a la Selección Manual (Si no hay rutina sugerida)
