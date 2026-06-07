@@ -167,6 +167,50 @@ def iniciar_sesion(req: LoginRequest, db: Session = Depends(get_db)):
 
     # Si todo está bien, le devolvemos su ID y nombre
     return {"usuario_id": usuario.id, "nombre": usuario.nombre}
+
+@app.get("/api/analisis/dia/{usuario_id}/{fecha_str}")
+def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depends(get_db)):
+    try:
+        # Buscamos en un rango de 24 horas exactas
+        inicio_dia = datetime.datetime.strptime(fecha_str, "%Y-%m-%d")
+        fin_dia = inicio_dia + datetime.timedelta(days=1)
+    except ValueError:
+        return {"error": "Formato de fecha inválido."}
+        
+    recuperacion = db.query(RecuperacionDiaria).filter(
+        RecuperacionDiaria.usuario_id == usuario_id,
+        RecuperacionDiaria.fecha >= inicio_dia,
+        RecuperacionDiaria.fecha < fin_dia
+    ).first()
+
+    series = db.query(RegistroSerie).filter(
+        RegistroSerie.usuario_id == usuario_id,
+        RegistroSerie.fecha >= inicio_dia,
+        RegistroSerie.fecha < fin_dia
+    ).all()
+
+    ejercicios_dia = {}
+    for s in series:
+        ej = db.query(Ejercicio).filter(Ejercicio.id == s.ejercicio_id).first()
+        if ej:
+            if ej.nombre not in ejercicios_dia:
+                ejercicios_dia[ej.nombre] = {"series": 0, "max_peso": 0}
+            ejercicios_dia[ej.nombre]["series"] += 1
+            if s.peso_kg > ejercicios_dia[ej.nombre]["max_peso"]:
+                ejercicios_dia[ej.nombre]["max_peso"] = s.peso_kg
+
+    return {
+        "fecha": fecha_str,
+        "nutricion": {
+            "sueno": recuperacion.horas_sueno if recuperacion else "Sin registro",
+            "calorias": recuperacion.calorias_ayer if recuperacion else "Sin registro",
+            "carbs": recuperacion.carbohidratos_pre_entreno if recuperacion else "Sin registro"
+        },
+        "entrenamiento": {
+            "total_series": len(series),
+            "desglose": ejercicios_dia
+        }
+    }
 # ==========================================
 # CONFIGURACIÓN DE CORS (El puente al Front-End)
 # ==========================================

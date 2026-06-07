@@ -115,8 +115,35 @@
             <div id="mensaje-rec"></div>
         </div>
 
-        <div id="vista-lobby-entrenamiento" style="display: flex; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
+        <div id="vista-lobby-entrenamiento" style="display: flex; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px; gap: 10px;">
             <button onclick="comenzarEntrenamiento()" style="background-color: #34a853; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">🚀 Comenzar Entrenamiento</button>
+            
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button onclick="abrirConsulta()" style="background-color: #1a73e8; font-size: 0.95rem;">📊 Ver Gráficas</button>
+                <button onclick="abrirCalendario()" style="background-color: #673ab7; font-size: 0.95rem;">📅 Calendario</button>
+            </div>
+        </div>
+
+        <div id="vista-consulta-grafica" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
+            <button onclick="volverAEjerciciosConsulta()" style="background-color: #6c757d; margin-bottom: 15px; width: 100%;">⬅️ Volver al Catálogo</button>
+            <h2 id="titulo-consulta-ejercicio" style="color: #1a73e8;"></h2>
+            <div class="card" style="margin-top: 10px;">
+                <h2 style="color: #34a853;">📈 HISTORIAL Y SOBRECARGA</h2>
+                <div style="position: relative; height:35vh; width:100%; margin-top: 15px;">
+                    <canvas id="miCanvasConsulta"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="vista-calendario" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;" class="card">
+            <button onclick="location.reload()" style="background-color: #6c757d; margin-bottom: 15px; width: 100%;">⬅️ Volver al Inicio</button>
+            <h2 style="color: #673ab7;">📅 Calendario de Entrenamientos</h2>
+            <p style="font-size: 0.85rem; color: #555; text-align: center;">Selecciona un día en específico para ver tus métricas de nutrición y rendimiento.</p>
+            
+            <input type="date" id="selector-fecha" onchange="consultarDiaEspecifico()" style="margin-bottom: 15px; font-weight: bold; color: #333; cursor: pointer;">
+            
+            <div id="resultado-dia" style="display:none; width: 100%; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; box-sizing: border-box;">
+            </div>
         </div>
 
         <div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
@@ -224,7 +251,8 @@
         let ejerciciosDeLaSesion = [];     // Lista de ejercicios elegidos para hoy
         let indiceEjercicioActual = 0;     // En qué ejercicio de la lista vamos
         let historialCargasAnteriores = {}; // Para comparar si subiste o bajaste pesos
-        
+        let modoConsulta = false;
+        let graficaConsultaObj = null;
         // Estructura mejorada para acumular múltiples ejercicios de forma limpia
         let resumenSesion = {
             total_series: 0,
@@ -265,12 +293,20 @@
 
         // 4. Iniciar el Asistente con el ejercicio manual
         function iniciarEjercicioManual(id, nombre) {
-            // Engañamos al asistente para que crea que esta es nuestra "rutina"
-            ejerciciosDeLaSesion = [{ id: id, nombre: nombre }];
-            indiceEjercicioActual = 0;
-            
+            ejercicioActivoID = id;
             document.getElementById("vista-lista-ejercicios").style.display = "none";
-            lanzarAsistenteEjercicio();
+
+            if(modoConsulta) {
+                // RUTA A: Solo dibujamos la gráfica en frío
+                document.getElementById("titulo-consulta-ejercicio").innerText = `Análisis de: ${nombre}`;
+                document.getElementById("vista-consulta-grafica").style.display = "flex";
+                dibujarGraficaConsultaAislada();
+            } else {
+                // RUTA B: Asistente de Entrenamiento (tu código actual)
+                ejerciciosDeLaSesion = [{ id: id, nombre: nombre }];
+                indiceEjercicioActual = 0;
+                lanzarAsistenteEjercicio();
+            }
         }
 
         // Botones de retroceso
@@ -834,7 +870,10 @@
             const usr_id = obtenerUsuarioActivo();
             
             document.getElementById("vista-pregunta-musculo").style.display = "none";
-            
+            if(modoConsulta) {
+                seleccionarGrupo(grupoActivoNombre);
+                return;
+            }
             try {
                 const res = await fetch(`${API_BASE}/entrenamiento/ultima-rutina/${usr_id}/${grupoMuscular}`);
                 const data = await res.json();
@@ -1042,6 +1081,109 @@
             });
 
             document.getElementById("vista-resumen-final").style.display = "flex";
+        }
+        // --- MÓDULO CONSULTA ---
+        function abrirConsulta() {
+            modoConsulta = true;
+            document.getElementById("vista-lobby-entrenamiento").style.display = "none";
+            document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-veredicto").style.display = "none";
+            document.getElementById("tarjeta-grafica").style.display = "none";
+            
+            document.getElementById("vista-pregunta-musculo").style.display = "flex";
+            dibujarBotonesMusculosWizard(); // Reutilizamos tu UI de músculos
+        }
+
+        function volverAEjerciciosConsulta() {
+            document.getElementById("vista-consulta-grafica").style.display = "none";
+            seleccionarGrupo(grupoActivoNombre);
+        }
+
+        // --- MÓDULO CALENDARIO ---
+        function abrirCalendario() {
+            document.getElementById("vista-lobby-entrenamiento").style.display = "none";
+            document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-veredicto").style.display = "none";
+            document.getElementById("tarjeta-grafica").style.display = "none";
+            
+            document.getElementById("vista-calendario").style.display = "flex";
+        }
+
+        async function consultarDiaEspecifico() {
+            const fechaElegida = document.getElementById("selector-fecha").value;
+            if(!fechaElegida) return;
+            
+            const usr_id = obtenerUsuarioActivo();
+            const divRes = document.getElementById("resultado-dia");
+            divRes.innerHTML = "⏳ Extrayendo bitácora de la base de datos...";
+            divRes.style.display = "block";
+
+            try {
+                const res = await fetch(`${API_BASE}/analisis/dia/${usr_id}/${fechaElegida}`);
+                const data = await res.json();
+
+                if(data.error) {
+                    divRes.innerHTML = `❌ ${data.error}`;
+                    return;
+                }
+
+                let html = `<h3 style="color:#1a73e8; margin-top:0;">🍏 Nutrición y Descanso</h3>
+                            <p style="margin:5px 0;">• Sueño: <strong>${data.nutricion.sueno}</strong> h</p>
+                            <p style="margin:5px 0;">• Calorías: <strong>${data.nutricion.calorias}</strong> kcal</p>
+                            <p style="margin:5px 0;">• Carbs Pre: <strong>${data.nutricion.carbs}</strong> g</p>
+                            <hr style="border:0; border-top:1px solid #ccc; margin:15px 0;">
+                            <h3 style="color:#34a853; margin-top:0;">🏋️ Rendimiento Físico</h3>
+                            <p style="margin:5px 0;">Total de series: <strong>${data.entrenamiento.total_series}</strong></p>`;
+                
+                if(data.entrenamiento.total_series > 0) {
+                    html += `<ul style="padding-left:20px; font-size:0.9rem; color:#444;">`;
+                    for (const [ej, stats] of Object.entries(data.entrenamiento.desglose)) {
+                        html += `<li style="margin-bottom:5px;"><strong>${ej}</strong>: ${stats.series} series (Máx: ${stats.max_peso}kg)</li>`;
+                    }
+                    html += `</ul>`;
+                } else {
+                    html += `<p style="color:#666; font-style:italic;">Día de descanso activo o sin registros deportivos.</p>`;
+                }
+
+                divRes.innerHTML = html;
+            } catch(e) { divRes.innerHTML = "❌ Error al conectar con Neon.tech."; }
+        }
+
+        // --- CLON DE GRÁFICA PARA CONSULTA AISLADA ---
+        async function dibujarGraficaConsultaAislada() {
+            const usr_id = obtenerUsuarioActivo();
+            if (!usr_id || !ejercicioActivoID) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/historial/${usr_id}`);
+                const historialCompleto = await res.json();
+
+                const datosFiltrados = historialCompleto.filter(
+                    registro => registro.ejercicio_id === ejercicioActivoID && registro.numero_serie === 1
+                );
+
+                datosFiltrados.reverse(); 
+                const etiquetasX = datosFiltrados.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
+                const datosY_Peso = datosFiltrados.map(r => r.peso_kg);
+                const datosY_Reps = datosFiltrados.map(r => r.repeticiones);
+
+                const ctx = document.getElementById('miCanvasConsulta').getContext('2d');
+                if (graficaConsultaObj) graficaConsultaObj.destroy();
+                
+                etiquetasX.reverse(); datosY_Peso.reverse(); datosY_Reps.reverse();
+                
+                graficaConsultaObj = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: etiquetasX,
+                        datasets: [
+                            { label: 'Peso (kg)', data: datosY_Peso, yAxisID: 'y', borderColor: '#1a73e8', backgroundColor: '#1a73e8', borderWidth: 3, pointRadius: 5, tension: 0.3 },
+                            { label: 'Reps', data: datosY_Reps, yAxisID: 'y1', borderColor: '#34a853', backgroundColor: '#34a853', borderWidth: 3, pointRadius: 5, borderDash: [5, 5], tension: 0.3 }
+                        ]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { type: 'linear', display: true, position: 'left' }, y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false }, min: 0 } } }
+                });
+            } catch (e) { console.error("Error dibujando la gráfica aislada:", e); }
         }
     </script>
 </body>
