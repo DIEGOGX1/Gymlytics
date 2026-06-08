@@ -146,9 +146,12 @@
             </div>
         </div>
 
-        <div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
-            <h2 style="text-align: center;">¿Qué parte del cuerpo vas a entrenar hoy?</h2>
+<div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
+            <h2 style="text-align: center;">¿Qué vas a entrenar hoy?</h2>
+            
+            <input type="text" id="buscador-global" placeholder="🔍 Buscar cualquier ejercicio..." onkeyup="buscarEjercicioGlobal()" style="margin-bottom: 15px; border: 2px solid #1a73e8; border-radius: 20px; padding: 12px 15px; width: 100%; box-sizing: border-box; outline: none; transition: 0.3s;">
             <div id="contenedor-botones-musculos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
+            <div id="contenedor-resultados-busqueda" style="display: none; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
             <button onclick="volverAlLobby()" style="background-color: #6c757d; margin-bottom: 10px; width: 92%; border-radius: 12px;">⬅️ Volver al Inicio</button>
             <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">🛑 Terminar Sesión y Ver Resumen</button>
         </div>
@@ -854,13 +857,15 @@
             dibujarBotonesMusculosWizard();
         }
 
-        function dibujarBotonesMusculosWizard() {
+function dibujarBotonesMusculosWizard() {
+            // LIMPIEZA: Reseteamos la barra y las vistas al entrar
+            const buscador = document.getElementById("buscador-global");
+            if(buscador) buscador.value = "";
+            document.getElementById("contenedor-botones-musculos").style.display = "flex";
+            document.getElementById("contenedor-resultados-busqueda").style.display = "none";
             const contenedor = document.getElementById("contenedor-botones-musculos");
             contenedor.innerHTML = "";
-            
-            // ESCUDO: Evita que un valor nulo en la DB rompa la creación de botones
             const gruposUnicos = [...new Set(ejerciciosGlobales.map(ej => (ej.grupo_muscular || "General").split(" - ")[0]))];
-            
             gruposUnicos.forEach(m => {
                 contenedor.innerHTML += `<button onclick="evaluarUltimaRutina('${m}')" style="width: 45%; background: white; color: #333; border: 2px solid #e0e0e0; font-size: 0.9rem; padding: 15px; border-radius: 12px;">${m}</button>`;
             });
@@ -1232,6 +1237,42 @@
 
             // 3. Lanzamos el asistente directo al primer ejercicio
             lanzarAsistenteEjercicio();
+        }
+        // --- MOTOR DE BÚSQUEDA GLOBAL ---
+        function buscarEjercicioGlobal() {
+            const textoBusqueda = document.getElementById("buscador-global").value.toLowerCase();
+            const divMusculos = document.getElementById("contenedor-botones-musculos");
+            const divResultados = document.getElementById("contenedor-resultados-busqueda");
+
+            // Si la barra está vacía, regresamos a la vista de botones
+            if (textoBusqueda.trim() === "") {
+                divMusculos.style.display = "flex";
+                divResultados.style.display = "none";
+                divResultados.innerHTML = "";
+                return;
+            }
+
+            // Si hay texto, ocultamos los botones de músculos y encendemos el buscador
+            divMusculos.style.display = "none";
+            divResultados.style.display = "flex";
+            divResultados.innerHTML = "";
+
+            // Filtramos todo el catálogo en memoria
+            const filtrados = ejerciciosGlobales.filter(ej => ej.nombre.toLowerCase().includes(textoBusqueda));
+
+            if (filtrados.length === 0) {
+                divResultados.innerHTML = "<p style='color:#666; font-style:italic;'>No se encontraron ejercicios con ese nombre.</p>";
+                return;
+            }
+
+            // Renderizamos las tarjetas directamente, usando la función inteligente que ya teníamos
+            filtrados.forEach(ej => {
+                divResultados.innerHTML += `
+                    <div class="tarjeta-seleccion" style="width: 100%; flex-direction: row; justify-content: flex-start; padding: 15px;" onclick="iniciarEjercicioManual(${ej.id}, '${ej.nombre}')">
+                        <div class="tarjeta-titulo" style="text-align: left;">${ej.nombre} <br><small style="color: #666; font-weight: normal;">${ej.grupo_muscular || "General"}</small></div>
+                    </div>
+                `;
+            });
         }
     </script>
 </body>
