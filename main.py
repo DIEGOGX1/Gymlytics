@@ -285,7 +285,8 @@ def registrar_serie(datos: DatosSerieRecepcion, db: Session = Depends(get_db)):
         ejercicio_id=datos.ejercicio_id,
         numero_serie=datos.numero_serie,
         peso_kg=datos.peso_kg,
-        repeticiones=datos.repeticiones
+        repeticiones=datos.repeticiones,
+        sesion_id=datos.sesion_id  # <--- ¡ESTE ERA EL ESLABÓN PERDIDO!
     )
     db.add(nueva_serie)
     db.commit()
