@@ -171,7 +171,6 @@ def iniciar_sesion(req: LoginRequest, db: Session = Depends(get_db)):
 @app.get("/api/analisis/dia/{usuario_id}/{fecha_str}")
 def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depends(get_db)):
     try:
-        # Buscamos en un rango de 24 horas exactas
         inicio_dia = datetime.datetime.strptime(fecha_str, "%Y-%m-%d")
         fin_dia = inicio_dia + datetime.timedelta(days=1)
     except ValueError:
@@ -187,14 +186,15 @@ def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depend
         RegistroSerie.usuario_id == usuario_id,
         RegistroSerie.fecha >= inicio_dia,
         RegistroSerie.fecha < fin_dia
-    ).all()
+    ).order_by(RegistroSerie.fecha.asc()).all() # Ordenamos de primero a último
 
     ejercicios_dia = {}
     for s in series:
         ej = db.query(Ejercicio).filter(Ejercicio.id == s.ejercicio_id).first()
         if ej:
             if ej.nombre not in ejercicios_dia:
-                ejercicios_dia[ej.nombre] = {"series": 0, "max_peso": 0}
+                # NUEVO: Guardamos también el ID del ejercicio
+                ejercicios_dia[ej.nombre] = {"id": ej.id, "series": 0, "max_peso": 0}
             ejercicios_dia[ej.nombre]["series"] += 1
             if s.peso_kg > ejercicios_dia[ej.nombre]["max_peso"]:
                 ejercicios_dia[ej.nombre]["max_peso"] = s.peso_kg
@@ -341,33 +341,33 @@ def calcular_series_musculo_hoy(usuario_id: int, db: Session = Depends(get_db)):
 
 @app.get("/api/entrenamiento/ultima-rutina/{usuario_id}/{grupo_muscular}")
 def obtener_ultima_rutina_musculo(usuario_id: int, grupo_muscular: str, db: Session = Depends(get_db)):
-    # 1. Buscar todas las series del usuario para ese músculo
-    series_historicas = db.query(RegistroSerie).join(Ejercicio).filter(
+    # 1. Buscar la última serie registrada de ese músculo para obtener el sesion_id matriz
+    ultima_serie_musculo = db.query(RegistroSerie).join(Ejercicio).filter(
         RegistroSerie.usuario_id == usuario_id,
         Ejercicio.grupo_muscular.startswith(grupo_muscular)
-    ).order_by(RegistroSerie.fecha.desc()).all()
+    ).order_by(RegistroSerie.fecha.desc()).first()
 
-    if not series_historicas:
-        return {"mensaje": "No hay rutinas previas. Elige tus ejercicios manualmente.", "ejercicios": []}
+    if not ultima_serie_musculo or not ultima_serie_musculo.sesion_id:
+        return {"mensaje": "No hay rutinas previas de este músculo.", "ejercicios": []}
 
-    # 2. Identificar cuál fue la "Última Sesión" de ese músculo
-    ultima_sesion_id = series_historicas[0].sesion_id
-    
-    if not ultima_sesion_id:
-        return {"mensaje": "Historial antiguo sin ID de sesión.", "ejercicios": []}
+    # 2. Traer TODAS las series de esa sesión, sin importar el músculo, ordenadas cronológicamente (de primero a último)
+    todas_series_sesion = db.query(RegistroSerie).filter(
+        RegistroSerie.sesion_id == ultima_serie_musculo.sesion_id
+    ).order_by(RegistroSerie.fecha.asc()).all()
 
-    # 3. Extraer solo los ejercicios únicos que se hicieron en esa sesión específica
+    # 3. Extraer los ejercicios únicos en el orden exacto en que se ejecutaron en el gimnasio
     ejercicios_sesion = []
     ids_vistos = set()
     
-    for serie in series_historicas:
-        if serie.sesion_id == ultima_sesion_id and serie.ejercicio_id not in ids_vistos:
+    for serie in todas_series_sesion:
+        if serie.ejercicio_id not in ids_vistos:
             ejercicio = db.query(Ejercicio).filter(Ejercicio.id == serie.ejercicio_id).first()
-            ejercicios_sesion.append({"id": ejercicio.id, "nombre": ejercicio.nombre})
-            ids_vistos.add(serie.ejercicio_id)
+            if ejercicio:
+                ejercicios_sesion.append({"id": ejercicio.id, "nombre": ejercicio.nombre})
+                ids_vistos.add(serie.ejercicio_id)
 
     return {
-        "mensaje": "Rutina sugerida basada en tu última sesión.",
+        "mensaje": "Rutina completa e híbrida ordenada detectada.",
         "ejercicios": ejercicios_sesion
     }
 

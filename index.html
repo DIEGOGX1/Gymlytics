@@ -258,7 +258,7 @@
             total_series: 0,
             ejercicios: {} // Almacenará { id_ejercicio: { nombre, grupo, series, max_peso, delta } }
         };
-
+        let ejerciciosPlantillaCalendario = []; // Guardará la receta del día seleccionado  
         // 1. Descargar el catálogo a la memoria global sin dibujar la vista antigua
         async function cargarEjerciciosAgrupados() {
             try {
@@ -1136,12 +1136,22 @@
                             <h3 style="color:#34a853; margin-top:0;">🏋️ Rendimiento Físico</h3>
                             <p style="margin:5px 0;">Total de series: <strong>${data.entrenamiento.total_series}</strong></p>`;
                 
+                // Reiniciamos la plantilla temporal
+                ejerciciosPlantillaCalendario = [];
+
                 if(data.entrenamiento.total_series > 0) {
-                    html += `<ul style="padding-left:20px; font-size:0.9rem; color:#444;">`;
-                    for (const [ej, stats] of Object.entries(data.entrenamiento.desglose)) {
-                        html += `<li style="margin-bottom:5px;"><strong>${ej}</strong>: ${stats.series} series (Máx: ${stats.max_peso}kg)</li>`;
+                    html += `<ul style="padding-left:20px; font-size:0.9rem; color:#444; margin-bottom:15px;">`;
+                    
+                    for (const [ejNombre, stats] of Object.entries(data.entrenamiento.desglose)) {
+                        html += `<li style="margin-bottom:5px;"><strong>${ejNombre}</strong>: ${stats.series} series (Máx: ${stats.max_peso}kg)</li>`;
+                        
+                        // Guardamos la receta en orden
+                        ejerciciosPlantillaCalendario.push({ id: stats.id, nombre: ejNombre });
                     }
                     html += `</ul>`;
+                    
+                    // NUEVO: Botón dinámico para clonar el entrenamiento entero de ese día
+                    html += `<button onclick="cargarEntrenamientoDesdeCalendario()" style="background-color: #34a853; color: white; font-weight: bold; padding: 12px; border-radius: 8px; width: 100%;">🏋️ Repetir este Entrenamiento</button>`;
                 } else {
                     html += `<p style="color:#666; font-style:italic;">Día de descanso activo o sin registros deportivos.</p>`;
                 }
@@ -1202,6 +1212,26 @@
             document.getElementById("tarjeta-recuperacion").style.display = "block";
             document.getElementById("tarjeta-veredicto").style.display = "block";
             document.getElementById("tarjeta-grafica").style.display = "block";
+        }
+        function cargarEntrenamientoDesdeCalendario() {
+            if(!ejerciciosPlantillaCalendario || ejerciciosPlantillaCalendario.length === 0) return;
+            
+            // 1. MODO ENFOQUE: Apagamos el calendario y las tarjetas principales
+            document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-veredicto").style.display = "none";
+            document.getElementById("tarjeta-grafica").style.display = "none";
+            document.getElementById("vista-calendario").style.display = "none";
+
+            // 2. Inicializamos una nueva sesión con la receta copiada
+            sesionActivaID = "SES-" + Date.now();
+            resumenSesion = { total_series: 0, ejercicios: {} };
+            
+            // Copiamos los ejercicios exactamente en el orden del calendario
+            ejerciciosDeLaSesion = [...ejerciciosPlantillaCalendario];
+            indiceEjercicioActual = 0;
+
+            // 3. Lanzamos el asistente directo al primer ejercicio
+            lanzarAsistenteEjercicio();
         }
     </script>
 </body>
