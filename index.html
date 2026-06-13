@@ -146,14 +146,13 @@
             </div>
         </div>
 
-<div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
-            <h2 style="text-align: center;">¿Qué vas a entrenar hoy?</h2>
-            
+        <div id="vista-pregunta-musculo" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;">
+            <h2 id="titulo-vista-musculos" style="text-align: center;">¿Qué vas a entrenar hoy?</h2>
             <input type="text" id="buscador-global" placeholder="🔍 Buscar cualquier ejercicio..." onkeyup="buscarEjercicioGlobal()" style="margin-bottom: 15px; border: 2px solid #1a73e8; border-radius: 20px; padding: 12px 15px; width: 100%; box-sizing: border-box; outline: none; transition: 0.3s;">
             <div id="contenedor-botones-musculos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
             <div id="contenedor-resultados-busqueda" style="display: none; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
             <button onclick="volverAlLobby()" style="background-color: #6c757d; margin-bottom: 10px; width: 92%; border-radius: 12px;">⬅️ Volver al Inicio</button>
-            <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">🛑 Terminar Sesión y Ver Resumen</button>
+            <button id="btn-terminar-sesion-musculos" onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">🛑 Terminar Sesión y Ver Resumen</button>
         </div>
         <div id="vista-decision-plantilla" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;" class="card">
             <h2 style="color: #673ab7;">📋 Rutina Sugerida Detectada</h2>
@@ -860,15 +859,30 @@
             dibujarBotonesMusculosWizard();
         }
 
-function dibujarBotonesMusculosWizard() {
+        function dibujarBotonesMusculosWizard() {
             // LIMPIEZA: Reseteamos la barra y las vistas al entrar
             const buscador = document.getElementById("buscador-global");
             if(buscador) buscador.value = "";
             document.getElementById("contenedor-botones-musculos").style.display = "flex";
             document.getElementById("contenedor-resultados-busqueda").style.display = "none";
+            
+            // MAGIA DINÁMICA: Cambiamos la UI dependiendo del modo
+            const tituloMenu = document.getElementById("titulo-vista-musculos");
+            const btnTerminarSesion = document.getElementById("btn-terminar-sesion-musculos");
+            
+            if (modoConsulta) {
+                tituloMenu.innerText = "📊 ¿De qué ejercicio quieres ver tus gráficas?";
+                btnTerminarSesion.style.display = "none"; // Ocultamos el botón rojo
+            } else {
+                tituloMenu.innerText = "🏋️ ¿Qué vas a entrenar hoy?";
+                btnTerminarSesion.style.display = "block"; // Mostramos el botón rojo
+            }
+
             const contenedor = document.getElementById("contenedor-botones-musculos");
             contenedor.innerHTML = "";
+            
             const gruposUnicos = [...new Set(ejerciciosGlobales.map(ej => (ej.grupo_muscular || "General").split(" - ")[0]))];
+            
             gruposUnicos.forEach(m => {
                 contenedor.innerHTML += `<button onclick="evaluarUltimaRutina('${m}')" style="width: 45%; background: white; color: #333; border: 2px solid #e0e0e0; font-size: 0.9rem; padding: 15px; border-radius: 12px;">${m}</button>`;
             });
