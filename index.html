@@ -297,7 +297,10 @@
         // 4. Iniciar el Asistente con el ejercicio manual
         function iniciarEjercicioManual(id, nombre) {
             ejercicioActivoID = id;
+            
+            // CORRECCIÓN: Apagamos TODAS las pantallas previas para limpiar la vista
             document.getElementById("vista-lista-ejercicios").style.display = "none";
+            document.getElementById("vista-pregunta-musculo").style.display = "none";
 
             if(modoConsulta) {
                 // RUTA A: Solo dibujamos la gráfica en frío
@@ -305,7 +308,7 @@
                 document.getElementById("vista-consulta-grafica").style.display = "flex";
                 dibujarGraficaConsultaAislada();
             } else {
-                // RUTA B: Asistente de Entrenamiento (tu código actual)
+                // RUTA B: Asistente de Entrenamiento
                 ejerciciosDeLaSesion = [{ id: id, nombre: nombre }];
                 indiceEjercicioActual = 0;
                 lanzarAsistenteEjercicio();
