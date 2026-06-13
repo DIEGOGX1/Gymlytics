@@ -185,8 +185,14 @@
                     <div id="meta-texto" style="margin-top: 5px; color: #333; line-height: 1.4;"></div>
                 </div>
 
-                <label>Peso a registrar (kg):</label>
-                <input type="number" id="peso" placeholder="Ej: 140" step="0.5">
+                <label>Peso a registrar:</label>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="number" id="peso" placeholder="Ej: 100" step="0.5" style="margin: 0; flex-grow: 1;">
+                    <select id="unidad-peso" style="padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; background: white; color: #555;">
+                        <option value="kg">kg</option>
+                        <option value="lbs">lbs</option>
+                    </select>
+                </div>
                 <label>Reps logradas:</label>
                 <input type="number" id="reps" placeholder="Ej: 8">
                 <button onclick="enviarSerieAsistente()" style="background-color: #1a73e8;">Guardar Serie</button>
@@ -973,13 +979,20 @@
             const inputSerie = document.getElementById("num_serie");
             const usr_id = obtenerUsuarioActivo();
             
-            // CORRECCIÓN: Sintaxis limpia para leer el peso y las repeticiones
-            const pesoCapturado = parseFloat(document.getElementById("peso").value);
+            // Leemos los valores crudos
+            let pesoCapturado = parseFloat(document.getElementById("peso").value);
             const repsCapturadas = parseInt(document.getElementById("reps").value);
+            const unidadElegida = document.getElementById("unidad-peso").value;
 
             if (!usr_id || isNaN(pesoCapturado) || isNaN(repsCapturadas)) {
                 resDiv.innerHTML = "❌ Por favor llena los campos de peso y repeticiones.";
                 return;
+            }
+
+            // ESCUDO DE CONVERSIÓN: Si el usuario eligió libras, convertimos a kilos
+            if (unidadElegida === "lbs") {
+                // 1 kg = 2.20462 lbs. Dividimos y redondeamos a 2 decimales para evitar números infinitos.
+                pesoCapturado = parseFloat((pesoCapturado / 2.20462).toFixed(2));
             }
 
             const btnGuardar = document.querySelector("button[onclick='enviarSerieAsistente()']");
@@ -990,10 +1003,9 @@
                 ejercicio_id: ejercicioActivoID,
                 sesion_id: sesionActivaID, 
                 numero_serie: parseInt(inputSerie.value),
-                peso_kg: pesoCapturado,
+                peso_kg: pesoCapturado, // Aquí ya viaja limpio y siempre en kilos
                 repeticiones: repsCapturadas
             };
-            
             try {
                 const res = await fetch(`${API_BASE}/entrenamiento/registrar-serie`, {
                     method: "POST",
