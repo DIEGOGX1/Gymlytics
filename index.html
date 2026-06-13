@@ -166,7 +166,7 @@
             <div id="contenedor-tarjetas-ejercicios" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
             
             <button onclick="volverAGrupos()" style="background-color: #6c757d; margin-bottom: 10px; width: 100%;">⬅️ Volver a Músculos</button>
-            <button onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 100%;">🛑 Terminar Sesión y Ver Resumen</button>
+            <button id="btn-terminar-sesion-lista" onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 100%;">🛑 Terminar Sesión y Ver Resumen</button>
         </div>
         <div id="vista-asistente-tracking" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;">
             <h2 id="asistente-ejercicio-titulo" style="background-color: #1a73e8; color: white; padding: 12px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box;"></h2>
@@ -294,6 +294,12 @@
                     </div>
                 `;
             });
+
+            // MAGIA DINÁMICA: Ocultamos el botón rojo si estamos en modo Consulta
+            const btnTerminarLista = document.getElementById("btn-terminar-sesion-lista");
+            if (btnTerminarLista) {
+                btnTerminarLista.style.display = modoConsulta ? "none" : "block";
+            }
 
             document.getElementById("vista-pregunta-musculo").style.display = "none";
             document.getElementById("vista-lista-ejercicios").style.display = "flex";
@@ -1066,11 +1072,16 @@
                         const pDelta = data.estadisticas.peso_delta;
                         const rDelta = data.estadisticas.reps_delta;
 
-                        if(pDelta > 0 || rDelta > 0) {
+                        // LÓGICA CORREGIDA: Sube peso, O mantiene peso y suben reps.
+                        if (pDelta > 0 || (pDelta === 0 && rDelta > 0)) {
                             resumenSesion.ejercicios[ejercicioActivoID].delta = "Aumentó Carga 🔼";
-                        } else if(pDelta < 0 || rDelta < 0) {
+                        } 
+                        // Baja peso, O mantiene peso pero bajan reps.
+                        else if (pDelta < 0 || (pDelta === 0 && rDelta < 0)) {
                             resumenSesion.ejercicios[ejercicioActivoID].delta = "Disminuyó Carga 🔽";
-                        } else {
+                        } 
+                        // Mismo peso y mismas reps exactas
+                        else {
                             resumenSesion.ejercicios[ejercicioActivoID].delta = "Estable o Consolidado 📊";
                         }
                     }
