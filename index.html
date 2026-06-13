@@ -852,16 +852,19 @@
                 });
             } catch (e) { console.error("Error cargando tendencia global:", e); }
         }
-        // 1. Iniciar Flujo y Generar sesión temporal por tiempo
+        // 1. Iniciar Flujo o Continuar Sesión Activa
         function comenzarEntrenamiento() {
             document.getElementById("tarjeta-recuperacion").style.display = "none";
             document.getElementById("tarjeta-veredicto").style.display = "none";
             document.getElementById("tarjeta-grafica").style.display = "none";
 
-            sesionActivaID = "SES-" + Date.now();
+            // ESCUDO DE MEMORIA: Solo creamos una nueva sesión si no hay una activa
+            if (!sesionActivaID) {
+                sesionActivaID = "SES-" + Date.now();
+                resumenSesion = { total_series: 0, ejercicios: {} };
+            }
             
-            // Inicialización limpia
-            resumenSesion = { total_series: 0, ejercicios: {} };
+            // Limpiamos la plantilla temporal por si el usuario elige un ejercicio nuevo
             ejerciciosDeLaSesion = [];
             indiceEjercicioActual = 0;
 
@@ -1249,10 +1252,18 @@
             document.getElementById("vista-asistente-tracking").style.display = "none";
             document.getElementById("vista-decision-plantilla").style.display = "none";
             
-            // 2. Apagamos la bandera de consulta por si veníamos de ahí
+            // 2. Apagamos la bandera de consulta
             modoConsulta = false;
 
-            // 3. Volvemos a encender el lobby y las tarjetas principales
+            // 3. UX MAGIA: Si el usuario dejó un entrenamiento a medias, transformamos el botón
+            const btnComenzar = document.querySelector("button[onclick='comenzarEntrenamiento()']");
+            if (btnComenzar && sesionActivaID) {
+                btnComenzar.innerHTML = "🔄 Continuar Entrenamiento";
+                btnComenzar.style.backgroundColor = "#fbbc04"; // Color amarillo de "en progreso"
+                btnComenzar.style.color = "#333";
+            }
+
+            // 4. Volvemos a encender el lobby y las tarjetas principales
             document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
             document.getElementById("tarjeta-recuperacion").style.display = "block";
             document.getElementById("tarjeta-veredicto").style.display = "block";
