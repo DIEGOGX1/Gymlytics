@@ -169,15 +169,37 @@
         </div>
 
         <div class="card" id="tarjeta-recuperacion">
-            <h2>RECUPERACIÓN PARA HOY</h2>
-            <label>Horas de sueño:</label>
-            <input type="number" id="sueno" placeholder="Ej: 7.5" step="0.1">
-            <label>Carbs Pre-entreno (g):</label>
-            <input type="number" id="carbs" placeholder="Ej: 50">
-            <label>Calorías totales de las últimas 24h:</label>
-            <input type="number" id="calorias" placeholder="Ej: 2500">
-            <button onclick="enviarRecuperacion()" style="background-color: #34a853;">Guardar Recuperación</button>
-            <div id="mensaje-rec"></div>
+            <h2>📊 REGISTRO DIARIO</h2>
+            <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">Ingresa tus datos o usa el Asistente IA para los macros.</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🔥 Calorías (kcal)</label>
+                    <input type="number" id="input-cal" placeholder="Ej: 2500" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🍗 Proteínas (g)</label>
+                    <input type="number" id="input-pro" placeholder="Ej: 150" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🍚 Carbohidratos (g)</label>
+                    <input type="number" id="input-car" placeholder="Ej: 300" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
+                </div>
+                <div>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🥑 Grasas (g)</label>
+                    <input type="number" id="input-gra" placeholder="Ej: 70" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.8rem; font-weight: bold; color: #555;">😴 Horas de Sueño</label>
+                <input type="number" id="input-sueno" placeholder="Ej: 7.5" step="0.1" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
+            </div>
+            
+            <button onclick="guardarRegistroDiario()" style="width: 100%; padding: 10px; background-color: #34a853; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">💾 Guardar mi progreso</button>
+            <div id="mensaje-rec" style="text-align: center; margin-top: 10px; font-size: 0.9rem;"></div>
         </div>
 
         <div class="card" id="tarjeta-nutricion" style="border: 2px solid #fbbc04;">
@@ -1637,18 +1659,21 @@ async function enviarBiometria() {
                 if (res.ok) {
                     const datos = await res.json();
                     
-                    // 4. Dibujar la respuesta de la IA (Burbuja azul)
+                    // 1. Dibujar la respuesta de la IA
                     const msgIA = `
                         <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; border-left: 4px solid #1a73e8; align-self: flex-start; max-width: 85%;">
                             <strong>🤖 IA:</strong> ${datos.resumen}<br>
-                            <hr style="border: 0; border-top: 1px solid #c2e7d9; margin: 8px 0;">
-                            🔥 Calorías: <strong>${datos.calorias} kcal</strong><br>
-                            🍗 Proteínas: <strong>${datos.proteinas} g</strong><br>
-                            🍚 Carbs: <strong>${datos.carbohidratos} g</strong><br>
-                            🥑 Grasas: <strong>${datos.grasas} g</strong>
+                            <br><em style="font-size: 0.85rem; color: #555;">¡He rellenado tu tarjeta de macros arriba! Revisa los números y presiona "Guardar".</em>
                         </div>
                     `;
                     chat.innerHTML += msgIA;
+
+                    // 2. LA MAGIA: Auto-rellenar la tarjeta manual
+                    document.getElementById("input-cal").value = datos.calorias;
+                    document.getElementById("input-pro").value = datos.proteinas;
+                    document.getElementById("input-car").value = datos.carbohidratos;
+                    document.getElementById("input-gra").value = datos.grasas;
+
                 } else {
                     chat.innerHTML += `<div style="background: #fce8e6; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%;"><strong>🤖 IA:</strong> Uy, me confundí. ¿Puedes describir esa comida un poco mejor?</div>`;
                 }
