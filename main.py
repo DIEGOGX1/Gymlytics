@@ -12,6 +12,8 @@ from pydantic import BaseModel
 import jwt
 import os
 from dotenv import load_dotenv
+from passlib.context import CryptContext
+from sqlalchemy.exc import IntegrityError
 # Definir el horario
 def obtener_hora_mexico():
     zona_mx = ZoneInfo("America/Mexico_City")
@@ -24,6 +26,9 @@ load_dotenv()
 # Clave secreta para firmar los tokens (puedes cambiarla por cualquier texto complejo)
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
+
+# Configuración del motor de encriptación de contraseñas
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA BASE DE DATOS
@@ -40,6 +45,7 @@ class Usuario(Base):
     __tablename__ = "usuarios"
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String, index=True)
+    correo = Column(String, unique=True, index=True)
     contrasena = Column(String) # <--- NUEVO CAMPO
     meta = Column(String)
 
@@ -157,30 +163,54 @@ def get_db():
     finally:
         db.close()
 class LoginRequest(BaseModel):
-    nombre: str
+    correo: str  # <-- Cambiamos nombre por correo
     contrasena: str
+
+class RegistroRequest(BaseModel):
+    nombre: str
+    correo: str
+    contrasena: str
+    meta: str
+
+@app.post("/api/registro")
+def registrar_usuario(req: RegistroRequest, db: Session = Depends(get_db)):
+    # 1. Encriptamos la contraseña (unidireccional)
+    contrasena_encriptada = pwd_context.hash(req.contrasena)
+    
+    # 2. Preparamos al usuario
+    nuevo_usuario = Usuario(
+        nombre=req.nombre,
+        correo=req.correo.lower(), # Guardamos en minúsculas para evitar errores
+        contrasena=contrasena_encriptada,
+        meta=req.meta
+    )
+    
+    try:
+        db.add(nuevo_usuario)
+        db.commit()
+        db.refresh(nuevo_usuario)
+        return {"mensaje": "Usuario creado con éxito", "usuario_id": nuevo_usuario.id}
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=400, detail="Este correo ya está registrado.")
 
 @app.post("/api/login")
 def iniciar_sesion(req: LoginRequest, db: Session = Depends(get_db)):
-    usuario = db.query(Usuario).filter(
-        Usuario.nombre == req.nombre, 
-        Usuario.contrasena == req.contrasena
-    ).first()
+    # Buscamos al usuario por su correo
+    usuario = db.query(Usuario).filter(Usuario.correo == req.correo.lower()).first()
 
-    if not usuario:
-        raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
+    # Verificamos que exista y que la contraseña coincida con el código encriptado
+    if not usuario or not pwd_context.verify(req.contrasena, usuario.contrasena):
+        raise HTTPException(status_code=401, detail="Correo o contraseña incorrectos")
 
-    # Creamos el paquete de datos que llevará el token adentro (Payload)
+    # Si pasa el filtro de seguridad, le firmamos su llave JWT
     payload = {
         "usuario_id": usuario.id,
         "nombre": usuario.nombre,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7) # El token expira en 7 días
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)
     }
     
-    # Ciframos el token con nuestra palabra secreta
     token_seguro = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
-
-    # Devolvemos el token al frontend
     return {"token": token_seguro, "nombre": usuario.nombre}
 
 @app.get("/api/analisis/dia/{usuario_id}/{fecha_str}")

@@ -64,11 +64,33 @@
 </head>
 <body>
     <div id="login-caja" class="card">
-        <h2>Acceso a Gymlytics</h2>
-        <input type="text" id="login_usuario" placeholder="Usuario (Ej. Diego Gaxiola)">
-        <input type="password" id="login_pass" placeholder="Contraseña">
-        <button id="btn-login" onclick="ejecutarLogin()">Entrar</button>
-        <div id="login-error" style="color: red; margin-top: 10px;"></div>
+        <div id="vista-login">
+            <h2>Acceso a SEAFIT</h2>
+            <input type="email" id="login_correo" placeholder="Correo electrónico">
+            <input type="password" id="login_pass" placeholder="Contraseña">
+            <button id="btn-login" onclick="ejecutarLogin()">Entrar</button>
+            <div id="login-error" style="color: red; margin-top: 10px; text-align: center; font-size: 0.9rem;"></div>
+            <p style="text-align: center; font-size: 0.9rem; margin-top: 15px;">¿No tienes cuenta? <a href="#" onclick="mostrarRegistro()" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Regístrate aquí</a></p>
+        </div>
+
+        <div id="vista-registro" style="display: none;">
+            <h2 style="color: #34a853;">Crear Cuenta</h2>
+            <input type="text" id="reg_nombre" placeholder="Nombre completo (Ej. Diego Gaxiola)">
+            <input type="email" id="reg_correo" placeholder="Correo electrónico">
+            <input type="password" id="reg_pass" placeholder="Crea una contraseña segura">
+            
+            <label style="font-size: 0.85rem; margin-top: 5px;">Tu meta principal:</label>
+            <select id="reg_meta" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 15px; font-size: 0.95rem;">
+                <option value="Hipertrofia">Hipertrofia (Ganar músculo)</option>
+                <option value="Perdida de Grasa">Pérdida de Grasa</option>
+                <option value="Fuerza">Fuerza Máxima</option>
+                <option value="Recomposicion">Recomposición Corporal</option>
+            </select>
+
+            <button id="btn-registro" onclick="ejecutarRegistro()" style="background-color: #34a853;">Registrar mi perfil</button>
+            <div id="registro-msj" style="margin-top: 10px; text-align: center; font-weight: bold; font-size: 0.9rem;"></div>
+            <p style="text-align: center; font-size: 0.9rem; margin-top: 15px;">¿Ya tienes cuenta? <a href="#" onclick="mostrarLogin()" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Inicia Sesión</a></p>
+        </div>
     </div>
 
     <div id="pantalla-biometria" class="card" style="margin-top: 5vh; max-width: 400px; display: none;">
@@ -482,9 +504,65 @@
                 resDiv.innerHTML = "❌ Error de conexión.";
             }
         }
+        
+        function mostrarRegistro() {
+            document.getElementById("vista-login").style.display = "none";
+            document.getElementById("vista-registro").style.display = "block";
+        }
+
+        function mostrarLogin() {
+            document.getElementById("vista-registro").style.display = "none";
+            document.getElementById("vista-login").style.display = "block";
+        }
+
+        async function ejecutarRegistro() {
+            const nombre = document.getElementById("reg_nombre").value;
+            const correo = document.getElementById("reg_correo").value;
+            const pass = document.getElementById("reg_pass").value;
+            const meta = document.getElementById("reg_meta").value;
+            const msjDiv = document.getElementById("registro-msj");
+            const btn = document.getElementById("btn-registro");
+
+            if(!nombre || !correo || !pass) {
+                msjDiv.innerHTML = "❌ Llena todos los campos.";
+                msjDiv.style.color = "#dc3545";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Creando cuenta...";
+
+            try {
+                const res = await fetch(`${API_BASE}/registro`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nombre: nombre, correo: correo, contrasena: pass, meta: meta })
+                });
+
+                if (res.ok) {
+                    msjDiv.innerHTML = "✅ ¡Cuenta creada! Iniciando sesión...";
+                    msjDiv.style.color = "#28a745";
+                    
+                    // Auto-login para cero fricción
+                    document.getElementById("login_correo").value = correo;
+                    document.getElementById("login_pass").value = pass;
+                    setTimeout(ejecutarLogin, 1500);
+                } else {
+                    const data = await res.json();
+                    msjDiv.innerHTML = "❌ " + (data.detail || "Error al registrar");
+                    msjDiv.style.color = "#dc3545";
+                    btn.disabled = false;
+                    btn.innerText = "Registrar mi perfil";
+                }
+            } catch(e) {
+                msjDiv.innerHTML = "❌ Error de conexión al servidor.";
+                btn.disabled = false;
+                btn.innerText = "Registrar mi perfil";
+            }
+        }
 
         async function ejecutarLogin() {
-            const usr = document.getElementById("login_usuario").value;
+            const correo = document.getElementById("login_correo").value; // Ahora leemos el correo
             const pass = document.getElementById("login_pass").value;
             const btn = document.getElementById("btn-login");
             const errorDiv = document.getElementById("login-error");
@@ -497,19 +575,16 @@
                 const res = await fetch(`${API_BASE}/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nombre: usr, contrasena: pass })
+                    body: JSON.stringify({ correo: correo, contrasena: pass }) // Enviamos correo al Backend
                 });
 
                 if (res.ok) {
                     const data = await res.json();
-                    
-                    // GUARDADO SEGURO: Almacenamos el token firmado por el servidor
                     localStorage.setItem("gymlytics_token", data.token);
                     localStorage.setItem("gymlytics_nombre", data.nombre);
-                    
                     location.reload(); 
                 } else {
-                    errorDiv.innerText = "❌ Usuario o contraseña incorrectos.";
+                    errorDiv.innerText = "❌ Correo o contraseña incorrectos.";
                 }
             } catch (e) {
                 errorDiv.innerText = "❌ Error al conectar con el servidor.";
