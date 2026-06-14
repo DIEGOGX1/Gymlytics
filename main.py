@@ -37,7 +37,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Configuración del Cerebro de IA
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-modelo_ia = genai.GenerativeModel('gemini-1.5-flash') # Un modelo súper rápido y ligero
+modelo_ia = genai.GenerativeModel('gemini-1.0-pro') # Un modelo súper rápido y ligero
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA BASE DE DATOS
