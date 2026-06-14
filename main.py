@@ -14,6 +14,10 @@ import os
 from dotenv import load_dotenv
 from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
+
+
 # Definir el horario
 def obtener_hora_mexico():
     zona_mx = ZoneInfo("America/Mexico_City")
@@ -41,6 +45,11 @@ Base = declarative_base()
 # ==========================================
 # 2. MODELOS DE DATOS (Las Tablas)
 # ==========================================
+
+class GoogleAuthRequest(BaseModel):
+    token: str
+    meta: str = "General" # Por si es un usuario completamente nuevo
+
 class Usuario(Base):
     __tablename__ = "usuarios"
     id = Column(Integer, primary_key=True, index=True)
@@ -172,6 +181,44 @@ class RegistroRequest(BaseModel):
     contrasena: str
     meta: str
 
+
+@app.post("/api/auth/google")
+def login_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
+    try:
+        # 1. Verificamos matemáticamente que el gafete viene de Google y no es falso
+        idinfo = id_token.verify_oauth2_token(
+            req.token, 
+            google_requests.Request(), 
+            os.getenv("GOOGLE_CLIENT_ID")
+        )
+        
+        correo = idinfo['email'].lower()
+        nombre = idinfo.get('name', 'Atleta')
+
+        # 2. Buscamos si el atleta ya existe en tu base de datos
+        usuario = db.query(Usuario).filter(Usuario.correo == correo).first()
+
+        if not usuario:
+            # 3. REGISTRO INVISIBLE: Si no existe, le creamos la cuenta al instante
+            # Le asignamos una contraseña encriptada fantasma que nunca usará
+            contrasena_fantasma = pwd_context.hash("google_oauth_secret_random_pass")
+            usuario = Usuario(nombre=nombre, correo=correo, contrasena=contrasena_fantasma, meta=req.meta)
+            db.add(usuario)
+            db.commit()
+            db.refresh(usuario)
+
+        # 4. Le firmamos su llave JWT de tu sistema (exactamente igual que el login normal)
+        payload = {
+            "usuario_id": usuario.id,
+            "nombre": usuario.nombre,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)
+        }
+        token_seguro = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        return {"token": token_seguro, "nombre": usuario.nombre}
+
+    except ValueError:
+        raise HTTPException(status_code=401, detail="Token de Google inválido o expirado")
+    
 @app.post("/api/registro")
 def registrar_usuario(req: RegistroRequest, db: Session = Depends(get_db)):
     # 1. Encriptamos la contraseña (unidireccional)

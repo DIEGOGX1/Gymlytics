@@ -7,3 +7,5 @@ pyjwt
 python-dotenv
 passlib
 bcrypt==3.2.0
+google-auth
+requests

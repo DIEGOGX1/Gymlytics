@@ -61,6 +61,7 @@
             color: #333;
         }
     </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div id="login-caja" class="card">
@@ -70,11 +71,45 @@
             <input type="password" id="login_pass" placeholder="Contraseña">
             <button id="btn-login" onclick="ejecutarLogin()">Entrar</button>
             <div id="login-error" style="color: red; margin-top: 10px; text-align: center; font-size: 0.9rem;"></div>
+            <div id="g_id_onload"
+            data-client_id="634260670587-lgqagvh5e52iurh9ophiqgjl7chbm5r7.apps.googleusercontent.com"
+            data-context="signin"
+            data-ux_mode="popup"
+            data-callback="manejarRespuestaGoogle"
+            data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin"
+            data-type="standard"
+            data-shape="rectangular"
+            data-theme="outline"
+            data-text="continue_with"
+            data-size="large"
+            data-logo_alignment="left"
+            style="display: flex; justify-content: center; margin-top: 15px;">
+        </div>
             <p style="text-align: center; font-size: 0.9rem; margin-top: 15px;">¿No tienes cuenta? <a href="#" onclick="mostrarRegistro()" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Regístrate aquí</a></p>
         </div>
 
         <div id="vista-registro" style="display: none;">
             <h2 style="color: #34a853;">Crear Cuenta</h2>
+                        <div id="g_id_onload"
+            data-client_id="634260670587-lgqagvh5e52iurh9ophiqgjl7chbm5r7.apps.googleusercontent.com"
+            data-context="signin"
+            data-ux_mode="popup"
+            data-callback="manejarRespuestaGoogle"
+            data-auto_prompt="false">
+        </div>
+
+        <div class="g_id_signin"
+            data-type="standard"
+            data-shape="rectangular"
+            data-theme="outline"
+            data-text="continue_with"
+            data-size="large"
+            data-logo_alignment="left"
+            style="display: flex; justify-content: center; margin-top: 15px;">
+        </div>
             <input type="text" id="reg_nombre" placeholder="Nombre completo (Ej. Diego Gaxiola)">
             <input type="email" id="reg_correo" placeholder="Correo electrónico">
             <input type="password" id="reg_pass" placeholder="Crea una contraseña segura">
@@ -86,10 +121,10 @@
                 <option value="Fuerza">Fuerza Máxima</option>
                 <option value="Recomposicion">Recomposición Corporal</option>
             </select>
-
             <button id="btn-registro" onclick="ejecutarRegistro()" style="background-color: #34a853;">Registrar mi perfil</button>
             <div id="registro-msj" style="margin-top: 10px; text-align: center; font-weight: bold; font-size: 0.9rem;"></div>
             <p style="text-align: center; font-size: 0.9rem; margin-top: 15px;">¿Ya tienes cuenta? <a href="#" onclick="mostrarLogin()" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Inicia Sesión</a></p>
+
         </div>
     </div>
 
@@ -1432,6 +1467,35 @@
                     </div>
                 `;
             });
+        }
+
+        async function manejarRespuestaGoogle(response) {
+            // Este es el gafete (JWT) que nos acaba de entregar Google
+            const googleToken = response.credential;
+            const errorDiv = document.getElementById("login-error"); // Reutilizamos tu div de error
+            
+            try {
+                const res = await fetch(`${API_BASE}/auth/google`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ 
+                        token: googleToken,
+                        meta: "Hipertrofia" // Opcional: podrías leer esto de un select si quieres
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    // Guardamos la llave maestra de nuestra propia app
+                    localStorage.setItem("gymlytics_token", data.token);
+                    localStorage.setItem("gymlytics_nombre", data.nombre);
+                    location.reload(); 
+                } else {
+                    errorDiv.innerText = "❌ Error al iniciar sesión con Google.";
+                }
+            } catch (e) {
+                errorDiv.innerText = "❌ Error de conexión al servidor.";
+            }
         }
     </script>
 </body>
