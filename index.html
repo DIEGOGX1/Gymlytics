@@ -340,10 +340,10 @@
 
         // 1. INICIALIZACIÓN Y ENRUTAMIENTO (Login vs Dashboard)
         window.onload = function() {
-            // CORREGIDO: Unificamos la llave a gymlytics_user
-            const usuarioLogueado = localStorage.getItem("gymlytics_user"); 
+            // AHORA BUSCAMOS EL TOKEN DE SEGURIDAD (JWT)
+            const tokenSeguro = localStorage.getItem("gymlytics_token"); 
             
-            if (usuarioLogueado) {
+            if (tokenSeguro) {
                 iniciarDashboard(); 
             } else {
                 mostrarPantallaLogin(); 
@@ -358,8 +358,9 @@
         }
 
         function cerrarSesion() {
-            // CORREGIDO: Borramos la llave correcta
-            localStorage.removeItem("gymlytics_user"); 
+            // BORRAMOS LAS LLAVES DE SEGURIDAD
+            localStorage.removeItem("gymlytics_token"); 
+            localStorage.removeItem("gymlytics_nombre");
             location.reload(); 
         }
 
@@ -402,10 +403,38 @@
             }
         }
 
-        // --- LAS FUNCIONES BASE AHORA LEEN DE LOCALSTORAGE ---
+        function obtenerTokenActivo() {
+            return localStorage.getItem("gymlytics_token");
+        }
+
+        // --- MAGIA JWT: Extraemos el ID directamente del token firmado ---
         function obtenerUsuarioActivo() {
-            // CORREGIDO: Leemos la llave correcta
-            return localStorage.getItem("gymlytics_user"); 
+            const token = obtenerTokenActivo();
+            if (!token) return null;
+            
+            try {
+                // Desciframos la parte media del token (Payload)
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
+                const payload = JSON.parse(jsonPayload);
+                
+                // Verificamos si ya expiró (la fecha 'exp' viene en segundos)
+                const tiempoActual = Math.floor(Date.now() / 1000);
+                if (payload.exp && payload.exp < tiempoActual) {
+                    console.log("La sesión ha expirado por tiempo.");
+                    cerrarSesion(); // Lo sacamos automáticamente
+                    return null;
+                }
+                
+                // Devolvemos el ID de forma invisible para que el resto de tu app siga funcionando igual
+                return payload.usuario_id; 
+            } catch (e) {
+                return null;
+            }
         }
 
         // NUEVA FUNCIÓN: Guardar datos corporales y liberar el sistema
@@ -473,10 +502,11 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    // Guardamos el ID en el almacenamiento del navegador
-                    localStorage.setItem("gymlytics_user", data.usuario_id);
+                    
+                    // GUARDADO SEGURO: Almacenamos el token firmado por el servidor
+                    localStorage.setItem("gymlytics_token", data.token);
                     localStorage.setItem("gymlytics_nombre", data.nombre);
-                    // Recargamos la página para que el dashboard detecte al usuario
+                    
                     location.reload(); 
                 } else {
                     errorDiv.innerText = "❌ Usuario o contraseña incorrectos.";
@@ -986,39 +1016,42 @@
         async function enviarSerieAsistente() {
             const resDiv = document.getElementById("mensaje");
             const inputSerie = document.getElementById("num_serie");
-            const usr_id = obtenerUsuarioActivo();
+            const token = obtenerTokenActivo(); // <--- EXTRAEMOS LA LLAVE SEGURA
             
             // Leemos los valores crudos
             let pesoCapturado = parseFloat(document.getElementById("peso").value);
             const repsCapturadas = parseInt(document.getElementById("reps").value);
             const unidadElegida = document.getElementById("unidad-peso").value;
 
-            if (!usr_id || isNaN(pesoCapturado) || isNaN(repsCapturadas)) {
+            if (isNaN(pesoCapturado) || isNaN(repsCapturadas)) {
                 resDiv.innerHTML = "❌ Por favor llena los campos de peso y repeticiones.";
                 return;
             }
 
-            // ESCUDO DE CONVERSIÓN: Si el usuario eligió libras, convertimos a kilos
+            // ESCUDO DE CONVERSIÓN
             if (unidadElegida === "lbs") {
-                // 1 kg = 2.20462 lbs. Dividimos y redondeamos a 2 decimales para evitar números infinitos.
                 pesoCapturado = parseFloat((pesoCapturado / 2.20462).toFixed(2));
             }
 
             const btnGuardar = document.querySelector("button[onclick='enviarSerieAsistente()']");
             btnGuardar.disabled = true;
             
+            // ELIMINAMOS usuario_id del paquete JSON
             const datos = {
-                usuario_id: parseInt(usr_id),
                 ejercicio_id: ejercicioActivoID,
                 sesion_id: sesionActivaID, 
                 numero_serie: parseInt(inputSerie.value),
-                peso_kg: pesoCapturado, // Aquí ya viaja limpio y siempre en kilos
+                peso_kg: pesoCapturado, 
                 repeticiones: repsCapturadas
             };
+
             try {
                 const res = await fetch(`${API_BASE}/entrenamiento/registrar-serie`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}` // <--- ENVIAMOS LA LLAVE AQUÍ
+                    },
                     body: JSON.stringify(datos)
                 });
                 
@@ -1034,7 +1067,7 @@
                     }
                     
                     document.getElementById("asistente-conteo-series").innerText = resumenSesion.total_series;
-                    inputSerie.value = datos.numero_serie + 1;
+                    inputSerie.value = parseInt(inputSerie.value) + 1;
                     
                     actualizarSugerencia(); 
                     dibujarGrafica(); 

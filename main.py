@@ -9,12 +9,17 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel
 from typing import Optional
 from pydantic import BaseModel
+import jwt
 # Definir el horario
 # Definir el horario
 def obtener_hora_mexico():
     zona_mx = ZoneInfo("America/Mexico_City")
     # Extraemos la hora exacta de México y la volvemos "ingenua" para que Postgres no la cambie a UTC
     return datetime.datetime.now(zona_mx).replace(tzinfo=None)
+
+# Clave secreta para firmar los tokens (puedes cambiarla por cualquier texto complejo)
+SECRET_KEY = "BioForce_Gymlytics_Secret_Key_Ultra_Secure"
+ALGORITHM = "HS256"
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA BASE DE DATOS
@@ -102,7 +107,6 @@ class RecuperacionDiaria(Base):
 
 # Molde para recibir datos del Front-End en formato JSON
 class DatosSerieRecepcion(BaseModel):
-    usuario_id: int
     ejercicio_id: int
     numero_serie: int
     peso_kg: float
@@ -155,18 +159,26 @@ class LoginRequest(BaseModel):
 
 @app.post("/api/login")
 def iniciar_sesion(req: LoginRequest, db: Session = Depends(get_db)):
-    # Buscamos que coincida el nombre Y la contraseña
     usuario = db.query(Usuario).filter(
         Usuario.nombre == req.nombre, 
         Usuario.contrasena == req.contrasena
     ).first()
 
     if not usuario:
-        # Si no coinciden, lanzamos un error 401 (No autorizado)
         raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos")
 
-    # Si todo está bien, le devolvemos su ID y nombre
-    return {"usuario_id": usuario.id, "nombre": usuario.nombre}
+    # Creamos el paquete de datos que llevará el token adentro (Payload)
+    payload = {
+        "usuario_id": usuario.id,
+        "nombre": usuario.nombre,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7) # El token expira en 7 días
+    }
+    
+    # Ciframos el token con nuestra palabra secreta
+    token_seguro = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+    # Devolvemos el token al frontend
+    return {"token": token_seguro, "nombre": usuario.nombre}
 
 @app.get("/api/analisis/dia/{usuario_id}/{fecha_str}")
 def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depends(get_db)):
@@ -256,17 +268,34 @@ def crear_ejercicio(nombre: str, grupo_muscular: str, db: Session = Depends(get_
     db.commit()
     db.refresh(nuevo_ejercicio)
     return nuevo_ejercicio
+# leer el token de las cabeceras, descifrarlo en milisegundos y asegurar que el usuario es quien dice ser
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer()
+
+def obtener_usuario_desde_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    token = credentials.credentials
+    try:
+        # Desciframos el token usando nuestra palabra secreta
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        usuario_id: int = payload.get("usuario_id")
+        if usuario_id is None:
+            raise HTTPException(status_code=401, detail="Token inválido")
+        return usuario_id
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="La sesión ha expirado")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Error de autenticación")
 
 # 2. Registrar una serie terminada (¡El reemplazo de tu Excel!)
-
 @app.post("/api/entrenamiento/registrar-serie")
-def registrar_serie(datos: DatosSerieRecepcion, db: Session = Depends(get_db)):
+def registrar_serie(datos: DatosSerieRecepcion, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):
     
     hoy = obtener_hora_mexico().date()
 
-    # Buscamos usando el paquete 'datos'
+    # Buscamos usando el ID seguro extraído del token
     registros_previos = db.query(RegistroSerie).filter(
-        RegistroSerie.usuario_id == datos.usuario_id,
+        RegistroSerie.usuario_id == usuario_id,
         RegistroSerie.ejercicio_id == datos.ejercicio_id,
         RegistroSerie.numero_serie == datos.numero_serie
     ).all()
@@ -276,17 +305,17 @@ def registrar_serie(datos: DatosSerieRecepcion, db: Session = Depends(get_db)):
     if serie_repetida:
         raise HTTPException(
             status_code=400, 
-            detail=f"La serie {datos.numero_serie} ya fue registrada hoy para este ejercicio."
+            detail=f"La serie {datos.numero_serie} ya fue registrada hoy."
         )
 
-    # Guardamos extrayendo del paquete 'datos'
+    # Guardamos usando el ID seguro
     nueva_serie = RegistroSerie(
-        usuario_id=datos.usuario_id,
+        usuario_id=usuario_id,
         ejercicio_id=datos.ejercicio_id,
         numero_serie=datos.numero_serie,
         peso_kg=datos.peso_kg,
         repeticiones=datos.repeticiones,
-        sesion_id=datos.sesion_id  # <--- ¡ESTE ERA EL ESLABÓN PERDIDO!
+        sesion_id=datos.sesion_id
     )
     db.add(nueva_serie)
     db.commit()
@@ -799,4 +828,6 @@ def biometria_historico(usuario_id: int, db: Session = Depends(get_db)):
         "brazo": [r.perimetro_brazo for r in registros],
         "pierna": [r.perimetro_pierna for r in registros]
     }
+
+
 
