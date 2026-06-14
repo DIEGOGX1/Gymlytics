@@ -180,6 +180,21 @@
             <div id="mensaje-rec"></div>
         </div>
 
+        <div class="card" id="tarjeta-nutricion" style="border: 2px solid #fbbc04;">
+            <h2 style="color: #fbbc04;">🍏 Asistente Nutricional IA</h2>
+            <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 10px;">Dime qué comiste y calcularé tus macros exactos.</p>
+            
+            <div id="chat-historial" style="background: #f8f9fa; height: 180px; overflow-y: auto; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; border-left: 4px solid #1a73e8; align-self: flex-start; max-width: 85%;">
+                    <strong>🤖 IA:</strong> ¡Hola! ¿Qué vas a comer hoy? (Ej: 2 huevos revueltos con jamón).
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="input-comida" placeholder="Escribe aquí..." style="margin: 0; flex-grow: 1;" onkeypress="if(event.key === 'Enter') analizarComidaEnUI()">
+                <button onclick="analizarComidaEnUI()" style="width: auto; padding: 10px 15px; background-color: #fbbc04; color: #333; margin: 0;">Enviar</button>
+            </div>
+        </div>
         <div id="vista-lobby-entrenamiento" style="display: flex; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px; gap: 10px;">
             <button onclick="comenzarEntrenamiento()" style="background-color: #34a853; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">🚀 Comenzar Entrenamiento</button>
             
@@ -1581,6 +1596,68 @@ async function enviarBiometria() {
                     </tr>
                 `;
             });
+        }
+
+        async function analizarComidaEnUI() {
+            const input = document.getElementById("input-comida");
+            const chat = document.getElementById("chat-historial");
+            const texto = input.value.trim();
+
+            if (!texto) return;
+
+            // 1. Dibujar el mensaje del usuario (Burbuja verde)
+            chat.innerHTML += `
+                <div style="background: #e6f4ea; padding: 10px; border-radius: 8px; border-right: 4px solid #34a853; align-self: flex-end; max-width: 85%; text-align: right;">
+                    <strong>Tú:</strong> ${texto}
+                </div>
+            `;
+            input.value = "";
+            
+            // 2. Dibujar el indicador de "Escribiendo..."
+            const idCarga = "carga-" + Date.now();
+            chat.innerHTML += `<div id="${idCarga}" style="color: #888; font-size: 0.8rem; align-self: flex-start;"><em>🤖 Analizando alimentos...</em></div>`;
+            chat.scrollTop = chat.scrollHeight; // Auto-scroll hacia abajo
+
+            const token = obtenerTokenActivo(); // Extraemos la llave JWT
+
+            try {
+                // 3. Enviar la petición a tu servidor en Render
+                const res = await fetch(`${API_BASE}/nutricion/analizar`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ texto_comida: texto })
+                });
+
+                // Borramos el "Escribiendo..."
+                document.getElementById(idCarga).remove();
+
+                if (res.ok) {
+                    const datos = await res.json();
+                    
+                    // 4. Dibujar la respuesta de la IA (Burbuja azul)
+                    const msgIA = `
+                        <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; border-left: 4px solid #1a73e8; align-self: flex-start; max-width: 85%;">
+                            <strong>🤖 IA:</strong> ${datos.resumen}<br>
+                            <hr style="border: 0; border-top: 1px solid #c2e7d9; margin: 8px 0;">
+                            🔥 Calorías: <strong>${datos.calorias} kcal</strong><br>
+                            🍗 Proteínas: <strong>${datos.proteinas} g</strong><br>
+                            🍚 Carbs: <strong>${datos.carbohidratos} g</strong><br>
+                            🥑 Grasas: <strong>${datos.grasas} g</strong>
+                        </div>
+                    `;
+                    chat.innerHTML += msgIA;
+                } else {
+                    chat.innerHTML += `<div style="background: #fce8e6; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%;"><strong>🤖 IA:</strong> Uy, me confundí. ¿Puedes describir esa comida un poco mejor?</div>`;
+                }
+            } catch (e) {
+                document.getElementById(idCarga).remove();
+                chat.innerHTML += `<div style="background: #fce8e6; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%;"><strong>🤖 IA:</strong> Error de conexión con el servidor.</div>`;
+            }
+            
+            chat.scrollTop = chat.scrollHeight; // Auto-scroll final
         }
     </script>
 </body>

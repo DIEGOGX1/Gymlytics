@@ -51,6 +51,7 @@ Base = declarative_base()
 # 2. MODELOS DE DATOS (Las Tablas)
 # ==========================================
 
+
 class GoogleAuthRequest(BaseModel):
     token: str
     meta: str = "General" # Por si es un usuario completamente nuevo
