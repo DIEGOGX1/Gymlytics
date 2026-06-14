@@ -1472,7 +1472,16 @@
         async function manejarRespuestaGoogle(response) {
             // Este es el gafete (JWT) que nos acaba de entregar Google
             const googleToken = response.credential;
-            const errorDiv = document.getElementById("login-error"); // Reutilizamos tu div de error
+            const errorDiv = document.getElementById("login-error"); 
+            
+            // MAGIA DINÁMICA: Detectamos si el usuario está en la pantalla de registro
+            let metaElegida = "Hipertrofia"; // Valor por defecto si entra directo desde el Login
+            const vistaRegistro = document.getElementById("vista-registro");
+            
+            // Si la vista de registro está visible, capturamos lo que el usuario seleccionó en el dropdown
+            if (vistaRegistro && vistaRegistro.style.display === "block") {
+                metaElegida = document.getElementById("reg_meta").value;
+            }
             
             try {
                 const res = await fetch(`${API_BASE}/auth/google`, {
@@ -1480,13 +1489,12 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         token: googleToken,
-                        meta: "Hipertrofia" // Opcional: podrías leer esto de un select si quieres
+                        meta: metaElegida // <-- Enviamos la meta real elegida en la UI
                     })
                 });
 
                 if (res.ok) {
                     const data = await res.json();
-                    // Guardamos la llave maestra de nuestra propia app
                     localStorage.setItem("gymlytics_token", data.token);
                     localStorage.setItem("gymlytics_nombre", data.nombre);
                     location.reload(); 
