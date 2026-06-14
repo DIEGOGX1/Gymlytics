@@ -6,4 +6,4 @@ psycopg2-binary
 pyjwt
 python-dotenv
 passlib
-bcrypt
+bcrypt==3.2.0
