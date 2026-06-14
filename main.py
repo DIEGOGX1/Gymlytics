@@ -10,22 +10,25 @@ from pydantic import BaseModel
 from typing import Optional
 from pydantic import BaseModel
 import jwt
-# Definir el horario
+import os
+from dotenv import load_dotenv
 # Definir el horario
 def obtener_hora_mexico():
     zona_mx = ZoneInfo("America/Mexico_City")
     # Extraemos la hora exacta de México y la volvemos "ingenua" para que Postgres no la cambie a UTC
     return datetime.datetime.now(zona_mx).replace(tzinfo=None)
 
+# Cargar las variables ocultas
+load_dotenv()
+
 # Clave secreta para firmar los tokens (puedes cambiarla por cualquier texto complejo)
-SECRET_KEY = "BioForce_Gymlytics_Secret_Key_Ultra_Secure"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA BASE DE DATOS
 # ==========================================
-DATABASE_URL = "postgresql://neondb_owner:npg_X8beVmQ2CBpD@ep-lively-haze-apz76kao-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-
+DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL) # Quita el connect_args de SQLite, ya no se ocupa
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
