@@ -198,7 +198,7 @@
                 <input type="number" id="input-sueno" placeholder="Ej: 7.5" step="0.1" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
             </div>
             
-            <button onclick="guardarRegistroDiario()" style="width: 100%; padding: 10px; background-color: #34a853; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">💾 Guardar mi progreso</button>
+            <button onclick="guardarRegistroDiario()" style="width: 100%; padding: 10px; background-color: #34a853; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">Guardar mis datos</button>
             <div id="mensaje-rec" style="text-align: center; margin-top: 10px; font-size: 0.9rem;"></div>
         </div>
 
@@ -794,43 +794,6 @@ async function enviarBiometria() {
                 }
             } catch (e) {
                 console.error("Error al obtener el conteo de series:", e);
-            }
-        }
-        async function enviarRecuperacion() {
-            const resDiv = document.getElementById("mensaje-rec");
-            const usr_id = obtenerUsuarioActivo();
-            const sueno = document.getElementById("sueno").value;
-            const carbs = document.getElementById("carbs").value;
-            const calorias = document.getElementById("calorias").value;
-
-            // 1. ESCUDO: Atrapamos el botón que ejecutó la función y lo bloqueamos
-            // Buscamos el botón por la acción onclick. Si tu botón tiene un ID, puedes usar getElementById.
-            const btnGuardar = document.querySelector("button[onclick='enviarRecuperacion()']");
-            if (btnGuardar) {
-                btnGuardar.disabled = true;
-                btnGuardar.innerText = "⏳ Guardando...";
-            }
-
-            const url = `${API_BASE}/recuperacion?usuario_id=${usr_id}&horas_sueno=${sueno}&carbohidratos_pre=${carbs}&calorias_ayer=${calorias}`;
-            
-            try {
-                const res = await fetch(url, { method: "POST" });
-                if (res.ok) {
-                    resDiv.innerHTML = "✅ Datos listos";
-                    resDiv.className = "exito";
-                } else {
-                    resDiv.innerHTML = "❌ Error al guardar";
-                    resDiv.className = "error";
-                }
-            } catch (e) { 
-                resDiv.innerHTML = "❌ Error de conexión"; 
-                resDiv.className = "error";
-            } finally {
-                // 2. DESBLOQUEO: Pase lo que pase (éxito o error), volvemos a encender el botón
-                if (btnGuardar) {
-                    btnGuardar.disabled = false;
-                    btnGuardar.innerText = "Guardar"; // Pon aquí el texto original de tu botón
-                }
             }
         }
 
@@ -1683,6 +1646,59 @@ async function enviarBiometria() {
             }
             
             chat.scrollTop = chat.scrollHeight; // Auto-scroll final
+        }
+
+        async function guardarRegistroDiario() {
+            // 1. Recolectamos los datos de las cajitas
+            const calorias = document.getElementById("input-cal").value;
+            const proteinas = document.getElementById("input-pro").value;
+            const carbohidratos = document.getElementById("input-car").value;
+            const grasas = document.getElementById("input-gra").value;
+            const sueno = document.getElementById("input-sueno").value;
+            const mensajeDiv = document.getElementById("mensaje-rec");
+
+            // 2. Verificamos que el usuario haya llenado todo
+            if (!calorias || !proteinas || !carbohidratos || !grasas || !sueno) {
+                mensajeDiv.innerHTML = "<span style='color: #dc3545; font-weight: bold;'>⚠️ Por favor, llena todos los campos (incluyendo el sueño) antes de guardar.</span>";
+                return;
+            }
+
+            mensajeDiv.innerHTML = "<span style='color: #555;'>Guardando en la base de datos... ⏳</span>";
+            const token = obtenerTokenActivo(); // Extraemos tu llave de seguridad
+
+            try {
+                // 3. Enviamos el paquete a tu servidor de Python
+                const res = await fetch(`${API_BASE}/progreso/registro-diario`, {
+                    method: "POST",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        calorias: parseFloat(calorias),
+                        proteinas: parseFloat(proteinas),
+                        carbohidratos: parseFloat(carbohidratos),
+                        grasas: parseFloat(grasas),
+                        horas_sueno: parseFloat(sueno)
+                    })
+                });
+
+                if (res.ok) {
+                    mensajeDiv.innerHTML = "<span style='color: #34a853; font-weight: bold;'>¡Progreso guardado con éxito! ✅</span>";
+                    
+                    // Opcional: Limpiamos las cajitas después de guardar
+                    document.getElementById("input-cal").value = "";
+                    document.getElementById("input-pro").value = "";
+                    document.getElementById("input-car").value = "";
+                    document.getElementById("input-gra").value = "";
+                    document.getElementById("input-sueno").value = "";
+                } else {
+                    const error = await res.json();
+                    mensajeDiv.innerHTML = `<span style='color: #dc3545;'>❌ Error del servidor: ${error.detail}</span>`;
+                }
+            } catch (e) {
+                mensajeDiv.innerHTML = "<span style='color: #dc3545;'>❌ Error de conexión con el servidor.</span>";
+            }
         }
     </script>
 </body>

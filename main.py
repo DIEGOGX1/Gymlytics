@@ -18,6 +18,7 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import google.generativeai as genai
 import json
+from pydantic import BaseModel
 
 # Definir el horario
 def obtener_hora_mexico():
@@ -118,17 +119,19 @@ class RegistroSerie(Base):
     peso_kg = Column(Float)
     repeticiones = Column(Integer)
 
-class RecuperacionDiaria(Base):
-    __tablename__ = "recuperacion_diaria"
+class RegistroDiario(Base):
+    __tablename__ = "registros_diarios"
     id = Column(Integer, primary_key=True, index=True)
     usuario_id = Column(Integer, ForeignKey("usuarios.id"))
     
     # OPTIMIZACIÓN: Añadimos index=True para que los promedios semanales vuelen
     fecha = Column(DateTime, default=obtener_hora_mexico, index=True)
     
+    calorias = Column(Float)
+    proteinas = Column(Float)
+    carbohidratos = Column(Float)
+    grasas = Column(Float)
     horas_sueno = Column(Float)
-    carbohidratos_pre_entreno = Column(Float) 
-    calorias_ayer = Column(Float)
 
 # Molde para recibir datos del Front-End en formato JSON
 class DatosSerieRecepcion(BaseModel):
@@ -158,6 +161,13 @@ def sembrar_datos_iniciales(db: Session):
         db.commit()
         print("Usuario inicial cargado.")
 
+
+class RegistroDiarioCreate(BaseModel):
+    calorias: float
+    proteinas: float
+    carbohidratos: float
+    grasas: float
+    horas_sueno: float
 
 # Crear las tablas
 Base.metadata.create_all(bind=engine)
@@ -277,10 +287,10 @@ def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depend
     except ValueError:
         return {"error": "Formato de fecha inválido."}
         
-    recuperacion = db.query(RecuperacionDiaria).filter(
-        RecuperacionDiaria.usuario_id == usuario_id,
-        RecuperacionDiaria.fecha >= inicio_dia,
-        RecuperacionDiaria.fecha < fin_dia
+    recuperacion = db.query(RegistroDiario).filter(
+        RegistroDiario.usuario_id == usuario_id,
+        RegistroDiario.fecha >= inicio_dia,
+        RegistroDiario.fecha < fin_dia
     ).first()
 
     series = db.query(RegistroSerie).filter(
@@ -304,8 +314,8 @@ def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depend
         "fecha": fecha_str,
         "nutricion": {
             "sueno": recuperacion.horas_sueno if recuperacion else "Sin registro",
-            "calorias": recuperacion.calorias_ayer if recuperacion else "Sin registro",
-            "carbs": recuperacion.carbohidratos_pre_entreno if recuperacion else "Sin registro"
+            "calorias": recuperacion.calorias if recuperacion else "Sin registro",
+            "carbs": recuperacion.carbohidratos if recuperacion else "Sin registro"
         },
         "entrenamiento": {
             "total_series": len(series),
@@ -526,36 +536,28 @@ def obtener_ultima_rutina_musculo(usuario_id: int, grupo_muscular: str, db: Sess
 # --- MÓDULO DE PREDICCIÓN Y RECUPERACIÓN ---
 
 # 1. Guardar o Actualizar datos de recuperación del día
-@app.post("/api/recuperacion")
-def registrar_recuperacion(usuario_id: int, horas_sueno: float, carbohidratos_pre: float, calorias_ayer: float, db: Session = Depends(get_db)):
-    hoy = obtener_hora_mexico().date()
-    
-    # Buscamos el último registro de este usuario
-    ultimo_registro = db.query(RecuperacionDiaria).filter(
-        RecuperacionDiaria.usuario_id == usuario_id
-    ).order_by(RecuperacionDiaria.fecha.desc()).first()
-    
-    # REGLA UPSERT: Si existe un registro y es del día de hoy, lo ACTUALIZAMOS
-    if ultimo_registro and ultimo_registro.fecha.date() == hoy:
-        ultimo_registro.horas_sueno = horas_sueno
-        ultimo_registro.carbohidratos_pre_entreno = carbohidratos_pre
-        ultimo_registro.calorias_ayer = calorias_ayer
-        
+@app.post("/api/progreso/registro-diario")
+def guardar_registro_diario(
+    registro: RegistroDiarioCreate,
+    usuario_id: int = Depends(obtener_usuario_desde_token),
+    db: Session = Depends(get_db)
+):
+    try:
+        nuevo_registro = RegistroDiario(
+            usuario_id=usuario_id,
+            calorias=registro.calorias,
+            proteinas=registro.proteinas,
+            carbohidratos=registro.carbohidratos,
+            grasas=registro.grasas,
+            horas_sueno=registro.horas_sueno
+        )
+        db.add(nuevo_registro)
         db.commit()
-        db.refresh(ultimo_registro)
-        return {"mensaje": "Datos actualizados correctamente", "datos": ultimo_registro}
-    
-    # Si no hay registro de hoy, CREAMOS uno completamente nuevo
-    nuevo_registro = RecuperacionDiaria(
-        usuario_id=usuario_id,
-        horas_sueno=horas_sueno,
-        carbohidratos_pre_entreno=carbohidratos_pre,
-        calorias_ayer=calorias_ayer
-    )
-    db.add(nuevo_registro)
-    db.commit()
-    db.refresh(nuevo_registro)
-    return {"mensaje": "Nuevos datos guardados", "datos": nuevo_registro}
+        db.refresh(nuevo_registro)
+        return {"mensaje": "Progreso guardado con éxito", "id_registro": nuevo_registro.id}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Error al guardar en la base de datos.")
 
 # 2. Algoritmo Predictivo de Rendimiento (Con Doble Progresión)
 @app.get("/api/entrenamiento/prediccion/{usuario_id}/{ejercicio_id}/{numero_serie}")
@@ -573,9 +575,9 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
             "objetivo_hoy": "Usa una carga pesada (RIR 2)."
         }
 
-    recuperacion = db.query(RecuperacionDiaria).filter(
-        RecuperacionDiaria.usuario_id == usuario_id
-    ).order_by(RecuperacionDiaria.fecha.desc()).first()
+    recuperacion = db.query(RegistroDiario).filter(
+        RegistroDiario.usuario_id == usuario_id
+    ).order_by(RegistroDiario.fecha.desc()).first()
 
     if not recuperacion:
         return {"mensaje": "No hay datos de recuperación hoy."}
@@ -589,7 +591,7 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
     elif recuperacion.horas_sueno >= 8:
         puntaje += 5.0
 
-    if recuperacion.carbohidratos_pre_entreno < 30:
+    if recuperacion.carbohidratos < 30:
         puntaje -= 10.0
     
     recomendacion_texto = ""
@@ -624,7 +626,7 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
         "objetivo_hoy": objetivo_hoy_texto,
         "factores": {
             "sueño": recuperacion.horas_sueno,
-            "carbs_pre_entreno": recuperacion.carbohidratos_pre_entreno
+            "carbs_pre_entreno": recuperacion.carbohidratos
         }
     }
 
@@ -647,19 +649,19 @@ def analisis_correlacion(usuario_id: int, ejercicio_id: int, db: Session = Depen
     ant_train = sesiones[1]
 
     # 2. Buscar los últimos 2 registros de recuperación correspondientes
-    recuperaciones = db.query(RecuperacionDiaria).filter(
-        RecuperacionDiaria.usuario_id == usuario_id
-    ).order_by(RecuperacionDiaria.fecha.desc()).limit(2).all()
+    recuperaciones = db.query(RegistroDiario).filter(
+        RegistroDiario.usuario_id == usuario_id
+    ).order_by(RegistroDiario.fecha.desc()).limit(2).all()
 
     # Extraemos los datos de hoy y de la sesión anterior con candados por si no existen
     sueno_hoy = recuperaciones[0].horas_sueno if len(recuperaciones) > 0 else 0
     sueno_ant = recuperaciones[1].horas_sueno if len(recuperaciones) > 1 else 0
 
-    calorias_hoy = recuperaciones[0].calorias_ayer if len(recuperaciones) > 0 else 0
-    calorias_ant = recuperaciones[1].calorias_ayer if len(recuperaciones) > 1 else 0
+    calorias_hoy = recuperaciones[0].calorias if len(recuperaciones) > 0 else 0
+    calorias_ant = recuperaciones[1].calorias if len(recuperaciones) > 1 else 0
 
-    carbs_hoy = recuperaciones[0].carbohidratos_pre_entreno if len(recuperaciones) > 0 else 0
-    carbs_ant = recuperaciones[1].carbohidratos_pre_entreno if len(recuperaciones) > 1 else 0
+    carbs_hoy = recuperaciones[0].carbohidratos if len(recuperaciones) > 0 else 0
+    carbs_ant = recuperaciones[1].carbohidratos if len(recuperaciones) > 1 else 0
 
     # 3. Matemáticas de Comparación (Deltas)
     dif_peso = hoy_train.peso_kg - ant_train.peso_kg
@@ -808,16 +810,16 @@ def analisis_semanal(usuario_id: int, db: Session = Depends(get_db)):
     hace_14_dias = hoy - datetime.timedelta(days=14)
     
     # 3. RECUPERACIÓN: Comparativa calórica y de sueño
-    rec_actual = db.query(RecuperacionDiaria).filter(
-        RecuperacionDiaria.usuario_id == usuario_id, RecuperacionDiaria.fecha >= hace_7_dias).all()
-    rec_pasada = db.query(RecuperacionDiaria).filter(
-        RecuperacionDiaria.usuario_id == usuario_id, RecuperacionDiaria.fecha >= hace_14_dias, RecuperacionDiaria.fecha < hace_7_dias).all()
+    rec_actual = db.query(RegistroDiario).filter(
+        RegistroDiario.usuario_id == usuario_id, RegistroDiario.fecha >= hace_7_dias).all()
+    rec_pasada = db.query(RegistroDiario).filter(
+        RegistroDiario.usuario_id == usuario_id, RegistroDiario.fecha >= hace_14_dias, RegistroDiario.fecha < hace_7_dias).all()
 
-    prom_cal_actual = sum(r.calorias_ayer for r in rec_actual) / len(rec_actual) if rec_actual else 0
+    prom_cal_actual = sum(r.calorias for r in rec_actual) / len(rec_actual) if rec_actual else 0
     prom_sueno_actual = sum(r.horas_sueno for r in rec_actual) / len(rec_actual) if rec_actual else 0
     
     # Si no hay datos de la semana pasada, asumimos que se mantuvo igual para no romper las matemáticas
-    prom_cal_pasado = sum(r.calorias_ayer for r in rec_pasada) / len(rec_pasada) if rec_pasada else prom_cal_actual
+    prom_cal_pasado = sum(r.calorias for r in rec_pasada) / len(rec_pasada) if rec_pasada else prom_cal_actual
     prom_sueno_pasado = sum(r.horas_sueno for r in rec_pasada) / len(rec_pasada) if rec_pasada else prom_sueno_actual
 
     dif_calorias = round(prom_cal_actual - prom_cal_pasado, 1)
