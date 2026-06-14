@@ -855,7 +855,10 @@ async function enviarBiometria() {
                     registro => registro.ejercicio_id === ejercicioActivoID && registro.numero_serie === 1
                 );
 
-                datosFiltrados.reverse(); 
+                // 1. Ordenamos estrictamente por fecha (del más antiguo al más reciente)
+                datosFiltrados.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+                // 2. Mapeamos los datos limpios
                 const etiquetasX = datosFiltrados.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
                 const datosY_Peso = datosFiltrados.map(r => r.peso_kg);
                 const datosY_Reps = datosFiltrados.map(r => r.repeticiones);
@@ -863,6 +866,8 @@ async function enviarBiometria() {
                 const ctx = document.getElementById('miCanvasGrafica').getContext('2d');
 
                 if (miGraficaDeLineas) miGraficaDeLineas.destroy();
+                
+                // NOTA: Borra cualquier .reverse() que tuvieras aquí abajo. ¡Ya no se necesitan!
                 etiquetasX.reverse();
                 datosY_Peso.reverse();
                 datosY_Reps.reverse();
@@ -1039,6 +1044,7 @@ async function enviarBiometria() {
         // 1. Iniciar Flujo o Continuar Sesión Activa
         function comenzarEntrenamiento() {
             document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-nutricion").style.display = "none";
             document.getElementById("tarjeta-veredicto").style.display = "none";
             document.getElementById("tarjeta-grafica").style.display = "none";
 
@@ -1333,6 +1339,7 @@ async function enviarBiometria() {
             modoConsulta = true;
             document.getElementById("vista-lobby-entrenamiento").style.display = "none";
             document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-nutricion").style.display = "none";
             document.getElementById("tarjeta-veredicto").style.display = "none";
             document.getElementById("tarjeta-grafica").style.display = "none";
             
@@ -1349,6 +1356,7 @@ async function enviarBiometria() {
         function abrirCalendario() {
             document.getElementById("vista-lobby-entrenamiento").style.display = "none";
             document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-nutricion").style.display = "none";
             document.getElementById("tarjeta-veredicto").style.display = "none";
             document.getElementById("tarjeta-grafica").style.display = "none";
             
@@ -1418,13 +1426,19 @@ async function enviarBiometria() {
                     registro => registro.ejercicio_id === ejercicioActivoID && registro.numero_serie === 1
                 );
 
-                datosFiltrados.reverse(); 
+                // 1. Ordenamos estrictamente por fecha (del más antiguo al más reciente)
+                datosFiltrados.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+
+                // 2. Mapeamos los datos limpios
                 const etiquetasX = datosFiltrados.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
                 const datosY_Peso = datosFiltrados.map(r => r.peso_kg);
                 const datosY_Reps = datosFiltrados.map(r => r.repeticiones);
 
-                const ctx = document.getElementById('miCanvasConsulta').getContext('2d');
-                if (graficaConsultaObj) graficaConsultaObj.destroy();
+                const ctx = document.getElementById('miCanvasGrafica').getContext('2d');
+
+                if (miGraficaDeLineas) miGraficaDeLineas.destroy();
+                
+                // NOTA: Borra cualquier .reverse() que tuvieras aquí abajo. ¡Ya no se necesitan!
                 
                 etiquetasX.reverse(); datosY_Peso.reverse(); datosY_Reps.reverse();
                 
@@ -1446,6 +1460,7 @@ async function enviarBiometria() {
             // 1. Apagamos todas las pantallas de los módulos
             document.getElementById("vista-pregunta-musculo").style.display = "none";
             document.getElementById("vista-lista-ejercicios").style.display = "none";
+            document.getElementById("tarjeta-nutricion").style.display = "block";
             document.getElementById("vista-asistente-tracking").style.display = "none";
             document.getElementById("vista-decision-plantilla").style.display = "none";
             
@@ -1471,6 +1486,7 @@ async function enviarBiometria() {
             
             // 1. MODO ENFOQUE: Apagamos el calendario y las tarjetas principales
             document.getElementById("tarjeta-recuperacion").style.display = "none";
+            document.getElementById("tarjeta-nutricion").style.display = "none";
             document.getElementById("tarjeta-veredicto").style.display = "none";
             document.getElementById("tarjeta-grafica").style.display = "none";
             document.getElementById("vista-calendario").style.display = "none";
