@@ -33,7 +33,6 @@ engine = create_engine(DATABASE_URL) # Quita el connect_args de SQLite, ya no se
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-
 # ==========================================
 # 2. MODELOS DE DATOS (Las Tablas)
 # ==========================================
