@@ -866,11 +866,6 @@ async function enviarBiometria() {
                 const ctx = document.getElementById('miCanvasGrafica').getContext('2d');
 
                 if (miGraficaDeLineas) miGraficaDeLineas.destroy();
-                
-                // NOTA: Borra cualquier .reverse() que tuvieras aquí abajo. ¡Ya no se necesitan!
-                etiquetasX.reverse();
-                datosY_Peso.reverse();
-                datosY_Reps.reverse();
                 miGraficaDeLineas = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -1437,10 +1432,6 @@ async function enviarBiometria() {
                 const ctx = document.getElementById('miCanvasGrafica').getContext('2d');
 
                 if (miGraficaDeLineas) miGraficaDeLineas.destroy();
-                
-                // NOTA: Borra cualquier .reverse() que tuvieras aquí abajo. ¡Ya no se necesitan!
-                
-                etiquetasX.reverse(); datosY_Peso.reverse(); datosY_Reps.reverse();
                 
                 graficaConsultaObj = new Chart(ctx, {
                     type: 'line',
