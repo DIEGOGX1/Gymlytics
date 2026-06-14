@@ -127,7 +127,9 @@
 
         </div>
     </div>
-
+    <div id="pantalla-carga" style="display: none; text-align: center; margin-top: 30vh; font-weight: bold; color: #1a73e8; font-size: 1.2rem;">
+        Cargando Gymlytics...
+    </div>
     <div id="pantalla-biometria" class="card" style="margin-top: 5vh; max-width: 400px; display: none;">
         <h2>🦅 Control de Biometría</h2>
         <p id="msj-biometria" style="color: #dc3545; font-weight: bold; text-align: center; font-size: 0.9rem;"></p>
@@ -141,11 +143,17 @@
         <label>Cintura (cm) *Opcional:</label>
         <input type="number" id="bio_cintura" placeholder="Ej: 80">
         
-        <label>Brazo (cm) *Opcional:</label>
-        <input type="number" id="bio_brazo" placeholder="Ej: 35">
+        <label>Brazos (cm) *Opcional:</label>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="number" id="bio_brazo_der" placeholder="Derecho" step="0.1" style="margin: 0;">
+            <input type="number" id="bio_brazo_izq" placeholder="Izquierdo" step="0.1" style="margin: 0;">
+        </div>
         
-        <label>Pierna (cm) *Opcional:</label>
-        <input type="number" id="bio_pierna" placeholder="Ej: 60">
+        <label>Piernas (cm) *Opcional:</label>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="number" id="bio_pierna_der" placeholder="Derecho" step="0.1" style="margin: 0;">
+            <input type="number" id="bio_pierna_izq" placeholder="Izquierdo" step="0.1" style="margin: 0;">
+        </div>
         
         <button onclick="enviarBiometria()" style="background-color: #fbbc04; color: #333; margin-top: 15px;">Guardar y Desbloquear</button>
         <div id="mensaje-bio" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
@@ -413,10 +421,12 @@
 
         // 1. INICIALIZACIÓN Y ENRUTAMIENTO (Login vs Dashboard)
         window.onload = function() {
-            // AHORA BUSCAMOS EL TOKEN DE SEGURIDAD (JWT)
             const tokenSeguro = localStorage.getItem("gymlytics_token"); 
             
             if (tokenSeguro) {
+                // Escondemos el login y mostramos el letrero de carga al instante
+                document.getElementById("login-caja").style.display = "none";
+                document.getElementById("pantalla-carga").style.display = "block";
                 iniciarDashboard(); 
             } else {
                 mostrarPantallaLogin(); 
@@ -447,6 +457,7 @@
             try {
                 const res = await fetch(`${API_BASE}/biometria/estado/${usr_id}`);
                 if (!res.ok) {
+                    document.getElementById("pantalla-carga").style.display = "none"; // <-- APAGAR CARGA
                     document.getElementById("dashboard-principal").style.display = "none";
                     document.getElementById("pantalla-biometria").style.display = "none";
                     document.getElementById("msj-biometria").innerText = "Error crítico de conexión con la base de datos.";
@@ -454,6 +465,9 @@
                 }
 
                 const estado = await res.json();
+                
+                document.getElementById("pantalla-carga").style.display = "none"; // <-- APAGAR CARGA
+
                 if (estado.requiere_pesaje) {
                     document.getElementById("dashboard-principal").style.display = "none";
                     document.getElementById("pantalla-biometria").style.display = "block";
@@ -465,13 +479,13 @@
                     const nombreUsr = localStorage.getItem("gymlytics_nombre") || "Atleta";
                     document.getElementById("bienvenida-usuario").innerText = "🦅 Hola, " + nombreUsr;
                     
-                    // LÍNEA RESTAURADA: Descargamos el catálogo de ejercicios de forma invisible
                     await cargarEjerciciosAgrupados(); 
                     
                     document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
                     cargarTendenciaGlobal(); 
                 }
             } catch (e) {
+                document.getElementById("pantalla-carga").style.display = "none"; // <-- APAGAR CARGA
                 console.error("Error validando el estado de biometría:", e);
             }
         }
@@ -511,7 +525,7 @@
         }
 
         // NUEVA FUNCIÓN: Guardar datos corporales y liberar el sistema
-        async function enviarBiometria() {
+async function enviarBiometria() {
             const resDiv = document.getElementById("mensaje-bio");
             const usr_id = obtenerUsuarioActivo();
             const peso = parseFloat(document.getElementById("bio_peso").value);
@@ -527,8 +541,10 @@
                 peso_corporal: peso,
                 porcentaje_grasa: parseFloat(document.getElementById("bio_grasa").value) || null,
                 perimetro_cintura: parseFloat(document.getElementById("bio_cintura").value) || null,
-                perimetro_brazo: parseFloat(document.getElementById("bio_brazo").value) || null,
-                perimetro_pierna: parseFloat(document.getElementById("bio_pierna").value) || null
+                perimetro_brazo_der: parseFloat(document.getElementById("bio_brazo_der").value) || null,
+                perimetro_brazo_izq: parseFloat(document.getElementById("bio_brazo_izq").value) || null,
+                perimetro_pierna_der: parseFloat(document.getElementById("bio_pierna_der").value) || null,
+                perimetro_pierna_izq: parseFloat(document.getElementById("bio_pierna_izq").value) || null
             };
 
             try {
@@ -542,9 +558,8 @@
                     resDiv.innerHTML = "✅ ¡Datos registrados! Desbloqueando...";
                     resDiv.className = "exito";
                     
-                    // Esperamos 1 segundo para que el usuario lea el mensaje y recargamos el acceso
                     setTimeout(() => {
-                        document.getElementById("mensaje-bio").innerHTML = ""; // Limpiar mensaje
+                        document.getElementById("mensaje-bio").innerHTML = ""; 
                         iniciarDashboard();
                     }, 1500);
                 } else {

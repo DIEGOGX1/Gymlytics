@@ -16,7 +16,8 @@ from passlib.context import CryptContext
 from sqlalchemy.exc import IntegrityError
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
-
+import google.generativeai as genai
+import json
 
 # Definir el horario
 def obtener_hora_mexico():
@@ -33,6 +34,10 @@ ALGORITHM = "HS256"
 
 # Configuración del motor de encriptación de contraseñas
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# Configuración del Cerebro de IA
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+modelo_ia = genai.GenerativeModel('gemini-1.5-flash') # Un modelo súper rápido y ligero
 
 # ==========================================
 # 1. CONFIGURACIÓN DE LA BASE DE DATOS
@@ -71,9 +76,10 @@ class Biometria(Base):
     
     # NUEVAS COLUMNAS: Ajustes métricos para el reporte de recomposición corporal
     perimetro_cintura = Column(Float, nullable=True)
-    perimetro_brazo = Column(Float, nullable=True)
-    perimetro_pierna = Column(Float, nullable=True)
-
+    perimetro_brazo_der = Column(Float, nullable=True)  # <-- MODIFICADO
+    perimetro_brazo_izq = Column(Float, nullable=True)  # <-- MODIFICADO
+    perimetro_pierna_der = Column(Float, nullable=True) # <-- MODIFICADO
+    perimetro_pierna_izq = Column(Float, nullable=True) # <-- MODIFICADO
 # --- NUEVA TABLA: MATERIALIZACIÓN DE DATOS SEMANALES ---
 
 class ResumenSemanal(Base):
@@ -181,6 +187,8 @@ class RegistroRequest(BaseModel):
     contrasena: str
     meta: str
 
+class MensajeNutricion(BaseModel):
+    texto_comida: str
 
 @app.post("/api/auth/google")
 def login_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
@@ -367,6 +375,40 @@ def obtener_usuario_desde_token(credentials: HTTPAuthorizationCredentials = Depe
     except jwt.PyJWTError:
         raise HTTPException(status_code=401, detail="Error de autenticación")
 
+
+@app.post("/api/nutricion/analizar")
+def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usuario_desde_token)):
+    prompt = f"""
+    Eres un experto en nutrición deportiva. Tu tarea es analizar la siguiente comida descrita por el usuario y estimar sus calorías y macronutrientes de la forma más precisa posible.
+    
+    Comida del usuario: "{req.texto_comida}"
+    
+    DEBES responder ÚNICAMENTE con un objeto JSON válido, sin formato Markdown, sin texto adicional y sin saludos. Utiliza exactamente esta estructura:
+    {{
+        "calorias": 550,
+        "proteinas": 30,
+        "carbohidratos": 45,
+        "grasas": 20,
+        "resumen": "Descripción breve y limpia de lo detectado (Ej: 3 tacos al pastor y refresco)"
+    }}
+    """
+    
+    try:
+        respuesta = modelo_ia.generate_content(prompt)
+        texto_limpio = respuesta.text.strip()
+        
+        # A veces la IA insiste en poner ```json al principio, esto lo limpia:
+        if texto_limpio.startswith("```json"):
+            texto_limpio = texto_limpio[7:-3]
+        elif texto_limpio.startswith("```"):
+            texto_limpio = texto_limpio[3:-3]
+            
+        datos_nutricionales = json.loads(texto_limpio.strip())
+        return datos_nutricionales
+        
+    except Exception as e:
+        print(f"Error procesando IA: {e}")
+        raise HTTPException(status_code=500, detail="El bot no pudo analizar esta comida. Intenta describirla de otra forma.")
 # 2. Registrar una serie terminada (¡El reemplazo de tu Excel!)
 @app.post("/api/entrenamiento/registrar-serie")
 def registrar_serie(datos: DatosSerieRecepcion, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):
@@ -680,9 +722,10 @@ class DatosBiometriaRecepcion(BaseModel):
     peso_corporal: float
     porcentaje_grasa: Optional[float] = None
     perimetro_cintura: Optional[float] = None
-    perimetro_brazo: Optional[float] = None
-    perimetro_pierna: Optional[float] = None
-
+    perimetro_brazo_der: Optional[float] = None  # <-- MODIFICADO
+    perimetro_brazo_izq: Optional[float] = None  # <-- MODIFICADO
+    perimetro_pierna_der: Optional[float] = None # <-- MODIFICADO
+    perimetro_pierna_izq: Optional[float] = None # <-- MODIFICADO
 # B. El Guardia de Seguridad: Verifica si han pasado 7 días
 @app.get("/api/biometria/estado/{usuario_id}")
 def estado_biometria(usuario_id: int, db: Session = Depends(get_db)):
@@ -728,8 +771,10 @@ def registrar_biometria(datos: DatosBiometriaRecepcion, db: Session = Depends(ge
         peso_corporal=datos.peso_corporal,
         porcentaje_grasa=datos.porcentaje_grasa,
         perimetro_cintura=datos.perimetro_cintura,
-        perimetro_brazo=datos.perimetro_brazo,
-        perimetro_pierna=datos.perimetro_pierna
+        perimetro_brazo_der=datos.perimetro_brazo_der,
+        perimetro_brazo_izq=datos.perimetro_brazo_izq,
+        perimetro_pierna_der=datos.perimetro_pierna_der,
+        perimetro_pierna_izq=datos.perimetro_pierna_izq
     )
     db.add(nuevo_pesaje)
     db.commit()
@@ -879,11 +924,13 @@ def analisis_semanal(usuario_id: int, db: Session = Depends(get_db)):
     return {
         "analisis_semanal": dictamen,
         "deltas": {
-            "peso": dif_peso, # Este ya lo teníamos calculado al principio de la función
+            "peso": dif_peso, 
             "grasa": calcular_delta(bio_actual.porcentaje_grasa, bio_pasada.porcentaje_grasa),
             "cintura": calcular_delta(bio_actual.perimetro_cintura, bio_pasada.perimetro_cintura),
-            "brazo": calcular_delta(bio_actual.perimetro_brazo, bio_pasada.perimetro_brazo),
-            "pierna": calcular_delta(bio_actual.perimetro_pierna, bio_pasada.perimetro_pierna)
+            "brazo_der": calcular_delta(bio_actual.perimetro_brazo_der, bio_pasada.perimetro_brazo_der),
+            "brazo_izq": calcular_delta(bio_actual.perimetro_brazo_izq, bio_pasada.perimetro_brazo_izq),
+            "pierna_der": calcular_delta(bio_actual.perimetro_pierna_der, bio_pasada.perimetro_pierna_der),
+            "pierna_izq": calcular_delta(bio_actual.perimetro_pierna_izq, bio_pasada.perimetro_pierna_izq)
         }
     }
 
@@ -905,8 +952,10 @@ def biometria_historico(usuario_id: int, db: Session = Depends(get_db)):
         "peso": [r.peso_corporal for r in registros],
         "grasa": [r.porcentaje_grasa for r in registros],
         "cintura": [r.perimetro_cintura for r in registros],
-        "brazo": [r.perimetro_brazo for r in registros],
-        "pierna": [r.perimetro_pierna for r in registros]
+        "brazo_der": [r.perimetro_brazo_der for r in registros],
+        "brazo_izq": [r.perimetro_brazo_izq for r in registros],
+        "pierna_der": [r.perimetro_pierna_der for r in registros],
+        "pierna_izq": [r.perimetro_pierna_izq for r in registros]
     }
 
 
