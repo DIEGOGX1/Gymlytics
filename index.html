@@ -266,6 +266,22 @@
             <div style="width: 100%; margin-top: 10px;">
                 <button onclick="preguntarSiguientePaso()" style="background-color: #fbbc04; color: #333; font-weight: bold; padding: 15px;">⏭️ Terminar Ejercicio Actual</button>
             </div>
+            <div class="card" style="margin-top: 15px; border: 2px solid #6c757d;">
+                <h2 style="color: #6c757d; font-size: 1.1rem;">📝 REGISTROS DE ESTA SESIÓN</h2>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Ejercicio</th>
+                            <th>Serie</th>
+                            <th>Peso</th>
+                            <th>Reps</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-sesion-actual-cuerpo">
+                        <tr><td colspan="4" style="color:#888;">No hay series registradas aún.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div id="vista-resumen-final" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;" class="card">
             <h2 style="color: #34a853; font-size: 1.5rem;">🎉 ¡Entrenamiento Concluido!</h2>
@@ -955,10 +971,10 @@
                                 borderColor: '#1a73e8', // Azul SEAFIT
                                 backgroundColor: '#1a73e8',
                                 borderWidth: 3,
-                                cubicInterpolationMode: 'monotone', // Curvas suaves
+                                cubicInterpolationMode: 'monotone', 
                                 tension: 0.4,
                                 pointRadius: 4,
-                                spanGaps: true // Conecta los puntos si el usuario no se pesó un día
+                                spanGaps: true 
                             },
                             {
                                 label: 'Cintura (cm)',
@@ -966,11 +982,24 @@
                                 borderColor: '#34a853', // Verde
                                 backgroundColor: '#34a853',
                                 borderWidth: 3,
-                                borderDash: [5, 5], // Línea punteada
+                                borderDash: [5, 5], 
                                 cubicInterpolationMode: 'monotone',
                                 tension: 0.4,
                                 pointRadius: 4,
-                                spanGaps: true // Conecta los puntos si dejó el campo vacío
+                                spanGaps: true 
+                            },
+                            // NUEVO: Agregamos el porcentaje de grasa
+                            {
+                                label: 'Grasa (%)',
+                                data: data.grasa,
+                                borderColor: '#fbbc04', // Amarillo/Naranja
+                                backgroundColor: '#fbbc04',
+                                borderWidth: 3,
+                                borderDash: [2, 2], // Punteado diferente
+                                cubicInterpolationMode: 'monotone',
+                                tension: 0.4,
+                                pointRadius: 4,
+                                spanGaps: true
                             }
                         ]
                     },
@@ -1001,7 +1030,7 @@
             // ESCUDO DE MEMORIA: Solo creamos una nueva sesión si no hay una activa
             if (!sesionActivaID) {
                 sesionActivaID = "SES-" + Date.now();
-                resumenSesion = { total_series: 0, ejercicios: {} };
+                resumenSesion = { total_series: 0, ejercicios: {}, series_detalle: [] };
             }
             
             // Limpiamos la plantilla temporal por si el usuario elige un ejercicio nuevo
@@ -1120,6 +1149,7 @@
             
             actualizarSugerencia();
             dibujarGrafica();
+            dibujarTablaSesion();
         }
 
         // 3. REGISTRAR SERIE ACUMULANDO EN EL HISTORIAL TEMPORAL
@@ -1179,8 +1209,17 @@
                     document.getElementById("asistente-conteo-series").innerText = resumenSesion.total_series;
                     inputSerie.value = parseInt(inputSerie.value) + 1;
                     
+                    // Guardamos el detalle en la memoria temporal
+                    resumenSesion.series_detalle.push({
+                        nombre_ejercicio: document.getElementById("asistente-ejercicio-titulo").innerText.replace("🏋️ Ejercicio: ", ""),
+                        numero_serie: parseInt(inputSerie.value) - 1,
+                        peso: pesoCapturado,
+                        reps: repsCapturadas
+                    });
+                    
                     actualizarSugerencia(); 
                     dibujarGrafica(); 
+                    dibujarTablaSesion(); // <-- Refrescamos la tabla
                 } else {
                     const data = await res.json();
                     resDiv.innerHTML = "❌ " + (data.detail || "Error al registrar.");
@@ -1423,7 +1462,7 @@
 
             // 2. Inicializamos una nueva sesión con la receta copiada
             sesionActivaID = "SES-" + Date.now();
-            resumenSesion = { total_series: 0, ejercicios: {} };
+            resumenSesion = { total_series: 0, ejercicios: {}, series_detalle: [] };
             
             // Copiamos los ejercicios exactamente en el orden del calendario
             ejerciciosDeLaSesion = [...ejerciciosPlantillaCalendario];
@@ -1504,6 +1543,29 @@
             } catch (e) {
                 errorDiv.innerText = "❌ Error de conexión al servidor.";
             }
+        }
+
+        function dibujarTablaSesion() {
+            const cuerpoTabla = document.getElementById("tabla-sesion-actual-cuerpo");
+            if (!cuerpoTabla) return;
+            
+            if (resumenSesion.series_detalle.length === 0) {
+                cuerpoTabla.innerHTML = "<tr><td colspan='4' style='color:#888;'>No hay series registradas aún.</td></tr>";
+                return;
+            }
+            
+            cuerpoTabla.innerHTML = "";
+            // Mostramos de la más reciente a la más antigua
+            [...resumenSesion.series_detalle].reverse().forEach(s => {
+                cuerpoTabla.innerHTML += `
+                    <tr>
+                        <td style="color: #1a73e8; font-weight: bold;">${s.nombre_ejercicio}</td>
+                        <td>#${s.numero_serie}</td>
+                        <td>${s.peso} kg</td>
+                        <td>${s.reps}</td>
+                    </tr>
+                `;
+            });
         }
     </script>
 </body>
