@@ -287,24 +287,24 @@ def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depend
     except ValueError:
         return {"error": "Formato de fecha inválido."}
         
+    # CORRECCIÓN: Agregamos order_by(.desc()) para tomar siempre TU ÚLTIMA actualización del día
     recuperacion = db.query(RegistroDiario).filter(
         RegistroDiario.usuario_id == usuario_id,
         RegistroDiario.fecha >= inicio_dia,
         RegistroDiario.fecha < fin_dia
-    ).first()
+    ).order_by(RegistroDiario.fecha.desc()).first()
 
     series = db.query(RegistroSerie).filter(
         RegistroSerie.usuario_id == usuario_id,
         RegistroSerie.fecha >= inicio_dia,
         RegistroSerie.fecha < fin_dia
-    ).order_by(RegistroSerie.fecha.asc()).all() # Ordenamos de primero a último
+    ).order_by(RegistroSerie.fecha.asc()).all() 
 
     ejercicios_dia = {}
     for s in series:
         ej = db.query(Ejercicio).filter(Ejercicio.id == s.ejercicio_id).first()
         if ej:
             if ej.nombre not in ejercicios_dia:
-                # NUEVO: Guardamos también el ID del ejercicio
                 ejercicios_dia[ej.nombre] = {"id": ej.id, "series": 0, "max_peso": 0}
             ejercicios_dia[ej.nombre]["series"] += 1
             if s.peso_kg > ejercicios_dia[ej.nombre]["max_peso"]:
@@ -315,7 +315,9 @@ def resumen_dia_especifico(usuario_id: int, fecha_str: str, db: Session = Depend
         "nutricion": {
             "sueno": recuperacion.horas_sueno if recuperacion else "Sin registro",
             "calorias": recuperacion.calorias if recuperacion else "Sin registro",
-            "carbs": recuperacion.carbohidratos if recuperacion else "Sin registro"
+            "proteinas": recuperacion.proteinas if recuperacion else "Sin registro",
+            "carbohidratos": recuperacion.carbohidratos if recuperacion else "Sin registro",
+            "grasas": recuperacion.grasas if recuperacion else "Sin registro"
         },
         "entrenamiento": {
             "total_series": len(series),
