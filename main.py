@@ -336,6 +336,8 @@ app.add_middleware(
 )
 
 # Ruta raíz: Entrega la interfaz visual al usuario
+# Ruta raíz: Entrega la interfaz visual al usuario
+@app.head("/")
 @app.get("/")
 def iniciar_interfaz():
     return FileResponse("index.html")
