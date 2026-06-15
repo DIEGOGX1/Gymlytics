@@ -1631,20 +1631,26 @@ async function enviarBiometria() {
                 if (res.ok) {
                     const datos = await res.json();
                     
-                    // 1. Dibujar la respuesta de la IA
+                    // 1. Dibujar la respuesta de la IA en el chat
                     const msgIA = `
                         <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; border-left: 4px solid #1a73e8; align-self: flex-start; max-width: 85%;">
                             <strong>🤖 IA:</strong> ${datos.resumen}<br>
-                            <br><em style="font-size: 0.85rem; color: #555;">¡He rellenado tu tarjeta de macros arriba! Revisa los números y presiona "Guardar".</em>
+                            <br><em style="font-size: 0.85rem; color: #555;">¡He sumado estos nutrientes a tu tarjeta de progreso arriba!</em>
                         </div>
                     `;
                     chat.innerHTML += msgIA;
 
-                    // 2. LA MAGIA: Auto-rellenar la tarjeta manual
-                    document.getElementById("input-cal").value = datos.calorias;
-                    document.getElementById("input-pro").value = datos.proteinas;
-                    document.getElementById("input-car").value = datos.carbohidratos;
-                    document.getElementById("input-gra").value = datos.grasas;
+                    // 2. LA MAGIA ACUMULATIVA: Leer valores actuales o asumir 0, y sumar el nuevo plato
+                    const calActual = parseFloat(document.getElementById("input-cal").value) || 0;
+                    const proActual = parseFloat(document.getElementById("input-pro").value) || 0;
+                    const carActual = parseFloat(document.getElementById("input-car").value) || 0;
+                    const graActual = parseFloat(document.getElementById("input-gra").value) || 0;
+
+                    // Inyectar la suma redondeada en la UI
+                    document.getElementById("input-cal").value = Math.round(calActual + datos.calorias);
+                    document.getElementById("input-pro").value = Math.round(proActual + datos.proteinas);
+                    document.getElementById("input-car").value = Math.round(carActual + datos.carbohidratos);
+                    document.getElementById("input-gra").value = Math.round(graActual + datos.grasas);
 
                 } else {
                     chat.innerHTML += `<div style="background: #fce8e6; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%;"><strong>🤖 IA:</strong> Uy, me confundí. ¿Puedes describir esa comida un poco mejor?</div>`;
