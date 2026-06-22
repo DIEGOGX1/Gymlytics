@@ -1629,6 +1629,7 @@ async function enviarBiometria() {
                         document.getElementById("input-car").value = Math.round(carActual + datos.carbohidratos);
                         document.getElementById("input-gra").value = Math.round(graActual + datos.grasas);
                     } 
+                    hablar(datos.resumen);
                     // Si es entrenamiento, el backend ya lo guardó en la base de datos, 
                     // así que no necesitamos hacer nada más en la pantalla de nutrición.
                     
@@ -1762,6 +1763,21 @@ async function enviarBiometria() {
 
             // ¡Arrancamos el motor!
             reconocimiento.start();
+        }
+        // --- MÓDULO DE SÍNTESIS DE VOZ ---
+        function hablar(texto) {
+            // Verificamos si el navegador soporta hablar
+            if ('speechSynthesis' in window) {
+                // Limpiamos los emojis o textos raros que la voz robótica no sepa leer
+                const textoLimpio = texto.replace(/🤖|IA:|¡Anotado!|¡Macros calculados.../g, '').trim();
+                
+                const mensajeVoz = new SpeechSynthesisUtterance(textoLimpio);
+                mensajeVoz.lang = 'es-MX'; // Acento latino
+                mensajeVoz.rate = 1.0; // Velocidad normal (0.1 a 10)
+                mensajeVoz.pitch = 1.0; // Tono de voz
+                
+                window.speechSynthesis.speak(mensajeVoz);
+            }
         }
     </script>
     <script>
