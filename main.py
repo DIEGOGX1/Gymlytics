@@ -336,9 +336,11 @@ app.add_middleware(
 )
 
 # Ruta raíz: Entrega la interfaz visual al usuario
-# Ruta raíz: Entrega la interfaz visual al usuario
 @app.head("/")
 @app.get("/")
+def iniciar_interfaz():
+    return FileResponse("index.html")
+
 @app.get("/manifest.json")
 def entregar_manifest():
     return FileResponse("manifest.json")
@@ -347,6 +349,13 @@ def entregar_manifest():
 def entregar_service_worker():
     return FileResponse("sw.js")
 
+@app.get("/icono-192.png")
+def entregar_icono_192():
+    return FileResponse("icono-192.png")
+
+@app.get("/icono-512.png")
+def entregar_icono_512():
+    return FileResponse("icono-512.png")
 # Si también subes los iconos, necesitas una ruta genérica para ellos o declarar una carpeta de archivos estáticos.
 def iniciar_interfaz():
     return FileResponse("index.html")
