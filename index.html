@@ -92,7 +92,7 @@
                 <option value="Fuerza">Fuerza Máxima</option>
                 <option value="Recomposicion">Recomposición Corporal</option>
             </select>
-            <button id="btn-registro" onclick="ejecutarRegistro()" style="background-color: #34a853;">Registrar mi perfil</button>
+            <button id="btn-registro" onclick="ejecutarRegistro()" style="background-color: #39ff14; color: #000;;">Registrar mi perfil</button>
             <div id="registro-msj" style="margin-top: 10px; text-align: center; font-weight: bold; font-size: 0.9rem;"></div>
             <p style="text-align: center; font-size: 0.9rem; margin-top: 15px;">¿Ya tienes cuenta? <a href="#" onclick="mostrarLogin()" style="color: #1a73e8; text-decoration: none; font-weight: bold;">Inicia Sesión</a></p>
 
@@ -132,13 +132,11 @@
         <button onclick="cerrarSesion()" style="background-color: transparent; color: #dc3545; border: 1px solid #dc3545; margin-top: 10px;">Cerrar Sesión</button>
     </div>
 
-    <div id="dashboard-principal" style="display: none; width: 100%; flex-direction: column; align-items: center;">
-        
-        <div style="width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 10px 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); box-sizing: border-box;">
-            <span id="bienvenida-usuario" style="font-weight: bold; color: #1a73e8; font-size: 1.1rem;"></span>
-            <button onclick="cerrarSesion()" style="background-color: #dc3545; width: auto; padding: 8px 15px; margin: 0; font-size: 0.9rem;">🚪 Salir</button>
+    <div id="dashboard-principal" style="display: none; width: 100%; flex-direction: column; align-items: center;">     
+        <div style="width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: #121212; border: 1px solid #222; padding: 10px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(57, 255, 20, 0.1); box-sizing: border-box;">
+            <span id="bienvenida-usuario" style="font-weight: bold; color: #39ff14; font-size: 1.1rem; text-shadow: 0 0 5px rgba(57, 255, 20, 0.3);"></span>
+            <button onclick="cerrarSesion()" style="background-color: transparent; color: #dc3545; border: 1px solid #dc3545; width: auto; padding: 8px 15px; margin: 0; font-size: 0.9rem; box-shadow: none;">🚪 Salir</button>
         </div>
-
         <div class="card" id="tarjeta-recuperacion">
             <h2>REGISTRO DIARIO DE RECUPERACIÓN</h2>
             <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">Ingresa tus datos o usa el Asistente IA para los macros.</p>
@@ -169,7 +167,7 @@
                 <input type="number" id="input-sueno" placeholder="Ej: 7.5" step="0.1" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
             </div>
             
-            <button onclick="guardarRegistroDiario()" style="width: 100%; padding: 10px; background-color: #34a853; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">Guardar mis datos</button>
+            <button onclick="guardarRegistroDiario()" style="width: 100%; padding: 10px; background-color: #39ff14; color: #000;; color: white; font-weight: bold; border-radius: 8px; cursor: pointer; border: none;">Guardar mis datos</button>
             <div id="mensaje-rec" style="text-align: center; margin-top: 10px; font-size: 0.9rem;"></div>
         </div>
 
@@ -189,7 +187,7 @@
             </div>
         </div>
         <div id="vista-lobby-entrenamiento" style="display: flex; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px; gap: 10px;">
-            <button onclick="comenzarEntrenamiento()" style="background-color: #34a853; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">¡Comenzar a entrenar!</button>
+            <button onclick="comenzarEntrenamiento()" style="background-color: #39ff14; color: #000; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">¡Comenzar a entrenar!</button>
             
             <div style="display: flex; gap: 10px; width: 100%;">
                 <button onclick="abrirConsulta()" style="background-color: #1a73e8; font-size: 0.95rem;">Ver Gráficas de ejercicios</button>
@@ -215,7 +213,7 @@
             
             <input type="date" id="selector-fecha" onchange="consultarDiaEspecifico()" style="margin-bottom: 15px; font-weight: bold; color: #333; cursor: pointer;">
             
-            <div id="resultado-dia" style="display:none; width: 100%; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; box-sizing: border-box;">
+        <div id="resultado-dia" style="display:none; width: 100%; text-align: left; background: #1a1a1a; padding: 15px; border-radius: 8px; box-sizing: border-box; border-left: 5px solid #39ff14; color: #e0e0e0;">
             </div>
         </div>
 
@@ -1353,16 +1351,15 @@ async function enviarBiometria() {
                     divRes.innerHTML = `❌ ${data.error}`;
                     return;
                 }
-
-                let html = `<h3 style="color:#1a73e8; margin-top:0;">🍏 Nutrición y Descanso</h3>
-                            <p style="margin:5px 0;">• Sueño: <strong>${data.nutricion.sueno}</strong> h</p>
-                            <p style="margin:5px 0;">• Calorías: <strong>${data.nutricion.calorias}</strong> kcal</p>
-                            <p style="margin:5px 0;">• Proteínas: <strong>${data.nutricion.proteinas}</strong> g</p>
-                            <p style="margin:5px 0;">• Carbohidratos: <strong>${data.nutricion.carbohidratos}</strong> g</p>
-                            <p style="margin:5px 0;">• Grasas: <strong>${data.nutricion.grasas}</strong> g</p>
-                            <hr style="border:0; border-top:1px solid #ccc; margin:15px 0;">
-                            <h3 style="color:#34a853; margin-top:0;">🏋️ Rendimiento Físico</h3>
-                            <p style="margin:5px 0;">Total de series: <strong>${data.entrenamiento.total_series}</strong></p>`;
+                let html = `<h3 style="color:#39ff14; margin-top:0; text-shadow: 0 0 5px rgba(57, 255, 20, 0.3);">🍏 Nutrición y Descanso</h3>
+                            <p style="margin:5px 0; color:#ccc;">• Sueño: <strong style="color:#fff;">${data.nutricion.sueno}</strong> h</p>
+                            <p style="margin:5px 0; color:#ccc;">• Calorías: <strong style="color:#fff;">${data.nutricion.calorias}</strong> kcal</p>
+                            <p style="margin:5px 0; color:#ccc;">• Proteínas: <strong style="color:#fff;">${data.nutricion.proteinas}</strong> g</p>
+                            <p style="margin:5px 0; color:#ccc;">• Carbohidratos: <strong style="color:#fff;">${data.nutricion.carbohidratos}</strong> g</p>
+                            <p style="margin:5px 0; color:#ccc;">• Grasas: <strong style="color:#fff;">${data.nutricion.grasas}</strong> g</p>
+                            <hr style="border:0; border-top:1px solid #333; margin:15px 0;">
+                            <h3 style="color:#39ff14; margin-top:0; text-shadow: 0 0 5px rgba(57, 255, 20, 0.3);">🏋️ Rendimiento Físico</h3>
+                            <p style="margin:5px 0; color:#ccc;">Total de series: <strong style="color:#fff;">${data.entrenamiento.total_series}</strong></p>`;
                 
                 // Reiniciamos la plantilla temporal
                 ejerciciosPlantillaCalendario = [];
@@ -1379,7 +1376,7 @@ async function enviarBiometria() {
                     html += `</ul>`;
                     
                     // NUEVO: Botón dinámico para clonar el entrenamiento entero de ese día
-                    html += `<button onclick="cargarEntrenamientoDesdeCalendario()" style="background-color: #34a853; color: white; font-weight: bold; padding: 12px; border-radius: 8px; width: 100%;">🏋️ Repetir este Entrenamiento</button>`;
+                    html += `<button onclick="cargarEntrenamientoDesdeCalendario()" style="background-color: #39ff14; color: #000; color: white; font-weight: bold; padding: 12px; border-radius: 8px; width: 100%;">🏋️ Repetir este Entrenamiento</button>`;
                 } else {
                     html += `<p style="color:#666; font-style:italic;">Día de descanso activo o sin registros deportivos.</p>`;
                 }
