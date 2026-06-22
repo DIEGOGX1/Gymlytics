@@ -181,10 +181,14 @@
                 </div>
             </div>
             
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button id="btn-microfono" onclick="iniciarDictado()" style="width: auto; padding: 10px 15px; background-color: #e53935; color: white; margin: 0; border-radius: 50%; font-size: 1.2rem; cursor: pointer; box-shadow: 0 0 10px rgba(229, 57, 53, 0.4); border: 2px solid transparent; transition: 0.3s;" title="Hablar">
+                    🎤
+                </button>
                 <input type="text" id="input-comida" placeholder="Ej: De desayuno comí 3 huevos..." style="margin: 0; flex-grow: 1;" onkeypress="if(event.key === 'Enter') analizarComidaEnUI()">
-                <button onclick="analizarComidaEnUI()" style="width: auto; padding: 10px 15px; background-color: #fbbc04; color: #333; margin: 0;">Enviar</button>
+                <button id="btn-enviar-comida" onclick="analizarComidaEnUI()" style="width: auto; padding: 10px 15px; background-color: #39ff14; color: #000; margin: 0; font-weight: bold;">Enviar</button>
             </div>
+            <div id="estado-microfono" style="font-size: 0.8rem; color: #aaa; text-align: left; margin-top: 5px; margin-left: 55px; height: 15px;"></div>
         </div>
         <div id="vista-lobby-entrenamiento" style="display: flex; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px; gap: 10px;">
             <button onclick="comenzarEntrenamiento()" style="background-color: #39ff14; color: #000; color: white; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">¡Comenzar a entrenar!</button>
@@ -1687,6 +1691,75 @@ async function enviarBiometria() {
             } catch (e) {
                 mensajeDiv.innerHTML = "<span style='color: #dc3545;'>❌ Error de conexión con el servidor.</span>";
             }
+        }
+        // --- MÓDULO DE RECONOCIMIENTO DE VOZ ---
+        function iniciarDictado() {
+            const btnMicro = document.getElementById("btn-microfono");
+            const inputComida = document.getElementById("input-comida");
+            const estadoTexto = document.getElementById("estado-microfono");
+
+            // Verificamos si el navegador soporta la API de voz
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                estadoTexto.innerHTML = "<span style='color: #dc3545;'>Tu navegador no soporta el dictado por voz.</span>";
+                return;
+            }
+
+            const reconocimiento = new SpeechRecognition();
+            reconocimiento.lang = 'es-MX'; // Ajustamos al español de México (o tu región)
+            reconocimiento.interimResults = false; // Solo devuelve el texto final, no borradores
+            reconocimiento.maxAlternatives = 1;
+
+            // Qué pasa cuando empieza a escuchar
+            reconocimiento.onstart = function() {
+                btnMicro.style.backgroundColor = "#ff5252"; // Rojo más brillante
+                btnMicro.style.borderColor = "#fff";
+                btnMicro.style.boxShadow = "0 0 20px rgba(255, 82, 82, 0.8)";
+                btnMicro.innerText = "🔴"; // Cambiamos el icono para indicar "grabando"
+                estadoTexto.innerText = "Escuchando... Habla ahora.";
+                inputComida.placeholder = "Escuchando...";
+            };
+
+            // Qué pasa cuando recibe un resultado válido
+            reconocimiento.onresult = function(event) {
+                const textoDictado = event.results[0][0].transcript;
+                inputComida.value = textoDictado; // Ponemos el texto en la cajita
+                estadoTexto.innerText = "¡Texto capturado!";
+                
+                // Opcional: Descomenta la siguiente línea si quieres que se envíe automáticamente al terminar de hablar
+                // analizarComidaEnUI(); 
+            };
+
+            // Qué pasa si hay un error o el usuario se queda callado
+            reconocimiento.onerror = function(event) {
+                estadoTexto.innerHTML = `<span style='color: #dc3545;'>Error: ${event.error}</span>`;
+                restaurarBotonMicro();
+            };
+
+            // Qué pasa cuando termina (ya sea por éxito o silencio)
+            reconocimiento.onend = function() {
+                restaurarBotonMicro();
+            };
+
+            // Función auxiliar para regresar el botón a la normalidad
+            function restaurarBotonMicro() {
+                btnMicro.style.backgroundColor = "#e53935";
+                btnMicro.style.borderColor = "transparent";
+                btnMicro.style.boxShadow = "0 0 10px rgba(229, 57, 53, 0.4)";
+                btnMicro.innerText = "🎤";
+                inputComida.placeholder = "Ej: De desayuno comí 3 huevos...";
+                
+                // Borramos el estado después de 2 segundos
+                setTimeout(() => {
+                    if (estadoTexto.innerText !== "Escuchando... Habla ahora.") {
+                        estadoTexto.innerText = "";
+                    }
+                }, 2000);
+            }
+
+            // ¡Arrancamos el motor!
+            reconocimiento.start();
         }
     </script>
     <script>
