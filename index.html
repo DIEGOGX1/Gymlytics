@@ -37,10 +37,10 @@
 <body>
     <div id="login-caja" class="card">
         <div id="vista-login">
-            <h2>Acceso a Gymlytics</h2>
+            <h2>GYMLYTICS</h2>
             <input type="email" id="login_correo" placeholder="Correo electrónico">
             <input type="password" id="login_pass" placeholder="Contraseña">
-            <button id="btn-login" onclick="ejecutarLogin()">Entrar</button>
+            <button id="btn-login" onclick="ejecutarLogin()">Acceder</button>
             <div id="login-error" style="color: red; margin-top: 10px; text-align: center; font-size: 0.9rem;"></div>
             <div id="g_id_onload"
             data-client_id="634260670587-lgqagvh5e52iurh9ophiqgjl7chbm5r7.apps.googleusercontent.com"
@@ -102,7 +102,7 @@
         Cargando Gymlytics...
     </div>
     <div id="pantalla-biometria" class="card" style="margin-top: 5vh; max-width: 400px; display: none;">
-        <h2>🦅 Control de Biometría</h2>
+        <h2>Control de Biometría</h2>
         <p id="msj-biometria" style="color: #dc3545; font-weight: bold; text-align: center; font-size: 0.9rem;"></p>
         
         <label>Peso Corporal (kg) *Obligatorio:</label>
@@ -140,24 +140,24 @@
         </div>
 
         <div class="card" id="tarjeta-recuperacion">
-            <h2>📊 REGISTRO DIARIO</h2>
+            <h2>REGISTRO DIARIO DE RECUPERACIÓN</h2>
             <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 15px;">Ingresa tus datos o usa el Asistente IA para los macros.</p>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🔥 Calorías (kcal)</label>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">Calorías (kcal)</label>
                     <input type="number" id="input-cal" placeholder="Ej: 2500" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
                 </div>
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🍗 Proteínas (g)</label>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">Proteínas (g)</label>
                     <input type="number" id="input-pro" placeholder="Ej: 150" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
                 </div>
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🍚 Carbohidratos (g)</label>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">Carbohidratos (g)</label>
                     <input type="number" id="input-car" placeholder="Ej: 300" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
                 </div>
                 <div>
-                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">🥑 Grasas (g)</label>
+                    <label style="font-size: 0.8rem; font-weight: bold; color: #555;">Grasas (g)</label>
                     <input type="number" id="input-gra" placeholder="Ej: 70" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
                 </div>
             </div>
@@ -165,7 +165,7 @@
             <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
 
             <div style="margin-bottom: 15px;">
-                <label style="font-size: 0.8rem; font-weight: bold; color: #555;">😴 Horas de Sueño</label>
+                <label style="font-size: 0.8rem; font-weight: bold; color: #555;">Horas de Sueño</label>
                 <input type="number" id="input-sueno" placeholder="Ej: 7.5" step="0.1" style="width: 100%; box-sizing: border-box; margin-top: 4px;">
             </div>
             
@@ -174,13 +174,13 @@
         </div>
 
         <div class="card" id="tarjeta-nutricion" style="border: 2px solid #fbbc04;">
-            <h2 style="color: #fbbc04;">🍏 Asistente Nutricional IA</h2>
+            <h2 style="color: #fbbc04;">Asistente Nutricional IA</h2>
             <p style="font-size: 0.85rem; color: #555; text-align: center; margin-bottom: 10px;">Ingresa tus alimentos <strong>plato por plato</strong>. Yo me encargaré de ir sumando los nutrientes por ti.</p>
             
-            <div id="chat-historial" style="background: #f8f9fa; height: 180px; overflow-y: auto; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem; border: 1px solid #ddd; display: flex; flex-direction: column; gap: 8px;">
-            <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; border-left: 4px solid #1a73e8; align-self: flex-start; max-width: 85%;">
-                <strong>🤖 IA:</strong> ¡Hola! ¿Qué comiste en tu primer plato del día? Escríbelo y lo sumaré a tu registro.
-            </div>
+            <div id="chat-historial" style="background: #0a0a0a; height: 180px; overflow-y: auto; padding: 12px; border-radius: 8px; margin-bottom: 10px; font-size: 0.9rem; border: 1px solid #333; display: flex; flex-direction: column; gap: 8px;">
+                <div style="background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 4px solid #39ff14; align-self: flex-start; max-width: 85%; color: #e0e0e0; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+                    <strong style="color: #39ff14;">IA:</strong> ¡Hola! ¿Qué comiste hoy? Escribe comida por comida y sumaré los datos.
+                </div>
             </div>
             
             <div style="display: flex; gap: 10px;">
@@ -189,11 +189,11 @@
             </div>
         </div>
         <div id="vista-lobby-entrenamiento" style="display: flex; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px; gap: 10px;">
-            <button onclick="comenzarEntrenamiento()" style="background-color: #34a853; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">🚀 Comenzar Entrenamiento</button>
+            <button onclick="comenzarEntrenamiento()" style="background-color: #34a853; padding: 20px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(52,168,83,0.3);">¡Comenzar a entrenar!</button>
             
             <div style="display: flex; gap: 10px; width: 100%;">
-                <button onclick="abrirConsulta()" style="background-color: #1a73e8; font-size: 0.95rem;">📊 Ver Gráficas</button>
-                <button onclick="abrirCalendario()" style="background-color: #673ab7; font-size: 0.95rem;">📅 Calendario</button>
+                <button onclick="abrirConsulta()" style="background-color: #1a73e8; font-size: 0.95rem;">Ver Gráficas de ejercicios</button>
+                <button onclick="abrirCalendario()" style="background-color: #673ab7; font-size: 0.95rem;">Calendario</button>
             </div>
         </div>
 
@@ -201,7 +201,7 @@
             <button onclick="volverAEjerciciosConsulta()" style="background-color: #6c757d; margin-bottom: 15px; width: 100%;">⬅️ Volver al Catálogo</button>
             <h2 id="titulo-consulta-ejercicio" style="color: #1a73e8;"></h2>
             <div class="card" style="margin-top: 10px;">
-                <h2 style="color: #34a853;">📈 HISTORIAL Y SOBRECARGA</h2>
+                <h2 style="color: #34a853;">HISTORIAL Y SOBRECARGA</h2>
                 <div style="position: relative; height:35vh; width:100%; margin-top: 15px;">
                     <canvas id="miCanvasConsulta"></canvas>
                 </div>
@@ -210,7 +210,7 @@
 
         <div id="vista-calendario" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;" class="card">
             <button onclick="location.reload()" style="background-color: #6c757d; margin-bottom: 15px; width: 100%;">⬅️ Volver al Inicio</button>
-            <h2 style="color: #673ab7;">📅 Calendario de Entrenamientos</h2>
+            <h2 style="color: #673ab7;">Calendario de Entrenamientos</h2>
             <p style="font-size: 0.85rem; color: #555; text-align: center;">Selecciona un día en específico para ver tus métricas de nutrición y rendimiento.</p>
             
             <input type="date" id="selector-fecha" onchange="consultarDiaEspecifico()" style="margin-bottom: 15px; font-weight: bold; color: #333; cursor: pointer;">
@@ -225,10 +225,10 @@
             <div id="contenedor-botones-musculos" style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
             <div id="contenedor-resultados-busqueda" style="display: none; flex-wrap: wrap; gap: 10px; width: 100%; justify-content: center; margin-bottom: 15px;"></div>
             <button onclick="volverAlLobby()" style="background-color: #6c757d; margin-bottom: 10px; width: 92%; border-radius: 12px;">⬅️ Volver al Inicio</button>
-            <button id="btn-terminar-sesion-musculos" onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">🛑 Terminar Sesión y Ver Resumen</button>
+            <button id="btn-terminar-sesion-musculos" onclick="finalizarSesiónTotal()" style="background-color: #dc3545; color: white; font-weight: bold; padding: 15px; width: 92%; border-radius: 12px; box-shadow: 0 4px 6px rgba(220,53,69,0.2);">Terminar Sesión y Ver Resumen</button>
         </div>
         <div id="vista-decision-plantilla" style="display: none; flex-direction: column; width: 100%; max-width: 400px; align-items: center; margin-bottom: 20px;" class="card">
-            <h2 style="color: #673ab7;">📋 Rutina Sugerida Detectada</h2>
+            <h2 style="color: #673ab7;">Rutina Sugerida Detectada</h2>
             <p id="texto-sugerencia-rutina" style="font-size: 0.9rem; color: #555; text-align: center;"></p>
             <div id="lista-ejercicios-sugeridos" style="width: 100%; margin: 15px 0; text-align: left; background: #f8f9fa; padding: 10px; border-radius: 8px;"></div>
             <button onclick="aceptarRutinaSugerida()" style="background-color: #673ab7; margin-bottom: 10px;">Aceptar Rutina</button>
@@ -246,7 +246,7 @@
             
             <div class="card" style="margin-top: 10px;">
                 <div style="background-color: #f1f3f4; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #555; margin-bottom: 15px; width: 100%; text-align: center; box-sizing: border-box;">
-                    🔥 Series totales acumuladas: <span id="asistente-conteo-series" style="color: #e53935; font-size: 1rem;">0</span>
+                    Series totales acumuladas: <span id="asistente-conteo-series" style="color: #e53935; font-size: 1rem;">0</span>
                 </div>
 
                 <h2>REGISTRAR SERIE</h2>
@@ -273,17 +273,17 @@
             </div>
 
             <div class="card" style="margin-top: 10px;">
-                <h2 style="color: #34a853;">📈 MI PROGRESO (SOBRECARGA)</h2>
+                <h2 style="color: #34a853;">MI PROGRESO (SOBRECARGA)</h2>
                 <div style="position: relative; height:35vh; width:100%; margin-top: 15px;">
                     <canvas id="miCanvasGrafica"></canvas>
                 </div>
             </div>
 
             <div style="width: 100%; margin-top: 10px;">
-                <button onclick="preguntarSiguientePaso()" style="background-color: #fbbc04; color: #333; font-weight: bold; padding: 15px;">⏭️ Terminar Ejercicio Actual</button>
+                <button onclick="preguntarSiguientePaso()" style="background-color: #fbbc04; color: #333; font-weight: bold; padding: 15px;">Terminar Ejercicio Actual</button>
             </div>
             <div class="card" style="margin-top: 15px; border: 2px solid #6c757d;">
-                <h2 style="color: #6c757d; font-size: 1.1rem;">📝 REGISTROS DE ESTA SESIÓN</h2>
+                <h2 style="color: #6c757d; font-size: 1.1rem;">REGISTROS DE ESTA SESIÓN</h2>
                 <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem;">
                     <thead>
                         <tr>
@@ -300,16 +300,16 @@
             </div>
         </div>
         <div id="vista-resumen-final" style="display: none; width: 100%; max-width: 400px; flex-direction: column; align-items: center; margin-bottom: 20px;" class="card">
-            <h2 style="color: #34a853; font-size: 1.5rem;">🎉 ¡Entrenamiento Concluido!</h2>
+            <h2 style="color: #34a853; font-size: 1.5rem;">¡Entrenamiento Concluido!</h2>
             <p style="text-align: center; color: #666; font-weight: 500;">Tu esfuerzo de hoy ha sido procesado por el sistema.</p>
             
             <div style="background: #f1f8e9; padding: 15px; border-radius: 10px; width: 100%; box-sizing: border-box; margin: 10px 0; border-left: 5px solid #4caf50;">
-                <p style="margin: 5px 0;"><strong>💪 Total de Series:</strong> <span id="resumen-total-series">0</span> series efectivas</p>
+                <p style="margin: 5px 0;"><strong>Total de Series:</strong> <span id="resumen-total-series">0</span> series efectivas</p>
                 <div id="resumen-desglose-musculos" style="font-size: 0.9rem; color: #555; margin-top: 10px; padding-left: 10px;"></div>
             </div>
 
             <div style="background: #fff8e1; padding: 15px; border-radius: 10px; width: 100%; box-sizing: border-box; margin: 10px 0; border-left: 5px solid #ffb300; font-size: 0.9rem;">
-                <h4 style="margin: 0 0 8px 0; color: #b78103;">📊 Análisis de Sobrecarga Directa:</h4>
+                <h4 style="margin: 0 0 8px 0; color: #b78103;">Análisis de Sobrecarga Directa:</h4>
                 <div id="resumen-analisis-cargas"></div>
             </div>
 
@@ -1579,8 +1579,8 @@ async function enviarBiometria() {
 
             // 1. Dibujar el mensaje del usuario (Burbuja verde)
             chat.innerHTML += `
-                <div style="background: #e6f4ea; padding: 10px; border-radius: 8px; border-right: 4px solid #34a853; align-self: flex-end; max-width: 85%; text-align: right;">
-                    <strong>Tú:</strong> ${texto}
+                <div style="background: #122212; padding: 10px; border-radius: 8px; border-right: 4px solid #34a853; align-self: flex-end; max-width: 85%; text-align: right; color: #e0e0e0; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+                    <strong style="color: #34a853;">Tú:</strong> ${texto}
                 </div>
             `;
             input.value = "";
@@ -1611,9 +1611,9 @@ async function enviarBiometria() {
                     
                     // 1. Dibujar la respuesta de la IA en el chat
                     const msgIA = `
-                        <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; border-left: 4px solid #1a73e8; align-self: flex-start; max-width: 85%;">
-                            <strong>🤖 IA:</strong> ${datos.resumen}<br>
-                            <br><em style="font-size: 0.85rem; color: #555;">¡He sumado estos nutrientes a tu tarjeta de progreso arriba!</em>
+                        <div style="background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 4px solid #39ff14; align-self: flex-start; max-width: 85%; color: #e0e0e0; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+                            <strong style="color: #39ff14;">🤖 IA:</strong> ${datos.resumen}<br>
+                            <br><em style="font-size: 0.85rem; color: #888;">¡He sumado estos nutrientes a tu tarjeta de progreso arriba!</em>
                         </div>
                     `;
                     chat.innerHTML += msgIA;
@@ -1631,14 +1631,12 @@ async function enviarBiometria() {
                     document.getElementById("input-gra").value = Math.round(graActual + datos.grasas);
 
                 } else {
-                    chat.innerHTML += `<div style="background: #fce8e6; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%;"><strong>🤖 IA:</strong> Uy, me confundí. ¿Puedes describir esa comida un poco mejor?</div>`;
+                    chat.innerHTML += `<div style="background: #2a0808; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%; color: #e0e0e0;"><strong style="color: #dc3545;">🤖 IA:</strong> Uy, me confundí. ¿Puedes describir esa comida un poco mejor?</div>`;
                 }
             } catch (e) {
                 document.getElementById(idCarga).remove();
-                chat.innerHTML += `<div style="background: #fce8e6; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%;"><strong>🤖 IA:</strong> Error de conexión con el servidor.</div>`;
+                chat.innerHTML += `<div style="background: #2a0808; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%; color: #e0e0e0;"><strong style="color: #dc3545;">🤖 IA:</strong> Error de conexión con el servidor.</div>`;
             }
-            
-            chat.scrollTop = chat.scrollHeight; // Auto-scroll final
         }
 
         async function guardarRegistroDiario() {
