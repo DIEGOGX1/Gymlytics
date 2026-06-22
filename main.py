@@ -411,20 +411,34 @@ def obtener_usuario_desde_token(credentials: HTTPAuthorizationCredentials = Depe
 
 @app.post("/api/nutricion/analizar")
 def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):
-    # 1. Agregamos el texto del usuario al prompt (¡Corregido!)
-    prompt = f"""
-    Eres el asistente experto de gymlytics. El usuario te dictará un registro de alimentación o un registro de entrenamiento.
-    Tu tarea es analizar el texto y devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura exacta:
+    
+    # 1. Extraemos tu catálogo real de la base de datos para que la IA lo memorice al instante
+    nombres_ejercicios = [ej.nombre for ej in db.query(Ejercicio).all()]
+    catalogo_str = ", ".join(nombres_ejercicios)
 
+    # 2. El Prompt Maestro de Enrutamiento y Validación
+    prompt = f"""
+    Eres Ricardio, el asistente inteligente y experto de Gymlytics. Tu tarea es clasificar y extraer información del usuario.
+    
+    CATÁLOGO DE EJERCICIOS PERMITIDOS EN LA BASE DE DATOS: {catalogo_str}
+
+    Evalúa el texto y devuelve ÚNICAMENTE un JSON con esta estructura exacta:
     {{
-        "tipo": "comida",
+        "tipo": "comida" | "entrenamiento" | "incompleto",
         "macros": {{ "calorias": 0, "proteinas": 0, "carbohidratos": 0, "grasas": 0 }},
-        "ejercicio": {{ "nombre": "", "peso_kg": 0, "repeticiones": 0 }}
+        "ejercicio": {{ "nombre_catalogo": "", "peso_kg": 0, "repeticiones": 0 }},
+        "mensaje": "Respuesta o pregunta para el usuario"
     }}
 
-    Reglas:
-    1. Si es comida, calcula los macros y usa "tipo": "comida".
-    2. Si es entrenamiento, identifica el ejercicio, el peso en kg y las repeticiones, y usa "tipo": "entrenamiento".
+    Reglas estrictas:
+    1. COMIDA: Si habla de comida, calcula macros aproximados. Usa "tipo": "comida" y en "mensaje" pon un resumen nutricional breve.
+    2. ENTRENAMIENTO COMPLETO: Si habla de ejercicio y menciona peso y repeticiones LÓGICAS (ej. peso < 500kg, reps < 100):
+       - Usa "tipo": "entrenamiento".
+       - Relaciona el ejercicio mencionado con el MÁS PARECIDO del CATÁLOGO PERMITIDO (ej. si dice "press banca con mancuernas", cámbialo a "Press Banca").
+       - "nombre_catalogo" DEBE ser exacto a como está escrito en el catálogo.
+    3. INCOMPLETO O IRREAL: Si es ejercicio pero falta el peso, faltan las repeticiones, o los números son absurdos (ej. "levanté 1000 kg" o "hice 500 reps"):
+       - Usa "tipo": "incompleto".
+       - En "mensaje", pídele al usuario (con un tono amigable, retador y como entrenador) que complete el dato faltante o que corrija su mentira.
 
     TEXTO DEL USUARIO: "{req.texto_comida}"
     """
@@ -441,18 +455,23 @@ def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usu
                 "proteinas": datos_ia["macros"]["proteinas"],
                 "carbohidratos": datos_ia["macros"]["carbohidratos"],
                 "grasas": datos_ia["macros"]["grasas"],
-                "resumen": "¡Macros calculados y sumados a tu panel!"
+                "resumen": datos_ia.get("mensaje", "¡Macros calculados y sumados a tu panel!")
             }
 
+        elif datos_ia.get("tipo") == "incompleto":
+            # Si faltan datos o son irreales, NO guardamos nada y le mandamos el regaño/pregunta de la IA
+            return {"tipo": "error", "resumen": datos_ia.get("mensaje")}
+
         elif datos_ia.get("tipo") == "entrenamiento":
-            nombre_ej = datos_ia["ejercicio"]["nombre"]
+            nombre_ej = datos_ia["ejercicio"]["nombre_catalogo"]
             peso = datos_ia["ejercicio"]["peso_kg"]
             reps = datos_ia["ejercicio"]["repeticiones"]
 
-            # Buscar ejercicio en la BD (Ignorando mayúsculas con ilike)
-            ejercicio_bd = db.query(Ejercicio).filter(Ejercicio.nombre.ilike(f"%{nombre_ej}%")).first()
+            # Buscar ejercicio EXACTO (la IA ya hizo el trabajo de traducirlo en el paso anterior)
+            ejercicio_bd = db.query(Ejercicio).filter(Ejercicio.nombre == nombre_ej).first()
+            
             if not ejercicio_bd:
-                return {"tipo": "error", "resumen": f"No encontré '{nombre_ej}' en tu catálogo. Escríbelo como está guardado."}
+                return {"tipo": "error", "resumen": f"Identifiqué '{nombre_ej}', pero no parece estar en tu catálogo de rutinas."}
 
             # Calcular qué número de serie es hoy
             hoy = obtener_hora_mexico().date()
@@ -483,7 +502,8 @@ def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usu
 
     except Exception as e:
         print(f"Error procesando IA: {e}")
-        raise HTTPException(status_code=500, detail="El bot se confundió. Intenta hablar más claro.")
+        raise HTTPException(status_code=500, detail="Hubo una turbulencia de conexión. Intenta de nuevo.")
+    
 # 2. Registrar una serie terminada (¡El reemplazo de tu Excel!)
 @app.post("/api/entrenamiento/registrar-serie")
 def registrar_serie(datos: DatosSerieRecepcion, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):
