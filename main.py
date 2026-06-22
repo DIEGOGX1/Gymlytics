@@ -410,37 +410,80 @@ def obtener_usuario_desde_token(credentials: HTTPAuthorizationCredentials = Depe
 
 
 @app.post("/api/nutricion/analizar")
-def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usuario_desde_token)):
+def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):
+    # 1. Agregamos el texto del usuario al prompt (¡Corregido!)
     prompt = f"""
-    Eres un experto en nutrición deportiva. Tu tarea es analizar la siguiente comida y estimar sus valores nutricionales.
-    Incluso si la comida es ambigua, una mezcla compleja o una descripción larga, HAZ TU MEJOR ESTIMACIÓN MATEMÁTICA. NUNCA te rindas ni pidas aclaraciones.
-    
-    Comida del usuario: "{req.texto_comida}"
-    
-    Devuelve EXCLUSIVAMENTE este formato JSON:
+    Eres el asistente experto de gymlytics. El usuario te dictará un registro de alimentación o un registro de entrenamiento.
+    Tu tarea es analizar el texto y devolver ÚNICAMENTE un objeto JSON válido con la siguiente estructura exacta:
+
     {{
-        "calorias": 0,
-        "proteinas": 0,
-        "carbohidratos": 0,
-        "grasas": 0,
-        "resumen": "Descripción breve y limpia de lo detectado"
+        "tipo": "comida",
+        "macros": {{ "calorias": 0, "proteinas": 0, "carbohidratos": 0, "grasas": 0 }},
+        "ejercicio": {{ "nombre": "", "peso_kg": 0, "repeticiones": 0 }}
     }}
+
+    Reglas:
+    1. Si es comida, calcula los macros y usa "tipo": "comida".
+    2. Si es entrenamiento, identifica el ejercicio, el peso en kg y las repeticiones, y usa "tipo": "entrenamiento".
+
+    TEXTO DEL USUARIO: "{req.texto_comida}"
     """
-    
+
     try:
-        # LA MAGIA: Obligamos a la API a devolver un JSON nativo a nivel de sistema
-        respuesta = modelo_ia.generate_content(
-            prompt,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        # Como ya forzamos el JSON desde la API, no necesitamos limpiar texto raro
-        datos_nutricionales = json.loads(respuesta.text)
-        return datos_nutricionales
-        
+        respuesta = modelo_ia.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
+        datos_ia = json.loads(respuesta.text)
+
+        # --- EL ENRUTADOR INTELIGENTE ---
+        if datos_ia.get("tipo") == "comida":
+            return {
+                "tipo": "comida",
+                "calorias": datos_ia["macros"]["calorias"],
+                "proteinas": datos_ia["macros"]["proteinas"],
+                "carbohidratos": datos_ia["macros"]["carbohidratos"],
+                "grasas": datos_ia["macros"]["grasas"],
+                "resumen": "¡Macros calculados y sumados a tu panel!"
+            }
+
+        elif datos_ia.get("tipo") == "entrenamiento":
+            nombre_ej = datos_ia["ejercicio"]["nombre"]
+            peso = datos_ia["ejercicio"]["peso_kg"]
+            reps = datos_ia["ejercicio"]["repeticiones"]
+
+            # Buscar ejercicio en la BD (Ignorando mayúsculas con ilike)
+            ejercicio_bd = db.query(Ejercicio).filter(Ejercicio.nombre.ilike(f"%{nombre_ej}%")).first()
+            if not ejercicio_bd:
+                return {"tipo": "error", "resumen": f"No encontré '{nombre_ej}' en tu catálogo. Escríbelo como está guardado."}
+
+            # Calcular qué número de serie es hoy
+            hoy = obtener_hora_mexico().date()
+            series_hoy = db.query(RegistroSerie).filter(
+                RegistroSerie.usuario_id == usuario_id, RegistroSerie.ejercicio_id == ejercicio_bd.id
+            ).all()
+            num_serie = sum(1 for s in series_hoy if s.fecha.date() == hoy) + 1
+
+            # Guardar en BD directamente
+            nueva_serie = RegistroSerie(
+                usuario_id=usuario_id,
+                ejercicio_id=ejercicio_bd.id,
+                numero_serie=num_serie,
+                peso_kg=peso,
+                repeticiones=reps,
+                sesion_id=f"SES-VOZ-{hoy.strftime('%Y%m%d')}"
+            )
+            db.add(nueva_serie)
+            db.commit()
+
+            return {
+                "tipo": "entrenamiento",
+                "resumen": f"¡Anotado! Serie {num_serie} de {ejercicio_bd.nombre}: {peso}kg x {reps} reps."
+            }
+
+        else:
+            return {"tipo": "error", "resumen": "No logré identificar si es comida o ejercicio."}
+
     except Exception as e:
         print(f"Error procesando IA: {e}")
-        raise HTTPException(status_code=500, detail="El bot no pudo analizar esta comida. Intenta describirla de otra forma.")
+        raise HTTPException(status_code=500, detail="El bot se confundió. Intenta hablar más claro.")
 # 2. Registrar una serie terminada (¡El reemplazo de tu Excel!)
 @app.post("/api/entrenamiento/registrar-serie")
 def registrar_serie(datos: DatosSerieRecepcion, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):

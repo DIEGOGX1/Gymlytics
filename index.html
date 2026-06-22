@@ -1606,31 +1606,32 @@ async function enviarBiometria() {
 
                 // Borramos el "Escribiendo..."
                 document.getElementById(idCarga).remove();
-
-                if (res.ok) {
+                    if (res.ok) {
                     const datos = await res.json();
                     
                     // 1. Dibujar la respuesta de la IA en el chat
                     const msgIA = `
                         <div style="background: #1a1a1a; padding: 10px; border-radius: 8px; border-left: 4px solid #39ff14; align-self: flex-start; max-width: 85%; color: #e0e0e0; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
-                            <strong style="color: #39ff14;">🤖 IA:</strong> ${datos.resumen}<br>
-                            <br><em style="font-size: 0.85rem; color: #888;">¡He sumado estos nutrientes a tu tarjeta de progreso arriba!</em>
+                            <strong style="color: #39ff14;">🤖 IA:</strong> ${datos.resumen}
                         </div>
                     `;
                     chat.innerHTML += msgIA;
 
-                    // 2. LA MAGIA ACUMULATIVA: Leer valores actuales o asumir 0, y sumar el nuevo plato
-                    const calActual = parseFloat(document.getElementById("input-cal").value) || 0;
-                    const proActual = parseFloat(document.getElementById("input-pro").value) || 0;
-                    const carActual = parseFloat(document.getElementById("input-car").value) || 0;
-                    const graActual = parseFloat(document.getElementById("input-gra").value) || 0;
+                    // 2. EL SWITCH: Decidir qué hacer en la pantalla
+                    if (datos.tipo === "comida") {
+                        const calActual = parseFloat(document.getElementById("input-cal").value) || 0;
+                        const proActual = parseFloat(document.getElementById("input-pro").value) || 0;
+                        const carActual = parseFloat(document.getElementById("input-car").value) || 0;
+                        const graActual = parseFloat(document.getElementById("input-gra").value) || 0;
 
-                    // Inyectar la suma redondeada en la UI
-                    document.getElementById("input-cal").value = Math.round(calActual + datos.calorias);
-                    document.getElementById("input-pro").value = Math.round(proActual + datos.proteinas);
-                    document.getElementById("input-car").value = Math.round(carActual + datos.carbohidratos);
-                    document.getElementById("input-gra").value = Math.round(graActual + datos.grasas);
-
+                        document.getElementById("input-cal").value = Math.round(calActual + datos.calorias);
+                        document.getElementById("input-pro").value = Math.round(proActual + datos.proteinas);
+                        document.getElementById("input-car").value = Math.round(carActual + datos.carbohidratos);
+                        document.getElementById("input-gra").value = Math.round(graActual + datos.grasas);
+                    } 
+                    // Si es entrenamiento, el backend ya lo guardó en la base de datos, 
+                    // así que no necesitamos hacer nada más en la pantalla de nutrición.
+                    
                 } else {
                     chat.innerHTML += `<div style="background: #2a0808; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%; color: #e0e0e0;"><strong style="color: #dc3545;">🤖 IA:</strong> Uy, me confundí. ¿Puedes describir esa comida un poco mejor?</div>`;
                 }
