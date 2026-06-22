@@ -481,7 +481,7 @@
             // BORRAMOS LAS LLAVES DE SEGURIDAD
             localStorage.removeItem("gymlytics_token"); 
             localStorage.removeItem("gymlytics_nombre");
-            location.reload(); 
+            window.location.href = "/"; 
         }
 
         // 3. CARGA DEL ENTORNO DE TRABAJO (Solo ocurre si hay login)
@@ -522,7 +522,14 @@
                     cargarTendenciaGlobal(); 
                 }
             } catch (e) {
-                document.getElementById("pantalla-carga").style.display = "none"; // <-- APAGAR CARGA
+                document.getElementById("pantalla-carga").style.display = "none";
+                
+                // RED DE SEGURIDAD: Volvemos a encender el login y mostramos el error
+                document.getElementById("login-caja").style.display = "block";
+                document.getElementById("login-error").innerText = "❌ Error de conexión al cargar tu perfil. Por favor, vuelve a entrar.";
+                
+                // Borramos el token defectuoso para evitar bucles
+                localStorage.removeItem("gymlytics_token");
                 console.error("Error validando el estado de biometría:", e);
             }
         }
@@ -685,7 +692,7 @@ async function enviarBiometria() {
                     const data = await res.json();
                     localStorage.setItem("gymlytics_token", data.token);
                     localStorage.setItem("gymlytics_nombre", data.nombre);
-                    location.reload(); 
+                    window.location.href = "/"; 
                 } else {
                     errorDiv.innerText = "❌ Correo o contraseña incorrectos.";
                 }
@@ -1431,9 +1438,9 @@ async function enviarBiometria() {
                 const datosY_Peso = datosFiltrados.map(r => r.peso_kg);
                 const datosY_Reps = datosFiltrados.map(r => r.repeticiones);
 
-                const ctx = document.getElementById('miCanvasGrafica').getContext('2d');
-
-                if (miGraficaDeLineas) miGraficaDeLineas.destroy();
+                // ESTA ES LA VERSIÓN CORREGIDA:
+                const ctx = document.getElementById('miCanvasConsulta').getContext('2d');
+                if (graficaConsultaObj) graficaConsultaObj.destroy();
                 
                 graficaConsultaObj = new Chart(ctx, {
                     type: 'line',
@@ -1560,7 +1567,7 @@ async function enviarBiometria() {
                     const data = await res.json();
                     localStorage.setItem("gymlytics_token", data.token);
                     localStorage.setItem("gymlytics_nombre", data.nombre);
-                    location.reload(); 
+                    window.location.href = "/";
                 } else {
                     errorDiv.innerText = "❌ Error al iniciar sesión con Google.";
                 }

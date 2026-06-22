@@ -394,31 +394,30 @@ def obtener_usuario_desde_token(credentials: HTTPAuthorizationCredentials = Depe
 @app.post("/api/nutricion/analizar")
 def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usuario_desde_token)):
     prompt = f"""
-    Eres un experto en nutrición deportiva. Tu tarea es analizar la siguiente comida descrita por el usuario y estimar sus calorías y macronutrientes de la forma más precisa posible.
+    Eres un experto en nutrición deportiva. Tu tarea es analizar la siguiente comida y estimar sus valores nutricionales.
+    Incluso si la comida es ambigua, una mezcla compleja o una descripción larga, HAZ TU MEJOR ESTIMACIÓN MATEMÁTICA. NUNCA te rindas ni pidas aclaraciones.
     
     Comida del usuario: "{req.texto_comida}"
     
-    DEBES responder ÚNICAMENTE con un objeto JSON válido, sin formato Markdown, sin texto adicional y sin saludos. Utiliza exactamente esta estructura:
+    Devuelve EXCLUSIVAMENTE este formato JSON:
     {{
-        "calorias": 550,
-        "proteinas": 30,
-        "carbohidratos": 45,
-        "grasas": 20,
-        "resumen": "Descripción breve y limpia de lo detectado (Ej: 3 tacos al pastor y refresco)"
+        "calorias": 0,
+        "proteinas": 0,
+        "carbohidratos": 0,
+        "grasas": 0,
+        "resumen": "Descripción breve y limpia de lo detectado"
     }}
     """
     
     try:
-        respuesta = modelo_ia.generate_content(prompt)
-        texto_limpio = respuesta.text.strip()
+        # LA MAGIA: Obligamos a la API a devolver un JSON nativo a nivel de sistema
+        respuesta = modelo_ia.generate_content(
+            prompt,
+            generation_config={"response_mime_type": "application/json"}
+        )
         
-        # A veces la IA insiste en poner ```json al principio, esto lo limpia:
-        if texto_limpio.startswith("```json"):
-            texto_limpio = texto_limpio[7:-3]
-        elif texto_limpio.startswith("```"):
-            texto_limpio = texto_limpio[3:-3]
-            
-        datos_nutricionales = json.loads(texto_limpio.strip())
+        # Como ya forzamos el JSON desde la API, no necesitamos limpiar texto raro
+        datos_nutricionales = json.loads(respuesta.text)
         return datos_nutricionales
         
     except Exception as e:
