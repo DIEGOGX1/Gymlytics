@@ -1725,10 +1725,11 @@ async function enviarBiometria() {
             reconocimiento.onresult = function(event) {
                 const textoDictado = event.results[0][0].transcript;
                 inputComida.value = textoDictado; // Ponemos el texto en la cajita
-                estadoTexto.innerText = "¡Texto capturado!";
+                estadoTexto.innerText = "¡Texto capturado, enviando! 🚀";
                 
-                // Opcional: Descomenta la siguiente línea si quieres que se envíe automáticamente al terminar de hablar
-                // analizarComidaEnUI(); 
+                // ¡AQUÍ ESTÁ LA MAGIA! 
+                // Al quitar las dos diagonales (//), la función se ejecuta sola
+                analizarComidaEnUI(); 
             };
 
             // Qué pasa si hay un error o el usuario se queda callado
