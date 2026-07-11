@@ -491,6 +491,16 @@
                     
                     document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
                     cargarTendenciaGlobal(); 
+
+                    // NUEVO: Cargar los macros que se habían guardado antes en el día
+                    const macrosGuardados = localStorage.getItem('gymlytics_macros_hoy');
+                    if (macrosGuardados) {
+                        const macros = JSON.parse(macrosGuardados);
+                        document.getElementById("input-cal").value = macros.cal;
+                        document.getElementById("input-pro").value = macros.pro;
+                        document.getElementById("input-car").value = macros.car;
+                        document.getElementById("input-gra").value = macros.gra;
+                    }
                 }
             } catch (e) {
                 document.getElementById("pantalla-carga").style.display = "none";
@@ -1628,11 +1638,21 @@ async function enviarBiometria() {
                         const carActual = parseFloat(document.getElementById("input-car").value) || 0;
                         const graActual = parseFloat(document.getElementById("input-gra").value) || 0;
 
-                        document.getElementById("input-cal").value = Math.round(calActual + datos.calorias);
-                        document.getElementById("input-pro").value = Math.round(proActual + datos.proteinas);
-                        document.getElementById("input-car").value = Math.round(carActual + datos.carbohidratos);
-                        document.getElementById("input-gra").value = Math.round(graActual + datos.grasas);
-                    } 
+                        const nuevasCal = Math.round(calActual + datos.calorias);
+                        const nuevasPro = Math.round(proActual + datos.proteinas);
+                        const nuevosCar = Math.round(carActual + datos.carbohidratos);
+                        const nuevasGra = Math.round(graActual + datos.grasas);
+
+                        document.getElementById("input-cal").value = nuevasCal;
+                        document.getElementById("input-pro").value = nuevasPro;
+                        document.getElementById("input-car").value = nuevosCar;
+                        document.getElementById("input-gra").value = nuevasGra;
+
+                        // NUEVO: Guardar en la memoria del teléfono para que no se borre al cerrar la app
+                        localStorage.setItem('gymlytics_macros_hoy', JSON.stringify({
+                            cal: nuevasCal, pro: nuevasPro, car: nuevosCar, gra: nuevasGra
+                        }));
+                    }
                     //hablar(datos.resumen);
                     // Si es entrenamiento, el backend ya lo guardó en la base de datos, 
                     // así que no necesitamos hacer nada más en la pantalla de nutrición.
@@ -1696,6 +1716,7 @@ async function enviarBiometria() {
                     document.getElementById("input-car").value = "";
                     document.getElementById("input-gra").value = "";
                     document.getElementById("input-sueno").value = "";
+                    localStorage.removeItem('gymlytics_macros_hoy');
                 } else {
                     const error = await res.json();
                     mensajeDiv.innerHTML = `<span style='color: #dc3545;'>❌ Error del servidor: ${error.detail}</span>`;

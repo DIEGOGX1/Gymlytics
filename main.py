@@ -431,11 +431,8 @@ def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usu
     }}
 
     Reglas estrictas:
-    1. COMIDA: Si habla de comida, calcula macros aproximados. Usa "tipo": "comida" y en "mensaje" pon un resumen nutricional breve.
-    2. ENTRENAMIENTO COMPLETO: Si habla de ejercicio y menciona peso y repeticiones LÓGICAS (ej. peso < 500kg, reps < 100):
-       - Usa "tipo": "entrenamiento".
-       - Relaciona el ejercicio mencionado con el MÁS PARECIDO del CATÁLOGO PERMITIDO (ej. si dice "press banca con mancuernas", cámbialo a "Press Banca").
-       - "nombre_catalogo" DEBE ser exacto a como está escrito en el catálogo.
+    1. COMIDA: Si el usuario menciona una comida, o TODAS las comidas del día de golpe, SUMA TODOS LOS MACROS y devuelve UN SOLO JSON con los totales de todo lo mencionado. Usa "tipo": "comida" y en "mensaje" pon un breve resumen de lo que sumaste.
+    2. ENTRENAMIENTO COMPLETO: Si habla de ejercicio y menciona peso... (deja el resto igual)
     3. INCOMPLETO O IRREAL: Si es ejercicio pero falta el peso, faltan las repeticiones, o los números son absurdos (ej. "levanté 1000 kg" o "hice 500 reps"):
        - Usa "tipo": "incompleto".
        - En "mensaje", pídele al usuario (con un tono amigable, retador y como entrenador) que complete el dato faltante o que corrija su mentira.
