@@ -1571,6 +1571,7 @@ async function enviarBiometria() {
             // Mostramos de la más reciente a la más antigua
             [...resumenSesion.series_detalle].reverse().forEach((s, indexReverso) => {
                 const indexReal = resumenSesion.series_detalle.length - 1 - indexReverso;
+                
                 cuerpoTabla.innerHTML += `
                     <tr>
                         <td style="color: #39ff14; font-weight: bold;">${s.nombre_ejercicio}</td>
@@ -1579,52 +1580,47 @@ async function enviarBiometria() {
                         <td>${s.reps}</td>
                         <td>
                             <button onclick="editarSerie(${s.id_db}, ${indexReal}, ${s.peso}, ${s.reps})" style="background: transparent; border: none; font-size: 1rem; cursor: pointer;" title="Editar">✏️</button>
+                            <button onclick="eliminarSerie(${s.id_db}, ${indexReal})" style="background: transparent; border: none; font-size: 1rem; cursor: pointer;" title="Eliminar">🗑️</button>
                         </td>
                     </tr>
                 `;
             });
         }
-        async function editarSerie(id_db, indexArray, pesoActual, repsActual) {
-            // 1. Pedimos los nuevos datos (mostrando los actuales por defecto)
-            const nuevoPesoStr = prompt("✏️ Editar Peso (kg):", pesoActual);
-            if (nuevoPesoStr === null) return; // Si presiona "Cancelar", abortamos
+        async function eliminarSerie(id_db, indexArray) {
+            // 1. Candado de seguridad para evitar accidentes
+            const confirmar = confirm("⚠️ ¿Estás seguro de que deseas eliminar esta serie?");
+            if (!confirmar) return;
 
-            const nuevasRepsStr = prompt("✏️ Editar Repeticiones:", repsActual);
-            if (nuevasRepsStr === null) return; 
-
-            const nuevoPeso = parseFloat(nuevoPesoStr);
-            const nuevasReps = parseInt(nuevasRepsStr);
-
-            if (isNaN(nuevoPeso) || isNaN(nuevasReps)) {
-                alert("❌ Por favor ingresa números válidos.");
-                return;
-            }
-
-            // 2. Enviamos la orden de edición al servidor
+            // 2. Enviamos la orden de eliminación al servidor
             const token = obtenerTokenActivo();
             try {
                 const res = await fetch(`${API_BASE}/entrenamiento/serie/${id_db}`, {
-                    method: "PUT",
+                    method: "DELETE",
                     headers: { 
-                        "Content-Type": "application/json",
                         "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ peso_kg: nuevoPeso, repeticiones: nuevasReps })
+                    }
                 });
 
                 if (res.ok) {
-                    // 3. Actualizamos la memoria temporal de la pantalla
-                    resumenSesion.series_detalle[indexArray].peso = nuevoPeso;
-                    resumenSesion.series_detalle[indexArray].reps = nuevasReps;
+                    // 3. Borramos el dato de la memoria temporal del arreglo
+                    resumenSesion.series_detalle.splice(indexArray, 1);
                     
-                    // 4. Refrescamos la UI (Tabla y Gráfica) para que veas el cambio al instante
+                    // 4. Restamos la serie del contador global
+                    resumenSesion.total_series--;
+                    document.getElementById("asistente-conteo-series").innerText = resumenSesion.total_series;
+                    
+                    if (resumenSesion.ejercicios[ejercicioActivoID]) {
+                        resumenSesion.ejercicios[ejercicioActivoID].series--;
+                    }
+                    
+                    // 5. Refrescamos la UI (Tabla y Gráfica) para borrarlo de la pantalla
                     dibujarTablaSesion();
                     dibujarGrafica();
                 } else {
-                    alert("❌ Error al guardar los cambios en el servidor.");
+                    alert("❌ Error al eliminar la serie en el servidor.");
                 }
             } catch(e) {
-                alert("❌ Error de conexión al intentar editar.");
+                alert("❌ Error de conexión al intentar eliminar.");
             }
         }
         async function analizarComidaEnUI() {
