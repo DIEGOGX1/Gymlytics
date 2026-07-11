@@ -1,19 +1,20 @@
-const CACHE_NAME = 'gymlytics-v1';
+// Aumentamos la versión a v2 para forzar a los celulares a borrar el caché viejo
+const CACHE_NAME = 'gymlytics-v2';
 const urlsToCache = [
     '/',
     '/index.html',
     '/manifest.json'
 ];
 
-// 1. Instalación: Guardamos la estructura básica
+// 1. Instalación e Inyección Inmediata
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then(cache => cache.addAll(urlsToCache))
+        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
     );
+    self.skipWaiting(); // Obliga al celular a usar esta nueva versión sin esperar
 });
 
-// 2. Activación: Limpiamos cachés viejas si actualizas la versión
+// 2. Limpieza profunda
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -26,28 +27,32 @@ self.addEventListener('activate', event => {
             );
         })
     );
+    self.clients.claim(); // Toma el control de la pantalla de inmediato
 });
 
-// 3. Intercepción: Red primero, Caché como plan B
+// 3. LA MAGIA: Stale-While-Revalidate (Caché instantáneo + Red de fondo)
 self.addEventListener('fetch', event => {
-    // Excluimos las peticiones a la API para no congelar datos dinámicos
+    // La base de datos (API) siempre requiere internet fresco, la ignoramos aquí
     if (event.request.url.includes('/api/')) {
         return; 
     }
 
     event.respondWith(
-        fetch(event.request)
-            .then(response => {
-                // Si hay internet, clonamos la respuesta fresca a la caché
-                const resClone = response.clone();
+        caches.match(event.request).then(cachedResponse => {
+            // Se dispara la búsqueda en internet de forma silenciosa
+            const fetchPromise = fetch(event.request).then(networkResponse => {
                 caches.open(CACHE_NAME).then(cache => {
-                    cache.put(event.request, resClone);
+                    cache.put(event.request, networkResponse.clone());
                 });
-                return response;
-            })
-            .catch(() => {
-                // Si no hay internet, mostramos la interfaz guardada
-                return caches.match(event.request);
-            })
+                return networkResponse;
+            }).catch(() => {
+                // Si el usuario está sin señal en el gimnasio, no hacemos nada, 
+                // ya que la interfaz cargó exitosamente desde la caché.
+            });
+
+            // Retorna la caché al INSTANTE (0.1s de carga). 
+            // Si es la primerísima vez y no hay caché, espera a la red.
+            return cachedResponse || fetchPromise; 
+        })
     );
 });

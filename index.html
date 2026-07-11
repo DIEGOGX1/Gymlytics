@@ -428,20 +428,18 @@
             document.getElementById("vista-tracking-ejercicio").style.display = "none";
             document.getElementById("vista-lista-ejercicios").style.display = "flex";
         }
-
-        // 1. INICIALIZACIÓN Y ENRUTAMIENTO (Login vs Dashboard)
-        window.onload = function() {
+        // Usamos DOMContentLoaded para que la interfaz se dibuje INSTANTÁNEAMENTE
+        document.addEventListener('DOMContentLoaded', function() {
             const tokenSeguro = localStorage.getItem("gymlytics_token"); 
             
             if (tokenSeguro) {
-                // Escondemos el login y mostramos el letrero de carga al instante
                 document.getElementById("login-caja").style.display = "none";
                 document.getElementById("pantalla-carga").style.display = "block";
                 iniciarDashboard(); 
             } else {
                 mostrarPantallaLogin(); 
             }
-        };
+        });
 
         // 2. FUNCIONES DE ACCESO
         function mostrarPantallaLogin() {
@@ -1635,7 +1633,7 @@ async function enviarBiometria() {
                         document.getElementById("input-car").value = Math.round(carActual + datos.carbohidratos);
                         document.getElementById("input-gra").value = Math.round(graActual + datos.grasas);
                     } 
-                    hablar(datos.resumen);
+                    //hablar(datos.resumen);
                     // Si es entrenamiento, el backend ya lo guardó en la base de datos, 
                     // así que no necesitamos hacer nada más en la pantalla de nutrición.
                     
