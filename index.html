@@ -1569,7 +1569,8 @@ async function enviarBiometria() {
             
             cuerpoTabla.innerHTML = "";
             // Mostramos de la más reciente a la más antigua
-            [...resumenSesion.series_detalle].reverse().forEach(s => {
+            [...resumenSesion.series_detalle].reverse().forEach((s, indexReverso) => {
+                const indexReal = resumenSesion.series_detalle.length - 1 - indexReverso;
                 cuerpoTabla.innerHTML += `
                     <tr>
                         <td style="color: #39ff14; font-weight: bold;">${s.nombre_ejercicio}</td>
