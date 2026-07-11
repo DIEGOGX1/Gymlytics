@@ -1586,6 +1586,49 @@ async function enviarBiometria() {
                 `;
             });
         }
+        async function editarSerie(id_db, indexArray, pesoActual, repsActual) {
+            // 1. Pedimos los nuevos datos mediante ventanas nativas ligeras
+            const nuevoPesoStr = prompt("✏️ Editar Peso (kg):", pesoActual);
+            if (nuevoPesoStr === null) return; // Si presiona "Cancelar", abortamos
+
+            const nuevasRepsStr = prompt("✏️ Editar Repeticiones:", repsActual);
+            if (nuevasRepsStr === null) return; 
+
+            const nuevoPeso = parseFloat(nuevoPesoStr);
+            const nuevasReps = parseInt(nuevasRepsStr);
+
+            if (isNaN(nuevoPeso) || isNaN(nuevasReps)) {
+                alert("❌ Por favor ingresa números válidos.");
+                return;
+            }
+
+            // 2. Enviamos la orden de edición al servidor en Render
+            const token = obtenerTokenActivo();
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/serie/${id_db}`, {
+                    method: "PUT",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ peso_kg: nuevoPeso, repeticiones: nuevasReps })
+                });
+
+                if (res.ok) {
+                    // 3. Actualizamos la memoria temporal de la pantalla
+                    resumenSesion.series_detalle[indexArray].peso = nuevoPeso;
+                    resumenSesion.series_detalle[indexArray].reps = nuevasReps;
+                    
+                    // 4. Refrescamos la UI (Tabla y Gráfica) para ver el cambio al instante
+                    dibujarTablaSesion();
+                    dibujarGrafica();
+                } else {
+                    alert("❌ Error al guardar los cambios en el servidor.");
+                }
+            } catch(e) {
+                alert("❌ Error de conexión al intentar editar.");
+            }
+        }
         async function eliminarSerie(id_db, indexArray) {
             // 1. Candado de seguridad para evitar accidentes
             const confirmar = confirm("⚠️ ¿Estás seguro de que deseas eliminar esta serie?");
