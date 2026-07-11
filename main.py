@@ -536,6 +536,26 @@ def registrar_serie(datos: DatosSerieRecepcion, usuario_id: int = Depends(obtene
     db.refresh(nueva_serie)
     return {"mensaje": "Serie registrada con éxito", "datos": nueva_serie}
 
+# Molde para recibir los datos editados
+class EditarSerieRequest(BaseModel):
+    peso_kg: float
+    repeticiones: int
+
+@app.put("/api/entrenamiento/serie/{serie_id}")
+def editar_serie(serie_id: int, req: EditarSerieRequest, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):
+    # Buscamos la serie exacta asegurándonos de que pertenezca a este usuario
+    serie = db.query(RegistroSerie).filter(RegistroSerie.id == serie_id, RegistroSerie.usuario_id == usuario_id).first()
+    
+    if not serie:
+        raise HTTPException(status_code=404, detail="Serie no encontrada.")
+
+    # Reemplazamos los valores y guardamos
+    serie.peso_kg = req.peso_kg
+    serie.repeticiones = req.repeticiones
+    db.commit()
+    
+    return {"mensaje": "Serie actualizada correctamente."}
+
 # 3. Ver el historial de un usuario
 @app.get("/api/entrenamiento/historial/{usuario_id}")
 def obtener_historial(usuario_id: int, db: Session = Depends(get_db)):

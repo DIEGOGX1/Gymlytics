@@ -293,6 +293,7 @@
                             <th>Serie</th>
                             <th>Peso</th>
                             <th>Reps</th>
+                            <th>⚙️</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-sesion-actual-cuerpo">
@@ -1198,7 +1199,7 @@ async function enviarBiometria() {
                     },
                     body: JSON.stringify(datos)
                 });
-                
+                const data = await res.json();
                 if (res.ok) { 
                     resDiv.innerHTML = "✅ Serie guardada con éxito"; 
                     resDiv.className = "exito";
@@ -1215,6 +1216,7 @@ async function enviarBiometria() {
                     
                     // Guardamos el detalle en la memoria temporal
                     resumenSesion.series_detalle.push({
+                        id_db: data.datos.id,
                         nombre_ejercicio: document.getElementById("asistente-ejercicio-titulo").innerText.replace("🏋️ Ejercicio: ", ""),
                         numero_serie: parseInt(inputSerie.value) - 1,
                         peso: pesoCapturado,
@@ -1570,15 +1572,60 @@ async function enviarBiometria() {
             [...resumenSesion.series_detalle].reverse().forEach(s => {
                 cuerpoTabla.innerHTML += `
                     <tr>
-                        <td style="color: #1a73e8; font-weight: bold;">${s.nombre_ejercicio}</td>
+                        <td style="color: #39ff14; font-weight: bold;">${s.nombre_ejercicio}</td>
                         <td>#${s.numero_serie}</td>
                         <td>${s.peso} kg</td>
                         <td>${s.reps}</td>
+                        <td>
+                            <button onclick="editarSerie(${s.id_db}, ${indexReal}, ${s.peso}, ${s.reps})" style="background: transparent; border: none; font-size: 1rem; cursor: pointer;" title="Editar">✏️</button>
+                        </td>
                     </tr>
                 `;
             });
         }
+        async function editarSerie(id_db, indexArray, pesoActual, repsActual) {
+            // 1. Pedimos los nuevos datos (mostrando los actuales por defecto)
+            const nuevoPesoStr = prompt("✏️ Editar Peso (kg):", pesoActual);
+            if (nuevoPesoStr === null) return; // Si presiona "Cancelar", abortamos
 
+            const nuevasRepsStr = prompt("✏️ Editar Repeticiones:", repsActual);
+            if (nuevasRepsStr === null) return; 
+
+            const nuevoPeso = parseFloat(nuevoPesoStr);
+            const nuevasReps = parseInt(nuevasRepsStr);
+
+            if (isNaN(nuevoPeso) || isNaN(nuevasReps)) {
+                alert("❌ Por favor ingresa números válidos.");
+                return;
+            }
+
+            // 2. Enviamos la orden de edición al servidor
+            const token = obtenerTokenActivo();
+            try {
+                const res = await fetch(`${API_BASE}/entrenamiento/serie/${id_db}`, {
+                    method: "PUT",
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ peso_kg: nuevoPeso, repeticiones: nuevasReps })
+                });
+
+                if (res.ok) {
+                    // 3. Actualizamos la memoria temporal de la pantalla
+                    resumenSesion.series_detalle[indexArray].peso = nuevoPeso;
+                    resumenSesion.series_detalle[indexArray].reps = nuevasReps;
+                    
+                    // 4. Refrescamos la UI (Tabla y Gráfica) para que veas el cambio al instante
+                    dibujarTablaSesion();
+                    dibujarGrafica();
+                } else {
+                    alert("❌ Error al guardar los cambios en el servidor.");
+                }
+            } catch(e) {
+                alert("❌ Error de conexión al intentar editar.");
+            }
+        }
         async function analizarComidaEnUI() {
             const input = document.getElementById("input-comida");
             const chat = document.getElementById("chat-historial");
