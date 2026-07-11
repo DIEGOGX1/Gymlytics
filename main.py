@@ -534,7 +534,8 @@ def registrar_serie(datos: DatosSerieRecepcion, usuario_id: int = Depends(obtene
     db.add(nueva_serie)
     db.commit()
     db.refresh(nueva_serie)
-    return {"mensaje": "Serie registrada con éxito", "datos": nueva_serie}
+    # LA CORRECCIÓN: Le decimos a Python que envíe el ID como un diccionario explícito
+    return {"mensaje": "Serie registrada con éxito", "datos": {"id": nueva_serie.id}}
 
 # Molde para recibir los datos editados
 class EditarSerieRequest(BaseModel):
@@ -555,6 +556,21 @@ def editar_serie(serie_id: int, req: EditarSerieRequest, usuario_id: int = Depen
     db.commit()
     
     return {"mensaje": "Serie actualizada correctamente."}
+
+# --- RUTA PARA ELIMINAR SERIES ---
+@app.delete("/api/entrenamiento/serie/{serie_id}")
+def eliminar_serie(serie_id: int, usuario_id: int = Depends(obtener_usuario_desde_token), db: Session = Depends(get_db)):
+    # Buscamos la serie asegurando que le pertenezca al usuario activo
+    serie = db.query(RegistroSerie).filter(RegistroSerie.id == serie_id, RegistroSerie.usuario_id == usuario_id).first()
+    
+    if not serie:
+        raise HTTPException(status_code=404, detail="Serie no encontrada.")
+
+    # La eliminamos de la base de datos
+    db.delete(serie)
+    db.commit()
+    
+    return {"mensaje": "Serie eliminada correctamente."}
 
 # 3. Ver el historial de un usuario
 @app.get("/api/entrenamiento/historial/{usuario_id}")
