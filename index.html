@@ -1574,9 +1574,14 @@ async function enviarBiometria() {
         async function analizarComidaEnUI() {
             const input = document.getElementById("input-comida");
             const chat = document.getElementById("chat-historial");
+            const btnEnviar = document.getElementById("btn-enviar-comida"); // <-- Nuevo
             const texto = input.value.trim();
 
             if (!texto) return;
+
+            // BLOQUEO DE SEGURIDAD: Desactivamos el botón y el input
+            input.disabled = true;
+            if(btnEnviar) btnEnviar.disabled = true;
 
             // 1. Dibujar el mensaje del usuario (Burbuja verde)
             chat.innerHTML += `
@@ -1588,12 +1593,13 @@ async function enviarBiometria() {
             
             // 2. Dibujar el indicador de "Escribiendo..."
             const idCarga = "carga-" + Date.now();
-            chat.innerHTML += `<div id="${idCarga}" style="color: #888; font-size: 0.8rem; align-self: flex-start;"><em>🤖 Analizando alimentos...</em></div>`;
-            chat.scrollTop = chat.scrollHeight; // Auto-scroll hacia abajo
+            chat.innerHTML += `<div id="${idCarga}" style="color: #888; font-size: 0.8rem; align-self: flex-start;"><em>🤖 Analizando datos...</em></div>`;
+            chat.scrollTop = chat.scrollHeight;
 
-            const token = obtenerTokenActivo(); // Extraemos la llave JWT
+            const token = obtenerTokenActivo();
 
             try {
+                // ... (AQUÍ VA TU CÓDIGO FETCH EXACTAMENTE COMO ESTÁ) ...
                 // 3. Enviar la petición a tu servidor en Render
                 const res = await fetch(`${API_BASE}/nutricion/analizar`, {
                     method: "POST",
@@ -1639,9 +1645,15 @@ async function enviarBiometria() {
             } catch (e) {
                 document.getElementById(idCarga).remove();
                 chat.innerHTML += `<div style="background: #2a0808; padding: 10px; border-radius: 8px; border-left: 4px solid #dc3545; align-self: flex-start; max-width: 85%; color: #e0e0e0;"><strong style="color: #dc3545;">🤖 IA:</strong> Error de conexión con el servidor.</div>`;
+            } finally {
+                // DESBLOQUEO: Volvemos a encender todo pase lo que pase
+                input.disabled = false;
+                if(btnEnviar) btnEnviar.disabled = false;
+                input.focus(); // Regresamos el cursor a la cajita
             }
+            
+            chat.scrollTop = chat.scrollHeight; 
         }
-
         async function guardarRegistroDiario() {
             // 1. Recolectamos los datos de las cajitas
             const calorias = document.getElementById("input-cal").value;
