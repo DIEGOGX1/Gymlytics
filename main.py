@@ -341,6 +341,10 @@ app.add_middleware(
 def iniciar_interfaz():
     return FileResponse("index.html")
 
+@app.get("/style.css")
+def entregar_css():
+    return FileResponse("style.css")
+
 @app.get("/manifest.json")
 def entregar_manifest():
     return FileResponse("manifest.json")
