@@ -12,19 +12,65 @@
     <link rel="manifest" href="/manifest.json">
 </head>
 <body>
-    <div id="login-caja" class="card">
+<div id="login-caja" class="log-in-cont">
+        <svg class="onda-neon onda-top" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,0 L0,100 C 120,160 180,30 300,50 C 350,60 380,30 400,20 L400,0 Z" />
+        </svg>
+        <svg class="onda-neon onda-bottom" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,200 L0,50 C 50,50 80,150 200,180 C 250,190 280,200 400,200 Z" />
+        </svg>
+
         <div id="vista-login">
-            <h2>GYMLYTICS</h2>
-            <input type="email" id="login_correo" placeholder="Correo electrónico">
-            <input type="password" id="login_pass" placeholder="Contraseña">
-            <button id="btn-login" onclick="ejecutarLogin()">Acceder</button>
+            <img src="/Assets/03bc4abd-3da4-41d8-b390-c8a94d5ec835 (1).png" alt="" class="login-logoicon">
+            <h2>Inicia sesión</h2>
+            <div class="login-input-container">
+                <svg class="icono-input" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <input type="email" id="login_correo" placeholder="Username">
+            </div>
+            <div class="login-input-container">
+                <svg class="icono-input" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <input type="password" id="login_pass" placeholder="Password">
+                <svg class="icono-ojo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </div>
+            <div class="olvide-pass">
+                <a href="#">Olvidaste tu contraseña?</a>
+            </div>
+            <div class="login-btn-container">
+                <span class="login-signin-text">Ingresar</span>
+                
+                <button id="btn-login" class="btn-neon-arrow" onclick="ejecutarLogin()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </div>
             <div id="login-error" class="error text-center mt-10 text-md"></div>
-            
-            <div id="g_id_onload" data-client_id="634260670587-lgqagvh5e52iurh9ophiqgjl7chbm5r7.apps.googleusercontent.com" data-context="signin" data-ux_mode="popup" data-callback="manejarRespuestaGoogle" data-auto_prompt="false"></div>
-            <div class="g_id_signin flex-row-center" style="justify-content: center; margin-top: 15px;" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>
-            
-            <p class="login-footer-text">¿No tienes cuenta? <a href="#" onclick="mostrarRegistro()" class="color-blue">Regístrate aquí</a></p>
-        </div>
+            <div class="separador-login">Otras formas</div>
+            <!--<div id="g_id_onload" data-client_id="634260670587-lgqagvh5e52iurh9ophiqgjl7chbm5r7.apps.googleusercontent.com" data-context="signin" data-ux_mode="popup" data-callback="manejarRespuestaGoogle" data-auto_prompt="false"></div>
+            <div class="g_id_signin flex-row-center" style="justify-content: center; margin-top: 15px;" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>-->
+            <button type="button" class="btn-google-neon" onclick="console.log('Iniciar Google')">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path 
+                    d="M44.5 24.5C44.5 22.9 44.3 21.3 44 19.8H24V28.3H35.4C34.9 31 33.4 33.3 31.2 34.8V40.3H38.3C42.5 36.4 44.5 31.2 44.5 24.5Z" 
+                    fill="#39FF14"/>
+                    
+                <path 
+                    d="M24 45C29.7 45 34.5 43.1 38.3 40.3L31.2 34.8C29.2 36.1 26.8 36.8 24 36.8C18.5 36.8 13.8 33.1 12 28.1H4.7V33.8C8.5 40.5 15.7 45 24 45Z" 
+                    fill="#39FF14"/>
+                    
+                <path 
+                    d="M12 28.1C11.5 26.6 11.2 25 11.2 23.3C11.2 21.7 11.5 20.1 12 18.6V12.9H4.7C3.1 16 2.2 19.5 2.2 23.3C2.2 27.1 3.1 30.6 4.7 33.8L12 28.1Z" 
+                    fill="#39FF14"/>
+                    
+                <path 
+                    d="M24 9.8C27.1 9.8 29.9 10.9 32.1 13L38.5 6.6C34.5 2.9 29.7 0.7 24 0.7C15.7 0.7 8.5 5.3 4.7 12.9L12 18.6C13.8 13.6 18.5 9.8 24 9.8Z" 
+                    fill="#39FF14"/>
+            </svg><span>Continuar con google</span></div>
+            </button>
+            <div class="login-register-text">
+                No tienes una cuenta? <a href="#" onclick="mostrarRegistro()">Registrate</a>
+            </div>        </div>
 
         <div id="vista-registro" style="display: none;">
             <h2 class="color-accent">Crear Cuenta</h2>
