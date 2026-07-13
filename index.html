@@ -1487,21 +1487,20 @@
             }
             
             function iniciarSesionGoogle() {
-            
-            const botonGoogle = document.querySelector(
-            "#google-hidden-button div[role='button']"
-            );
-            
-            if (botonGoogle) {
-            
-            botonGoogle.click();
-            
-            } else {
-            
-            console.error("El botón de Google todavía no está cargado.");
-            
-            }
-            
+            google.accounts.id.prompt();
+                const botonGoogle = document.querySelector(
+                "#google-hidden-button div[role='button']"
+                );
+                
+                if (botonGoogle) {
+                
+                botonGoogle.click();
+                
+                } else {
+                
+                console.error("El botón de Google todavía no está cargado.");
+                
+                }
             }
             
             

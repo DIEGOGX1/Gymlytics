@@ -1,7 +1,18 @@
 /* =========================================
    BASE Y RESET
    ========================================= */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000000; color: #e0e0e0; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    background-color: #000000; 
+    color: #e0e0e0; 
+    margin: 0; 
+    padding: 0; /* <--- CAMBIA ESTO A 0 */
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    height: 100dvh; /* Asegura que el body no sea más grande que la pantalla */
+    overflow: hidden; /* Esto mata cualquier intento de scroll */
+}
 .card { background: #121212; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(57, 255, 20, 0.1); border: 1px solid #222; width: 100%; max-width: 400px; margin-bottom: 20px; box-sizing: border-box; }
 h2 { margin-top: 0; color: #ffffff; text-align: center; font-size: 1.2rem; text-shadow: 0 0 5px rgba(57, 255, 20, 0.3); }
 label { display: block; margin-top: 10px; font-weight: 500; color: #aaa; font-size: 0.9rem; }
@@ -126,10 +137,12 @@ tr:hover { background-color: #1a1a1a; }
     width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Centra el contenido en el hueco libre */
+    /* QUITAMOS EL JUSTIFY-CONTENT CENTER */
+    justify-content: flex-start; 
     align-items: center;
     position: relative;
-    overflow: hidden; /* ¡Adiós barra de scroll! */
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
 .login-logoicon{
@@ -167,12 +180,21 @@ tr:hover { background-color: #1a1a1a; }
     
 }
 .onda-top {
+    position: absolute;
     top: 0;
     left: 0;
+    width: 100%;
+    z-index: 1;
+    pointer-events: none;
 }
+
 .onda-bottom {
-    bottom: 0; 
+    position: absolute;
+    bottom: 0;
     left: 0;
+    width: 100%;
+    z-index: 1;
+    pointer-events: none;
 }
 
 /* --- ESTILOS DE LOS INPUTS --- */
@@ -340,13 +362,16 @@ tr:hover { background-color: #1a1a1a; }
 }
 
 #contenido-login {
-    position: relative; /* Necesario para que el z-index funcione */
-    z-index: 10;        /* ¡Flota por encima de las ondas! */
+    position: relative;
+    z-index: 2; /* Siempre por encima de las ondas */
     width: 90%;
     max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px 0;    /* Un pequeño respiro */
     
+    /* ESTO ES LO QUE ARREGLA EL ESPACIO */
+    margin-top: 150px;    /* Separa el logo de la onda de arriba */
+    margin-bottom: 20px;
+    gap: 10px;            /* Reduce el espacio entre inputs si aún se ve amontonado */
 }
