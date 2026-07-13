@@ -21,7 +21,7 @@
     </svg>
     <div id="contenido-login">
                 <div id="vista-login">
-                    <img src="Assets/LogoLogin.png" alt="Logo" class="login-logoicon">
+                    <img src="https://gymlytics.onrender.com/Assets/LogoLogin.png" alt="Logo" class="login-logoicon">
                     <h2>Inicia sesión</h2>
                     <div class="login-input-container">
                         <svg class="icono-input" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -399,8 +399,11 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const tokenSeguro = localStorage.getItem("gymlytics_token"); 
                 
+                // CAMBIO AQUÍ: Busca el ID correcto que tienes en tu HTML actual
+                const loginCaja = document.getElementById("contenido-login"); 
+                
                 if (tokenSeguro) {
-                    document.getElementById("login-caja").style.display = "none";
+                    if(loginCaja) loginCaja.style.display = "none"; // Solo actúa si existe
                     document.getElementById("pantalla-carga").style.display = "block";
                     iniciarDashboard(); 
                 } else {
