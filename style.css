@@ -122,14 +122,18 @@ tr:hover { background-color: #1a1a1a; }
 /*LOGIN*/
 
 .log-in-cont {
-    height: 100dvh; /* Forzamos a que mida EXACTAMENTE el alto de la pantalla */
+    height: 100dvh; /* Alto exacto de pantalla */
     width: 100%; 
     display: flex; 
     flex-direction: column;
-    justify-content: center; /* Esto centra el formulario en el medio exacto */
+    /* ESTO DISTRIBUYE LOS ELEMENTOS A LO LARGO DE LA PANTALLA */
+    justify-content: space-between; 
     align-items: center;
     position: relative;
-    overflow: hidden; /* ¡ESTA ES LA CLAVE! Esconde cualquier cosa que intente salirse */
+    overflow: hidden; /* Esto elimina la barra de scroll */
+    box-sizing: border-box;
+    /* Margen arriba y abajo para que los elementos no peguen con los bordes */
+    padding: 80px 20px; 
 }
 
 .login-logoicon{
@@ -151,21 +155,27 @@ tr:hover { background-color: #1a1a1a; }
 .onda-neon {
     position: absolute; 
     width: 100%; 
+    height: 150px; /* Reduce la altura para que no empuje tanto */
     z-index: 0; 
-    pointer-events: none; /* ¡ESTO ES VITAL! Le dice al navegador que atraviese la onda con el click */
+    pointer-events: none;
+}
+.onda-bottom {
+    bottom: 0; 
+    left: 0;
+}
+/* Asegúrate de que las ondas no bloqueen el formulario */
+.log-in-cont > svg {
+    pointer-events: none;
 }
 .onda-neon path {
     fill: #051405; /* RELLENO: Un verde extremadamente oscuro */
     stroke: #39ff14; /* BORDE: Verde neón */
     stroke-width: 2px; 
     filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.8)); 
+    
 }
 .onda-top {
     top: 0;
-    left: 0;
-}
-.onda-bottom {
-    bottom: 0; /* Anclada rígidamente al fondo de la pantalla */
     left: 0;
 }
 
@@ -274,7 +284,8 @@ tr:hover { background-color: #1a1a1a; }
 #vista-login, #vista-registro {
     position: relative;
     z-index: 2; 
-    width: 100%;
+    width: 90%;
+    max-width: 400px; /* Pero nunca más de 400px */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -286,23 +297,19 @@ tr:hover { background-color: #1a1a1a; }
     z-index: 2; /* Refuerzo de jerarquía visual */
 }
 
-.separador-login{
-    display: flex; 
+.separador-login {
+    display: flex;
     align-items: center;
+    width: 100%;
     color: #555;
-    margin: 20px 0;
+    margin: 15px 0;
 }
-.separador-login::before{
+.separador-login::before, .separador-login::after {
     content: "";
     flex: 1;
-    border-bottom: 1px solid #333;
-    margin: 0 10px;
-}
-.separador-login::after{
-    content: "";
-    flex: 1;
-    border-bottom: 1px solid #333;
-    margin: 0 10px;
+    height: 1px;           /* Altura de la línea */
+    background-color: #333; /* Color de la línea */
+    margin: 0 10px;        /* Espacio entre la línea y el texto "Otras formas" */
 }
 
 .btn-google-neon{
