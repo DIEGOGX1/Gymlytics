@@ -137,8 +137,7 @@ tr:hover { background-color: #1a1a1a; }
     width: 100%;
     display: flex;
     flex-direction: column;
-    /* QUITAMOS EL JUSTIFY-CONTENT CENTER */
-    justify-content: flex-start; 
+    justify-content: center; /* Centra verticalmente */
     align-items: center;
     position: relative;
     overflow: hidden;
@@ -363,15 +362,12 @@ tr:hover { background-color: #1a1a1a; }
 
 #contenido-login {
     position: relative;
-    z-index: 2; /* Siempre por encima de las ondas */
+    z-index: 2;
     width: 90%;
     max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    
-    /* ESTO ES LO QUE ARREGLA EL ESPACIO */
-    margin-top: 150px;    /* Separa el logo de la onda de arriba */
-    margin-bottom: 20px;
-    gap: 10px;            /* Reduce el espacio entre inputs si aún se ve amontonado */
+    gap: 15px; /* Espaciado automático */
+    margin-top: 0; /* ELIMINA EL MARGIN-TOP */
 }
