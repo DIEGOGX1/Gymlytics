@@ -122,18 +122,21 @@ tr:hover { background-color: #1a1a1a; }
 /*LOGIN*/
 
 .log-in-cont {
-    height: 100dvh; /* Alto exacto de pantalla */
-    width: 100%; 
-    display: flex; 
-    flex-direction: column;
-    /* ESTO DISTRIBUYE LOS ELEMENTOS A LO LARGO DE LA PANTALLA */
-    justify-content: space-between; 
-    align-items: center;
-    position: relative;
-    overflow: hidden; /* Esto elimina la barra de scroll */
-    box-sizing: border-box;
-    /* Margen arriba y abajo para que los elementos no peguen con los bordes */
-    padding: 80px 20px; 
+
+    min-height:100dvh;
+    width:100%;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    position:relative;
+    overflow:hidden;
+
+    box-sizing:border-box;
+
+    padding:20px;
+
 }
 
 .login-logoicon{
@@ -341,4 +344,14 @@ tr:hover { background-color: #1a1a1a; }
 
 .btn-google-neon:active {
     transform: scale(0.98); /* Efecto de "clic" al presionar */
+}
+
+#contenido-login {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
