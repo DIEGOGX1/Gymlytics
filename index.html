@@ -49,25 +49,43 @@
             <div class="separador-login">Otras formas</div>
             <!--<div id="g_id_onload" data-client_id="634260670587-lgqagvh5e52iurh9ophiqgjl7chbm5r7.apps.googleusercontent.com" data-context="signin" data-ux_mode="popup" data-callback="manejarRespuestaGoogle" data-auto_prompt="false"></div>
             <div class="g_id_signin flex-row-center" style="justify-content: center; margin-top: 15px;" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>-->
-            <button type="button" class="btn-google-neon" onclick="console.log('Iniciar Google')">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path 
-                    d="M44.5 24.5C44.5 22.9 44.3 21.3 44 19.8H24V28.3H35.4C34.9 31 33.4 33.3 31.2 34.8V40.3H38.3C42.5 36.4 44.5 31.2 44.5 24.5Z" 
-                    fill="#39FF14"/>
-                    
-                <path 
-                    d="M24 45C29.7 45 34.5 43.1 38.3 40.3L31.2 34.8C29.2 36.1 26.8 36.8 24 36.8C18.5 36.8 13.8 33.1 12 28.1H4.7V33.8C8.5 40.5 15.7 45 24 45Z" 
-                    fill="#39FF14"/>
-                    
-                <path 
-                    d="M12 28.1C11.5 26.6 11.2 25 11.2 23.3C11.2 21.7 11.5 20.1 12 18.6V12.9H4.7C3.1 16 2.2 19.5 2.2 23.3C2.2 27.1 3.1 30.6 4.7 33.8L12 28.1Z" 
-                    fill="#39FF14"/>
-                    
-                <path 
-                    d="M24 9.8C27.1 9.8 29.9 10.9 32.1 13L38.5 6.6C34.5 2.9 29.7 0.7 24 0.7C15.7 0.7 8.5 5.3 4.7 12.9L12 18.6C13.8 13.6 18.5 9.8 24 9.8Z" 
-                    fill="#39FF14"/>
-            </svg><span>Continuar con google</span></div>
-            </button>
+            <!-- Configuración de Google Login -->
+    <div id="g_id_onload"
+        data-client_id="634260670587-lgqagvh5e52iurh9ophiqgjl7chbm5r7.apps.googleusercontent.com"
+        data-context="signin"
+        data-ux_mode="popup"
+        data-callback="manejarRespuestaGoogle"
+        data-auto_prompt="false">
+    </div>
+    <!-- Botón oficial oculto de Google (motor de autenticación) -->
+    <div id="google-hidden-button" style="display:none;">
+        <div class="g_id_signin"
+            data-type="standard"
+            data-shape="rectangular"
+            data-theme="outline"
+            data-text="continue_with"
+            data-size="large"
+            data-logo_alignment="left">
+        </div>
+    </div>
+    <!-- TU BOTÓN PERSONALIZADO NEÓN -->
+    <button type="button" class="btn-google-neon" onclick="iniciarSesionGoogle()">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path 
+                d="M44.5 24.5C44.5 22.9 44.3 21.3 44 19.8H24V28.3H35.4C34.9 31 33.4 33.3 31.2 34.8V40.3H38.3C42.5 36.4 44.5 31.2 44.5 24.5Z"
+                fill="#39FF14"/>
+            <path 
+                d="M24 45C29.7 45 34.5 43.1 38.3 40.3L31.2 34.8C29.2 36.1 26.8 36.8 24 36.8C18.5 36.8 13.8 33.1 12 28.1H4.7V33.8C8.5 40.5 15.7 45 24 45Z"
+                fill="#39FF14"/>
+            <path 
+                d="M12 28.1C11.5 26.6 11.2 25 11.2 23.3C11.2 21.7 11.5 20.1 12 18.6V12.9H4.7C3.1 16 2.2 19.5 2.2 23.3C2.2 27.1 3.1 30.6 4.7 33.8L12 28.1Z"
+                fill="#39FF14"/>
+            <path 
+                d="M24 9.8C27.1 9.8 29.9 10.9 32.1 13L38.5 6.6C34.5 2.9 29.7 0.7 24 0.7C15.7 0.7 8.5 5.3 4.7 12.9L12 18.6C13.8 13.6 18.5 9.8 24 9.8Z"
+                fill="#39FF14"/>
+        </svg>
+        <span>Continuar con Google</span>
+    </button>
             <div class="login-register-text">
                 No tienes una cuenta? <a href="#" onclick="mostrarRegistro()">Registrate</a>
             </div>        </div>
@@ -1463,43 +1481,69 @@ async function enviarBiometria() {
             });
         }
 
-        async function manejarRespuestaGoogle(response) {
-            // Este es el gafete (JWT) que nos acaba de entregar Google
-            const googleToken = response.credential;
-            const errorDiv = document.getElementById("login-error"); 
-            
-            // MAGIA DINÁMICA: Detectamos si el usuario está en la pantalla de registro
-            let metaElegida = "Hipertrofia"; // Valor por defecto si entra directo desde el Login
-            const vistaRegistro = document.getElementById("vista-registro");
-            
-            // Si la vista de registro está visible, capturamos lo que el usuario seleccionó en el dropdown
-            if (vistaRegistro && vistaRegistro.style.display === "block") {
-                metaElegida = document.getElementById("reg_meta").value;
-            }
-            
-            try {
-                const res = await fetch(`${API_BASE}/auth/google`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        token: googleToken,
-                        meta: metaElegida // <-- Enviamos la meta real elegida en la UI
-                    })
-                });
+function iniciarSesionGoogle() {
 
-                if (res.ok) {
-                    const data = await res.json();
-                    localStorage.setItem("gymlytics_token", data.token);
-                    localStorage.setItem("gymlytics_nombre", data.nombre);
-                    window.location.href = "/";
-                } else {
-                    errorDiv.innerText = "❌ Error al iniciar sesión con Google.";
-                }
-            } catch (e) {
-                errorDiv.innerText = "❌ Error de conexión al servidor.";
-            }
+    const botonGoogle = document.querySelector(
+        "#google-hidden-button div[role='button']"
+    );
+
+    if (botonGoogle) {
+
+        botonGoogle.click();
+
+    } else {
+
+        console.error("El botón de Google todavía no está cargado.");
+
+    }
+
+}
+
+
+
+async function manejarRespuestaGoogle(response) {
+    // Token JWT entregado por Google
+    const googleToken = response.credential;
+    const errorDiv = document.getElementById("login-error");
+    // Meta por defecto
+    let metaElegida = "Hipertrofia";
+    // Detectar si está en registro
+    const vistaRegistro = document.getElementById("vista-registro");
+    if (vistaRegistro && vistaRegistro.style.display === "block") {
+        metaElegida = document.getElementById("reg_meta").value;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/auth/google`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                token: googleToken,
+                meta: metaElegida
+            })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            localStorage.setItem(
+                "gymlytics_token",
+                data.token
+            );
+            localStorage.setItem(
+                "gymlytics_nombre",
+                data.nombre
+            );
+            window.location.href = "/";
+        } else {
+            errorDiv.innerText =
+                "❌ Error al iniciar sesión con Google.";
         }
-
+    } catch (e) {
+        errorDiv.innerText =
+            "❌ Error de conexión al servidor.";
+        console.error(e);
+    }
+}
         function dibujarTablaSesion() {
             const cuerpoTabla = document.getElementById("tabla-sesion-actual-cuerpo");
             if (!cuerpoTabla) return;

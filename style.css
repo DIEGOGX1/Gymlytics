@@ -122,17 +122,14 @@ tr:hover { background-color: #1a1a1a; }
 /*LOGIN*/
 
 .log-in-cont {
-    min-height: 100dvh;
+    height: 100dvh; /* Forzamos a que mida EXACTAMENTE el alto de la pantalla */
     width: 100%; 
     display: flex; 
     flex-direction: column;
-    justify-content: center; /* Esto centra el contenido en el espacio sobrante */
+    justify-content: center; /* Esto centra el formulario en el medio exacto */
+    align-items: center;
     position: relative;
-    overflow: hidden;
-    /* --- LA MAGIA: BARRERAS DE SEGURIDAD --- */
-    box-sizing: border-box; /* Evita que la pantalla cree scroll al ponerle padding */
-    padding-top: 130px;     /* Protege la onda superior */
-    padding-bottom: 100px;  /* Protege la onda inferior */
+    overflow: hidden; /* ¡ESTA ES LA CLAVE! Esconde cualquier cosa que intente salirse */
 }
 
 .login-logoicon{
@@ -154,8 +151,8 @@ tr:hover { background-color: #1a1a1a; }
 .onda-neon {
     position: absolute; 
     width: 100%; 
-    height: 150px; /* Le damos altura fija para que no se estire raro */
     z-index: 0; 
+    pointer-events: none; /* ¡ESTO ES VITAL! Le dice al navegador que atraviese la onda con el click */
 }
 .onda-neon path {
     fill: #051405; /* RELLENO: Un verde extremadamente oscuro */
