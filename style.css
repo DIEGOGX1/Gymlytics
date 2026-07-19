@@ -135,14 +135,15 @@ tr:hover { background-color: #1a1a1a; }
 /*LOGIN*/
 
 .log-in-cont {
-    height: 100dvh; /* Esto mantiene el login centrado y en pantalla completa */
-    width: 100%; 
-    display: flex; 
+    min-height: 100dvh; /* Ocupa la pantalla, pero permite crecer si es necesario */
+    width: 100%;
+    display: flex;
     flex-direction: column;
-    justify-content: center; 
+    /* LA MAGIA AQUÍ: space-between manda el primer SVG al techo y el último al piso, centrando tu form */
+    justify-content: space-between; 
     align-items: center;
-    position: relative;
-    /* QUITAMOS EL OVERFLOW: HIDDEN DE AQUÍ para no bloquear el dashboard */
+    overflow-x: hidden; /* ELIMINA EL DESPLAZAMIENTO HORIZONTAL */
+    background-color: #000000;
 }
 
 .login-logoicon{
@@ -160,11 +161,12 @@ tr:hover { background-color: #1a1a1a; }
     position: relative;
 }
 
-/* --- ESTILOS DE LAS ONDAS SVG --- */
 .onda-neon {
-    position: absolute;
+    position: relative; /* FUNDAMENTAL: Debe ser relative para que Flexbox funcione */
     width: 100%;
-    z-index: 1; /* Fondo absoluto */
+    height: 120px; /* Altura fija para que no se estire de forma fea en PC */
+    flex-shrink: 0; /* Evita que el celular las comprima */
+    z-index: 1;
     pointer-events: none;
 }
 
@@ -173,29 +175,13 @@ tr:hover { background-color: #1a1a1a; }
     pointer-events: none;
 }
 .onda-neon path {
-    fill: #051405; /* RELLENO: Un verde extremadamente oscuro */
-    stroke: #39ff14; /* BORDE: Verde neón */
+    fill: #051405; 
+    stroke: #39ff14; 
     stroke-width: 2px; 
     filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.8)); 
-    
-}
-.onda-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1;
-    pointer-events: none;
 }
 
-.onda-bottom {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1;
-    pointer-events: none;
-}
+
 
 /* --- ESTILOS DE LOS INPUTS --- */
 .login-input-container {
@@ -363,12 +349,12 @@ tr:hover { background-color: #1a1a1a; }
 
 #contenido-login {
     position: relative;
-    z-index: 2;
+    z-index: 2; /* Arriba de todo */
     width: 90%;
     max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px; /* Espaciado automático */
-    margin-top: 0; /* ELIMINA EL MARGIN-TOP */
+    gap: 15px;      /* Separa tus inputs de forma uniforme */
+    margin: 20px 0; /* Margen de seguridad para que nunca toque las ondas */
 }
