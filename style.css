@@ -7,13 +7,9 @@ body {
     color: #e0e0e0; 
     margin: 0; 
     padding: 0;
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    /* --- CAMBIOS AQUÍ --- */
-    min-height: 100dvh; /* Mínimo el alto de pantalla, pero puede crecer */
-    overflow-y: auto;   /* Permite scroll vertical */
-    overflow-x: hidden; /* Evita scroll horizontal innecesario */
+    min-height: 100dvh; 
+    overflow-x: hidden; /* CERO SCROLL HORIZONTAL */
+    overflow-y: auto;   /* Habilita el scroll para el Dashboard */
 }
 .card { background: #121212; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(57, 255, 20, 0.1); border: 1px solid #222; width: 100%; max-width: 400px; margin-bottom: 20px; box-sizing: border-box; }
 h2 { margin-top: 0; color: #ffffff; text-align: center; font-size: 1.2rem; text-shadow: 0 0 5px rgba(57, 255, 20, 0.3); }
@@ -132,33 +128,34 @@ tr:hover { background-color: #1a1a1a; }
 .lista-sugerida { width: 100%; margin: 15px 0; text-align: left; background: #1a1a1a; padding: 10px; border-radius: 8px; }
 
 
-/*LOGIN*/
+/* =========================================
+   LOGIN: EL SÁNDWICH PERFECTO
+   ========================================= */
 
 /* 1. EL CONTENEDOR PRINCIPAL */
 .log-in-cont {
-    min-height: 100dvh; /* Ocupa el 100% de la pantalla, pero permite bajar si el cel es muy chico */
+    height: 100dvh; /* Altura estricta: Ni un píxel más, ni un píxel menos */
     width: 100%;
     display: flex;
     flex-direction: column;
-    /* LA MAGIA: Esto empuja la onda 1 al techo y la onda 2 al piso matemáticamente */
-    justify-content: space-between; 
+    justify-content: space-between; /* Empuja onda 1 al techo y onda 2 al piso */
     align-items: center;
-    overflow-x: hidden; /* MATA EL SCROLL HORIZONTAL */
+    overflow: hidden; /* Mata cualquier scroll o bloque negro exterior */
     background-color: #000000;
-    padding: 0;
 }
 
-/* 2. LAS ONDAS NEÓN */
+/* 2. LAS ONDAS (Sin absolute, son bloques fijos) */
 .onda-neon {
-    position: relative; /* ¡ADIÓS AL ABSOLUTE! Ahora respetan su espacio y no se enciman */
-    width: 100%;        /* Ocupan todo el ancho (se estiran en X) */
-    height: 120px;      /* ALTURA RÍGIDA: Nunca crecerán hacia abajo en la computadora */
-    flex-shrink: 0;     /* Evita que el celular las aplaste */
-    display: block;     /* Elimina márgenes invisibles que causan scroll */
+    width: 100%;
+    height: 12vh; /* 12% de la pantalla en celulares */
+    min-height: 60px;
+    max-height: 100px; /* EN PC NUNCA PASARÁ DE 100PX (No se deformará) */
+    display: block; /* Quita el espacio fantasma que causa scroll horizontal */
+    flex-shrink: 0; /* El navegador no las puede aplastar */
     pointer-events: none;
-    z-index: 1;
 }
-
+.onda-top { margin-top: -2px; }
+.onda-bottom { margin-bottom: -2px; }
 .onda-neon path {
     fill: #051405; 
     stroke: #39ff14; 
@@ -166,39 +163,35 @@ tr:hover { background-color: #1a1a1a; }
     filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.8)); 
 }
 
-/* Ocultamos la línea recta del trazo inferior/superior para que se vea continuo */
-.onda-top {
-    margin-top: -3px; 
-}
-.onda-bottom {
-    margin-bottom: -3px; 
-}
-
-/* 3. TU FORMULARIO CENTRAL */
+/* 3. EL CONTENIDO CENTRAL (Se ajusta solo) */
 #contenido-login {
-    position: relative;
-    z-index: 2; /* Siempre por encima de las ondas */
-    width: 90%;
-    max-width: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px; /* Crea espacio entre los botones automáticamente */
-    margin: 20px auto; /* Espacio de seguridad para que el logo jamás toque la onda */
+    justify-content: center;
+    width: 90%;
+    max-width: 400px;
+    z-index: 2;
+    gap: 12px;
+    flex-grow: 1; /* Toma el espacio libre entre las ondas */
+    overflow-y: auto; /* SI LA PANTALLA ES MUY CHICA, SOLO EL CENTRO HACE SCROLL, LAS ONDAS NO SE MUEVEN */
+    padding: 10px 0;
 }
 
-/* 4. EL LOGO */
+/* 4. EL LOGO (El culpable corregido) */
 .login-logoicon {
-    width: 200px; /* Límite de tamaño para que no empuje todo hacia abajo */
-    height: auto; 
+    height: 70px; /* LIMITAMOS LA ALTURA: Esto evita que empuje la pantalla hacia abajo */
+    width: auto; 
+    max-width: 100%;
     display: block;
-    margin: 0 auto 10px auto; 
+    margin: 0 auto; 
 }
 
 /* --- ESTILOS DE LOS INPUTS --- */
 .login-input-container {
     position: relative; 
     width: 100%;
+    margin-bottom: 10px;
 }
 .login-input-container input {
     background: transparent; 
@@ -249,6 +242,7 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
     justify-content: flex-end; 
     width: 100%;
+    margin-bottom: 10px;
 }
 .login-signin-text {
     font-size: 1.5rem;
@@ -298,7 +292,7 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
     width: 100%;
     color: #555;
-    margin: 15px 0;
+    margin: 10px 0;
 }
 .separador-login::before, .separador-login::after {
     content: "";
