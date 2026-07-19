@@ -13,15 +13,17 @@
     </head>
     <body>
     <div id="login-caja" class="log-in-cont">
-        <!-- 1. SVG SUPERIOR -->
-        <svg class="onda-neon onda-top" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        
+        <!-- 1. SVG SUPERIOR (Techo) -->
+        <svg class="onda-neon" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,0 L0,100 C 120,160 180,30 300,50 C 350,60 380,30 400,20 L400,0 Z" />
         </svg>
-        <!-- 2. CAPA CENTRAL (Z-INDEX 2) -->
+
+        <!-- 2. CAPA CENTRAL (El Sándwich) -->
         <div id="contenido-login">
-            <!-- VISTA DE LOGIN (Faltaba esta etiqueta) -->
             <div id="vista-login">
-                <img src="./assets/LogoLogin.png" alt="" class="login-logoicon">
+                <!-- CORRECCIÓN DE IMAGEN: "Assets" con mayúscula -->
+                <img src="/Assets/LogoLogin.png" alt="Logo Gymlytics" class="login-logoicon">
                 <h2>Inicia sesión</h2>
                 
                 <div class="login-input-container">
@@ -72,7 +74,6 @@
                 <div id="google-hidden-button" style="display:none;"><div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div></div>
             </div>
 
-            <!-- VISTA DE REGISTRO -->
             <div id="vista-registro" style="display: none;">
                 <h2 class="color-accent">Crear Cuenta</h2>
                 <input type="text" id="reg_nombre" placeholder="Nombre completo (Ej. Diego Gaxiola)">
@@ -90,11 +91,10 @@
                 <div id="registro-msj" class="text-center text-bold text-md mt-10"></div>
                 <p class="login-footer-text">¿Ya tienes cuenta? <a href="#" onclick="mostrarLogin()" class="color-blue">Inicia Sesión</a></p>
             </div>
-            
         </div>
 
-        <!-- 3. SVG INFERIOR -->
-        <svg class="onda-neon onda-bottom" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- 3. SVG INFERIOR (Piso) -->
+        <svg class="onda-neon" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,200 L0,50 C 50,50 80,150 200,180 C 250,190 280,200 400,200 Z" />
         </svg>
     </div>
