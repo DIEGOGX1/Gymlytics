@@ -1,28 +1,27 @@
 <!DOCTYPE html>
 <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-        <meta name="theme-color" content="#000000">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <title>Sistema de Entrenamiento Inteligente</title>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <link rel="stylesheet" href="/style.css">
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
-        <link rel="manifest" href="/manifest.json">
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Sistema de Entrenamiento Inteligente</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
     <div id="login-caja" class="log-in-cont">
         
         <!-- 1. SVG SUPERIOR (Techo) -->
-        <svg class="onda-neon" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="onda-neon onda-top" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,0 L0,100 C 120,160 180,30 300,50 C 350,60 380,30 400,20 L400,0 Z" />
         </svg>
 
-        <!-- 2. CAPA CENTRAL (El Sándwich) -->
+        <!-- 2. CAPA CENTRAL (Formulario encapsulado) -->
         <div id="contenido-login">
             <div id="vista-login">
-                <!-- CORRECCIÓN DE IMAGEN: "Assets" con mayúscula -->
                 <img src="/Assets/LogoLogin.png" alt="Logo Gymlytics" class="login-logoicon">
                 <h2>Inicia sesión</h2>
                 
@@ -74,6 +73,7 @@
                 <div id="google-hidden-button" style="display:none;"><div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div></div>
             </div>
 
+            <!-- VISTA DE REGISTRO -->
             <div id="vista-registro" style="display: none;">
                 <h2 class="color-accent">Crear Cuenta</h2>
                 <input type="text" id="reg_nombre" placeholder="Nombre completo (Ej. Diego Gaxiola)">
@@ -94,196 +94,198 @@
         </div>
 
         <!-- 3. SVG INFERIOR (Piso) -->
-        <svg class="onda-neon" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="onda-neon onda-bottom" viewBox="0 0 400 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M0,200 L0,50 C 50,50 80,150 200,180 C 250,190 280,200 400,200 Z" />
         </svg>
     </div>
-        <div id="pantalla-carga" class="pantalla-carga" style="display: none;">Cargando Gymlytics...</div>
-        <div id="pantalla-biometria" class="card mt-15" style="display: none;">
-            <h2>Control de Biometría</h2>
-            <p id="msj-biometria" class="error text-bold text-center text-md"></p>
-            <label>Peso Corporal (kg) *Obligatorio:</label>
-            <input type="number" id="bio_peso" placeholder="Ej: 75.5" step="0.1">
-            <label>Porcentaje de Grasa (%) *Opcional:</label>
-            <input type="number" id="bio_grasa" placeholder="Ej: 15.2" step="0.1">
-            <label>Cintura (cm) *Opcional:</label>
-            <input type="number" id="bio_cintura" placeholder="Ej: 80">
-            <label>Brazos (cm) *Opcional:</label>
-            <div class="flex-row mb-10">
-                <input type="number" id="bio_brazo_der" placeholder="Derecho" step="0.1" style="margin: 0;">
-                <input type="number" id="bio_brazo_izq" placeholder="Izquierdo" step="0.1" style="margin: 0;">
-            </div>
-            <label>Piernas (cm) *Opcional:</label>
-            <div class="flex-row mb-10">
-                <input type="number" id="bio_pierna_der" placeholder="Derecho" step="0.1" style="margin: 0;">
-                <input type="number" id="bio_pierna_izq" placeholder="Izquierdo" step="0.1" style="margin: 0;">
-            </div>
-            <button onclick="enviarBiometria()" class="btn-yellow mt-15">Guardar y Desbloquear</button>
-            <div id="mensaje-bio" class="text-center text-bold mt-10"></div>
-            <button onclick="cerrarSesion()" class="btn-outline-red mt-10">Cerrar Sesión</button>
+
+    <!-- EL RESTO DE TU APLICACIÓN -->
+    <div id="pantalla-carga" class="pantalla-carga" style="display: none;">Cargando Gymlytics...</div>
+    <div id="pantalla-biometria" class="card mt-15" style="display: none;">
+        <h2>Control de Biometría</h2>
+        <p id="msj-biometria" class="error text-bold text-center text-md"></p>
+        <label>Peso Corporal (kg) *Obligatorio:</label>
+        <input type="number" id="bio_peso" placeholder="Ej: 75.5" step="0.1">
+        <label>Porcentaje de Grasa (%) *Opcional:</label>
+        <input type="number" id="bio_grasa" placeholder="Ej: 15.2" step="0.1">
+        <label>Cintura (cm) *Opcional:</label>
+        <input type="number" id="bio_cintura" placeholder="Ej: 80">
+        <label>Brazos (cm) *Opcional:</label>
+        <div class="flex-row mb-10">
+            <input type="number" id="bio_brazo_der" placeholder="Derecho" step="0.1" style="margin: 0;">
+            <input type="number" id="bio_brazo_izq" placeholder="Izquierdo" step="0.1" style="margin: 0;">
         </div>
-        <div id="dashboard-principal" class="vista-container" style="display: none;">
-            <div class="barra-superior flex-between border-box w-100">
-                <span id="bienvenida-usuario" class="text-bold color-accent text-lg text-shadow"></span>
-                <button onclick="cerrarSesion()" class="btn-outline-red btn-small">🚪 Salir</button>
+        <label>Piernas (cm) *Opcional:</label>
+        <div class="flex-row mb-10">
+            <input type="number" id="bio_pierna_der" placeholder="Derecho" step="0.1" style="margin: 0;">
+            <input type="number" id="bio_pierna_izq" placeholder="Izquierdo" step="0.1" style="margin: 0;">
+        </div>
+        <button onclick="enviarBiometria()" class="btn-yellow mt-15">Guardar y Desbloquear</button>
+        <div id="mensaje-bio" class="text-center text-bold mt-10"></div>
+        <button onclick="cerrarSesion()" class="btn-outline-red mt-10">Cerrar Sesión</button>
+    </div>
+    <div id="dashboard-principal" class="vista-container" style="display: none;">
+        <div class="barra-superior flex-between border-box w-100">
+            <span id="bienvenida-usuario" class="text-bold color-accent text-lg text-shadow"></span>
+            <button onclick="cerrarSesion()" class="btn-outline-red btn-small">🚪 Salir</button>
+        </div>
+        <div class="card" id="tarjeta-recuperacion">
+            <h2>REGISTRO DIARIO DE RECUPERACIÓN</h2>
+            <p class="text-small color-gray text-center mb-15">Ingresa tus datos o usa el Asistente IA para los macros.</p>
+            <div class="grid-2 mb-15">
+                <div><label class="text-small text-bold color-gray">Calorías (kcal)</label><input type="number" id="input-cal" class="border-box mt-5 w-100"></div>
+                <div><label class="text-small text-bold color-gray">Proteínas (g)</label><input type="number" id="input-pro" class="border-box mt-5 w-100"></div>
+                <div><label class="text-small text-bold color-gray">Carbohidratos (g)</label><input type="number" id="input-car" class="border-box mt-5 w-100"></div>
+                <div><label class="text-small text-bold color-gray">Grasas (g)</label><input type="number" id="input-gra" class="border-box mt-5 w-100"></div>
             </div>
-            <div class="card" id="tarjeta-recuperacion">
-                <h2>REGISTRO DIARIO DE RECUPERACIÓN</h2>
-                <p class="text-small color-gray text-center mb-15">Ingresa tus datos o usa el Asistente IA para los macros.</p>
-                <div class="grid-2 mb-15">
-                    <div><label class="text-small text-bold color-gray">Calorías (kcal)</label><input type="number" id="input-cal" class="border-box mt-5 w-100"></div>
-                    <div><label class="text-small text-bold color-gray">Proteínas (g)</label><input type="number" id="input-pro" class="border-box mt-5 w-100"></div>
-                    <div><label class="text-small text-bold color-gray">Carbohidratos (g)</label><input type="number" id="input-car" class="border-box mt-5 w-100"></div>
-                    <div><label class="text-small text-bold color-gray">Grasas (g)</label><input type="number" id="input-gra" class="border-box mt-5 w-100"></div>
-                </div>
-                <hr>
-                <div class="mb-15">
-                    <label class="text-small text-bold color-gray">Horas de Sueño</label>
-                    <input type="number" id="input-sueno" step="0.1" class="border-box mt-5 w-100">
-                </div>
-                <button onclick="guardarRegistroDiario()">Guardar mis datos</button>
-                <div id="mensaje-rec" class="text-center text-md mt-10"></div>
+            <hr>
+            <div class="mb-15">
+                <label class="text-small text-bold color-gray">Horas de Sueño</label>
+                <input type="number" id="input-sueno" step="0.1" class="border-box mt-5 w-100">
             </div>
-            <div class="card card-yellow-border" id="tarjeta-nutricion">
-                <h2 class="color-yellow">Asistente Nutricional IA</h2>
-                <p class="text-small color-gray text-center mb-10">Ingresa tus alimentos <strong>plato por plato</strong>. Yo sumaré por ti.</p>
-                <div id="chat-historial" class="chat-historial">
-                    <div class="burbuja-ia"><strong class="color-accent">IA:</strong> ¡Hola! Soy tu asistente virtual, ¿quieres que analice tu comida?</div>
-                </div>
-                <div class="flex-row-center">
-                    <button id="btn-microfono" onclick="iniciarDictado()" class="btn-micro" title="Hablar">🎤</button>
-                    <input type="text" id="input-comida" placeholder="Ej: De desayuno comí..." style="margin: 0; flex-grow: 1;" onkeypress="if(event.key === 'Enter') analizarComidaEnUI()">
-                    <button id="btn-enviar-comida" onclick="analizarComidaEnUI()" class="btn-enviar">Enviar</button>
-                </div>
-                <div id="estado-microfono" class="micro-status"></div>
+            <button onclick="guardarRegistroDiario()">Guardar mis datos</button>
+            <div id="mensaje-rec" class="text-center text-md mt-10"></div>
+        </div>
+        <div class="card card-yellow-border" id="tarjeta-nutricion">
+            <h2 class="color-yellow">Asistente Nutricional IA</h2>
+            <p class="text-small color-gray text-center mb-10">Ingresa tus alimentos <strong>plato por plato</strong>. Yo sumaré por ti.</p>
+            <div id="chat-historial" class="chat-historial">
+                <div class="burbuja-ia"><strong class="color-accent">IA:</strong> ¡Hola! Soy tu asistente virtual, ¿quieres que analice tu comida?</div>
             </div>
-            <div id="vista-lobby-entrenamiento" class="vista-container" style="display: flex;">
-                <button onclick="comenzarEntrenamiento()" class="mb-10 text-lg p-15">¡Comenzar a entrenar!</button>
-                <div class="flex-row">
-                    <button onclick="abrirConsulta()" class="btn-blue text-md">Ver Gráficas</button>
-                    <button onclick="abrirCalendario()" class="btn-purple text-md">Calendario</button>
-                </div>
+            <div class="flex-row-center">
+                <button id="btn-microfono" onclick="iniciarDictado()" class="btn-micro" title="Hablar">🎤</button>
+                <input type="text" id="input-comida" placeholder="Ej: De desayuno comí..." style="margin: 0; flex-grow: 1;" onkeypress="if(event.key === 'Enter') analizarComidaEnUI()">
+                <button id="btn-enviar-comida" onclick="analizarComidaEnUI()" class="btn-enviar">Enviar</button>
             </div>
-            <div id="vista-consulta-grafica" class="vista-container">
-                <button onclick="volverAEjerciciosConsulta()" class="btn-gray mb-15 w-100">⬅️ Volver al Catálogo</button>
-                <h2 id="titulo-consulta-ejercicio" class="color-blue"></h2>
-                <div class="card mt-10">
-                    <h2 class="color-accent">HISTORIAL Y SOBRECARGA</h2>
-                    <div class="grafica-container">
-                        <canvas id="miCanvasConsulta"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div id="vista-calendario" class="vista-container card">
-                <button onclick="location.reload()" class="mb-15 w-100">⬅️ Volver al Inicio</button>
-                <h2 class="color-purple">Calendario de Entrenamientos</h2>
-                <p class="text-small color-gray text-center">Selecciona un día para ver tus métricas.</p>
-                <input type="date" id="selector-fecha" onchange="consultarDiaEspecifico()" class="mb-15 text-bold color-gray" style="cursor: pointer;">
-                <div id="resultado-dia" class="resultado-dia" style="display:none;"></div>
-            </div>
-            <div id="vista-pregunta-musculo" class="vista-container">
-                <h2 id="titulo-vista-musculos" class="text-center">¿Qué vas a entrenar hoy?</h2>
-                <input type="text" id="buscador-global" placeholder="🔍 Buscar ejercicio..." onkeyup="buscarEjercicioGlobal()" class="buscador mb-15">
-                <div id="contenedor-botones-musculos" class="flex-wrap-center mb-15"></div>
-                <div id="contenedor-resultados-busqueda" class="flex-wrap-center mb-15" style="display: none;"></div>
-                <button onclick="volverAlLobby()" class="mb-10 w-100" style="border-radius: 12px;">⬅️ Volver al Inicio</button>
-                <button id="btn-terminar-sesion-musculos" onclick="finalizarSesiónTotal()" class="btn-red text-bold p-15 w-100" style="border-radius: 12px;">Terminar Sesión y Ver Resumen</button>
-            </div>
-            <div id="vista-decision-plantilla" class="vista-container card">
-                <h2 class="color-purple">Rutina Sugerida Detectada</h2>
-                <p id="texto-sugerencia-rutina" class="text-md color-gray text-center"></p>
-                <div id="lista-ejercicios-sugeridos" class="lista-sugerida"></div>
-                <button onclick="aceptarRutinaSugerida()" class="btn-purple mb-10">Aceptar Rutina</button>
-                <button onclick="rechazarYBuscarManualmente()" class="btn-outline-gray">Elegir manualmente</button>
-            </div>
-            <div id="vista-lista-ejercicios" class="vista-container">
-                <h2 id="titulo-grupo-seleccionado" class="color-blue text-center"></h2>
-                <div id="contenedor-tarjetas-ejercicios" class="flex-wrap-center mb-15"></div>
-                <button onclick="volverAGrupos()" class="btn-gray mb-10 w-100">⬅️ Volver a Músculos</button>
-                <button id="btn-terminar-sesion-lista" onclick="finalizarSesiónTotal()" class="btn-red text-bold p-15 w-100">🛑 Terminar Sesión</button>
-            </div>
-            <div id="vista-asistente-tracking" class="vista-container">
-                <h2 id="asistente-ejercicio-titulo" class="header-asistente"></h2>
-                <div class="card mt-10">
-                    <div class="contador-box">Series acumuladas: <span id="asistente-conteo-series" class="color-red text-lg">0</span></div>
-                    <h2>REGISTRAR SERIE</h2>
-                    <label>Número de serie</label>
-                    <input type="number" id="num_serie" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
-                    <div id="meta-dinamica" class="meta-dinamica" style="display: none;">
-                        <span class="color-blue text-bold">Objetivo Sugerido:</span>
-                        <div id="meta-texto" class="mt-5 color-light" style="line-height: 1.4;"></div>
-                    </div>
-                    <label>Peso a registrar:</label>
-                    <div class="flex-row mb-10">
-                        <input type="number" id="peso" placeholder="Ej: 100" step="0.5" style="margin: 0; flex-grow: 1;">
-                        <select id="unidad-peso" style="width:auto; padding: 10px;">
-                            <option value="kg">kg</option>
-                            <option value="lbs">lbs</option>
-                        </select>
-                    </div>
-                    <label>Reps logradas:</label>
-                    <input type="number" id="reps" placeholder="Ej: 8">
-                    <button onclick="enviarSerieAsistente()" class="btn-blue">Guardar Serie</button>
-                    <div id="mensaje"></div>
-                </div>
-                <div class="card mt-10">
-                    <h2 class="color-accent">MI PROGRESO (SOBRECARGA)</h2>
-                    <div class="grafica-container">
-                        <canvas id="miCanvasGrafica"></canvas>
-                    </div>
-                </div>
-                <button onclick="preguntarSiguientePaso()" class="btn-yellow text-bold p-15 mt-10">Terminar Ejercicio Actual</button>
-                <div class="card card-gray-border mt-15">
-                    <h2 class="color-gray text-lg">REGISTROS DE SESIÓN</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ejercicio</th>
-                                <th>Serie</th>
-                                <th>Peso</th>
-                                <th>Reps</th>
-                                <th>⚙️</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-sesion-actual-cuerpo">
-                            <tr>
-                                <td colspan="5" class="color-gray">Sin series aún.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="vista-resumen-final" class="vista-container card">
-                <h2 class="color-accent text-xl">¡Entrenamiento Concluido!</h2>
-                <p class="text-center color-light text-bold">Tu esfuerzo de hoy ha sido procesado.</p>
-                <div class="resumen-box-green w-100">
-                    <p class="mt-5 mb-5"><strong>Total de Series:</strong> <span id="resumen-total-series">0</span> efectivas</p>
-                    <div id="resumen-desglose-musculos" class="text-md color-light mt-10" style="padding-left: 10px;"></div>
-                </div>
-                <div class="resumen-box-yellow w-100 text-md">
-                    <h4 style="margin: 0 0 8px 0; color: #b78103;">Análisis de Sobrecarga:</h4>
-                    <div id="resumen-analisis-cargas"></div>
-                </div>
-                <button onclick="location.reload()" class="btn-blue mt-15">Ir al Panel General</button>
-            </div>
-            <div class="card card-purple-border" id="tarjeta-veredicto">
-                <h2 class="color-purple">VEREDICTO SEMANAL</h2>
-                <p class="text-center text-md color-gray">Evalúa si tus hábitos de los últimos 7 días están alineados con tu meta.</p>
-                <button onclick="obtenerReporteSemanal()" class="btn-purple mt-10">Generar Reporte Semanal</button>
-                <div id="panel-semanal" class="panel-semanal">
-                    <p id="texto-semanal" class="color-light text-md" style="margin: 0; line-height: 1.5;"></p>
-                </div>
-            </div>
-            <div class="card card-blue-border" id="tarjeta-grafica">
-                <h2 class="color-blue">ANÁLISIS BIOMÉTRICO</h2>
-                <p class="text-small color-gray text-center mb-15">Evolución en datos representados gráficamente.</p>
-                <div class="grafica-container grafica-tendencia">
-                    <canvas id="graficaTendenciaGlobal"></canvas>
-                </div>
-                <button onclick="cargarTendenciaGlobal()" class="mt-15">Actualizar Tendencia</button>
+            <div id="estado-microfono" class="micro-status"></div>
+        </div>
+        <div id="vista-lobby-entrenamiento" class="vista-container" style="display: flex;">
+            <button onclick="comenzarEntrenamiento()" class="mb-10 text-lg p-15">¡Comenzar a entrenar!</button>
+            <div class="flex-row">
+                <button onclick="abrirConsulta()" class="btn-blue text-md">Ver Gráficas</button>
+                <button onclick="abrirCalendario()" class="btn-purple text-md">Calendario</button>
             </div>
         </div>
-        <script src="/scripts.js"></script>
-        <script src="/scripts2.js"></script>
-    </body>
+        <div id="vista-consulta-grafica" class="vista-container">
+            <button onclick="volverAEjerciciosConsulta()" class="btn-gray mb-15 w-100">⬅️ Volver al Catálogo</button>
+            <h2 id="titulo-consulta-ejercicio" class="color-blue"></h2>
+            <div class="card mt-10">
+                <h2 class="color-accent">HISTORIAL Y SOBRECARGA</h2>
+                <div class="grafica-container">
+                    <canvas id="miCanvasConsulta"></canvas>
+                </div>
+            </div>
+        </div>
+        <div id="vista-calendario" class="vista-container card">
+            <button onclick="location.reload()" class="mb-15 w-100">⬅️ Volver al Inicio</button>
+            <h2 class="color-purple">Calendario de Entrenamientos</h2>
+            <p class="text-small color-gray text-center">Selecciona un día para ver tus métricas.</p>
+            <input type="date" id="selector-fecha" onchange="consultarDiaEspecifico()" class="mb-15 text-bold color-gray" style="cursor: pointer;">
+            <div id="resultado-dia" class="resultado-dia" style="display:none;"></div>
+        </div>
+        <div id="vista-pregunta-musculo" class="vista-container">
+            <h2 id="titulo-vista-musculos" class="text-center">¿Qué vas a entrenar hoy?</h2>
+            <input type="text" id="buscador-global" placeholder="🔍 Buscar ejercicio..." onkeyup="buscarEjercicioGlobal()" class="buscador mb-15">
+            <div id="contenedor-botones-musculos" class="flex-wrap-center mb-15"></div>
+            <div id="contenedor-resultados-busqueda" class="flex-wrap-center mb-15" style="display: none;"></div>
+            <button onclick="volverAlLobby()" class="mb-10 w-100" style="border-radius: 12px;">⬅️ Volver al Inicio</button>
+            <button id="btn-terminar-sesion-musculos" onclick="finalizarSesiónTotal()" class="btn-red text-bold p-15 w-100" style="border-radius: 12px;">Terminar Sesión y Ver Resumen</button>
+        </div>
+        <div id="vista-decision-plantilla" class="vista-container card">
+            <h2 class="color-purple">Rutina Sugerida Detectada</h2>
+            <p id="texto-sugerencia-rutina" class="text-md color-gray text-center"></p>
+            <div id="lista-ejercicios-sugeridos" class="lista-sugerida"></div>
+            <button onclick="aceptarRutinaSugerida()" class="btn-purple mb-10">Aceptar Rutina</button>
+            <button onclick="rechazarYBuscarManualmente()" class="btn-outline-gray">Elegir manualmente</button>
+        </div>
+        <div id="vista-lista-ejercicios" class="vista-container">
+            <h2 id="titulo-grupo-seleccionado" class="color-blue text-center"></h2>
+            <div id="contenedor-tarjetas-ejercicios" class="flex-wrap-center mb-15"></div>
+            <button onclick="volverAGrupos()" class="btn-gray mb-10 w-100">⬅️ Volver a Músculos</button>
+            <button id="btn-terminar-sesion-lista" onclick="finalizarSesiónTotal()" class="btn-red text-bold p-15 w-100">🛑 Terminar Sesión</button>
+        </div>
+        <div id="vista-asistente-tracking" class="vista-container">
+            <h2 id="asistente-ejercicio-titulo" class="header-asistente"></h2>
+            <div class="card mt-10">
+                <div class="contador-box">Series acumuladas: <span id="asistente-conteo-series" class="color-red text-lg">0</span></div>
+                <h2>REGISTRAR SERIE</h2>
+                <label>Número de serie</label>
+                <input type="number" id="num_serie" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
+                <div id="meta-dinamica" class="meta-dinamica" style="display: none;">
+                    <span class="color-blue text-bold">Objetivo Sugerido:</span>
+                    <div id="meta-texto" class="mt-5 color-light" style="line-height: 1.4;"></div>
+                </div>
+                <label>Peso a registrar:</label>
+                <div class="flex-row mb-10">
+                    <input type="number" id="peso" placeholder="Ej: 100" step="0.5" style="margin: 0; flex-grow: 1;">
+                    <select id="unidad-peso" style="width:auto; padding: 10px;">
+                        <option value="kg">kg</option>
+                        <option value="lbs">lbs</option>
+                    </select>
+                </div>
+                <label>Reps logradas:</label>
+                <input type="number" id="reps" placeholder="Ej: 8">
+                <button onclick="enviarSerieAsistente()" class="btn-blue">Guardar Serie</button>
+                <div id="mensaje"></div>
+            </div>
+            <div class="card mt-10">
+                <h2 class="color-accent">MI PROGRESO (SOBRECARGA)</h2>
+                <div class="grafica-container">
+                    <canvas id="miCanvasGrafica"></canvas>
+                </div>
+            </div>
+            <button onclick="preguntarSiguientePaso()" class="btn-yellow text-bold p-15 mt-10">Terminar Ejercicio Actual</button>
+            <div class="card card-gray-border mt-15">
+                <h2 class="color-gray text-lg">REGISTROS DE SESIÓN</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ejercicio</th>
+                            <th>Serie</th>
+                            <th>Peso</th>
+                            <th>Reps</th>
+                            <th>⚙️</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-sesion-actual-cuerpo">
+                        <tr>
+                            <td colspan="5" class="color-gray">Sin series aún.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="vista-resumen-final" class="vista-container card">
+            <h2 class="color-accent text-xl">¡Entrenamiento Concluido!</h2>
+            <p class="text-center color-light text-bold">Tu esfuerzo de hoy ha sido procesado.</p>
+            <div class="resumen-box-green w-100">
+                <p class="mt-5 mb-5"><strong>Total de Series:</strong> <span id="resumen-total-series">0</span> efectivas</p>
+                <div id="resumen-desglose-musculos" class="text-md color-light mt-10" style="padding-left: 10px;"></div>
+            </div>
+            <div class="resumen-box-yellow w-100 text-md">
+                <h4 style="margin: 0 0 8px 0; color: #b78103;">Análisis de Sobrecarga:</h4>
+                <div id="resumen-analisis-cargas"></div>
+            </div>
+            <button onclick="location.reload()" class="btn-blue mt-15">Ir al Panel General</button>
+        </div>
+        <div class="card card-purple-border" id="tarjeta-veredicto">
+            <h2 class="color-purple">VEREDICTO SEMANAL</h2>
+            <p class="text-center text-md color-gray">Evalúa si tus hábitos de los últimos 7 días están alineados con tu meta.</p>
+            <button onclick="obtenerReporteSemanal()" class="btn-purple mt-10">Generar Reporte Semanal</button>
+            <div id="panel-semanal" class="panel-semanal">
+                <p id="texto-semanal" class="color-light text-md" style="margin: 0; line-height: 1.5;"></p>
+            </div>
+        </div>
+        <div class="card card-blue-border" id="tarjeta-grafica">
+            <h2 class="color-blue">ANÁLISIS BIOMÉTRICO</h2>
+            <p class="text-small color-gray text-center mb-15">Evolución en datos representados gráficamente.</p>
+            <div class="grafica-container grafica-tendencia">
+                <canvas id="graficaTendenciaGlobal"></canvas>
+            </div>
+            <button onclick="cargarTendenciaGlobal()" class="mt-15">Actualizar Tendencia</button>
+        </div>
+    </div>
+    <script src="/scripts.js"></script>
+    <script src="/scripts2.js"></script>
+</body>
 </html>
