@@ -134,22 +134,16 @@ tr:hover { background-color: #1a1a1a; }
 /* =========================================
    LOGIN: ESTRUCTURA EXACTA SIN DESBORDES
    ========================================= */
-/* =========================================
-   LOGIN: ESTRUCTURA EXACTA SIN DESBORDES
-   ========================================= */
 .log-in-cont {
     position: relative;
     width: 100%;
-    /* MAGIA 1: Usar min-height permite que el fondo crezca si la pantalla es bajita (100% zoom) */
     min-height: 100dvh; 
-    /* ELIMINAMOS overflow: hidden; para que la página te deje hacer scroll si no cabe */
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #000000;
-    /* MAGIA 2: Creamos 120px de espacio invisible arriba y abajo.
-       Así el formulario JAMÁS se esconderá detrás de las ondas neón. */
-    padding: 120px 0; 
+    /* EL CULPABLE ERA EL PADDING GIGANTE. Lo cambiamos a un respiro mínimo */
+    padding: 20px 15px; 
     box-sizing: border-box;
 }
 
@@ -159,7 +153,7 @@ tr:hover { background-color: #1a1a1a; }
     left: 0;
     width: 100%;        
     height: 15vh;
-    max-height: 120px; /* EN PC SE QUEDAN DE 120PX, NO CRECEN VERTICALMENTE */
+    max-height: 120px; 
     z-index: 1;
     pointer-events: none;
     display: block;
@@ -168,7 +162,7 @@ tr:hover { background-color: #1a1a1a; }
     top: 0;
 }
 .onda-bottom {
-    bottom: 0; /* Clavada al último pixel inferior */
+    bottom: 0; 
 }
 .onda-neon path {
     fill: #051405; 
@@ -180,10 +174,9 @@ tr:hover { background-color: #1a1a1a; }
 /* EL FORMULARIO - ENCAPSULADO PARA QUE NO TOQUE LAS ONDAS */
 #contenido-login {
     position: relative;
-    z-index: 2; /* Siempre encima */
+    z-index: 2; 
     width: 90%;
     max-width: 400px;
-    /* ELIMINAMOS el max-height y el overflow-y para dejar de "aplastar" el formulario por dentro */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -195,14 +188,16 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
 }
 
-/* EL LOGO (Regresado a su tamaño imponente original) */
+/* EL LOGO (Con el margen inferior ligeramente ajustado para ahorrar espacio) */
 .login-logoicon {
     width: 300px; 
     max-width: 100%;
     height: auto; 
     display: block;
-    margin: 0 auto 20px auto; 
+    margin: 0 auto 15px auto; 
 }
+
+/* ... (DE AQUÍ EN ADELANTE TODO TU CSS DE LOS INPUTS Y BOTONES SE QUEDA EXACTAMENTE IGUAL) ... */
 
 /* --- ESTILOS DE LOS INPUTS --- */
 .login-input-container {
