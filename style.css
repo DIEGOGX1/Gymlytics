@@ -142,18 +142,17 @@ tr:hover { background-color: #1a1a1a; }
     justify-content: center;
     align-items: center;
     background-color: #000000;
-    /* EL CULPABLE ERA EL PADDING GIGANTE. Lo cambiamos a un respiro mínimo */
     padding: 20px 15px; 
     box-sizing: border-box;
 }
 
-/* LAS ONDAS NEÓN - ANCLADAS RÍGIDAMENTE A LOS EXTREMOS */
+/* LAS ONDAS NEÓN */
 .onda-neon {
     position: absolute;
     left: 0;
     width: 100%;        
-    height: 15vh;
-    max-height: 120px; 
+    height: 12vh;       /* TRUCO 1: Reducido un poquito para dar aire */
+    max-height: 85px;   /* TRUCO 2: Ahora las ondas ocupan menos espacio vertical en PC */
     z-index: 1;
     pointer-events: none;
     display: block;
@@ -171,7 +170,7 @@ tr:hover { background-color: #1a1a1a; }
     filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.8)); 
 }
 
-/* EL FORMULARIO - ENCAPSULADO PARA QUE NO TOQUE LAS ONDAS */
+/* EL FORMULARIO */
 #contenido-login {
     position: relative;
     z-index: 2; 
@@ -188,22 +187,20 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
 }
 
-/* EL LOGO (Con el margen inferior ligeramente ajustado para ahorrar espacio) */
+/* EL LOGO */
 .login-logoicon {
-    width: 300px; 
+    width: 260px; /* TRUCO 3: Ligeramente ajustado para no empujar todo hacia abajo */
     max-width: 100%;
     height: auto; 
     display: block;
-    margin: 0 auto 15px auto; 
+    margin: 0 auto 10px auto; /* Redujimos el espacio vacío debajo del logo */
 }
-
-/* ... (DE AQUÍ EN ADELANTE TODO TU CSS DE LOS INPUTS Y BOTONES SE QUEDA EXACTAMENTE IGUAL) ... */
 
 /* --- ESTILOS DE LOS INPUTS --- */
 .login-input-container {
     position: relative; 
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 12px; /* TRUCO 4: Redujimos espacios muertos entre los inputs */
 }
 .login-input-container input {
     background: transparent; 
@@ -241,7 +238,7 @@ tr:hover { background-color: #1a1a1a; }
 .olvide-pass {
     text-align: right;
     width: 100%;
-    margin-bottom: 30px;
+    margin-bottom: 15px; /* TRUCO 5: Espacio muerto reducido */
 }
 .olvide-pass a {
     color: #39ff14;
@@ -255,7 +252,7 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
     justify-content: flex-end; 
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 10px; /* TRUCO 6: Espacio muerto reducido */
 }
 .login-signin-text {
     font-size: 1.5rem;
@@ -303,7 +300,7 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
     width: 100%;
     color: #555;
-    margin: 15px 0;
+    margin: 10px 0; /* TRUCO 7: Espacio muerto reducido */
 }
 .separador-login::before, .separador-login::after {
     content: "";
@@ -328,7 +325,7 @@ tr:hover { background-color: #1a1a1a; }
     padding: 12px;
     cursor: pointer; 
     transition: transform 0.2s; 
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* TRUCO 8: Espacio muerto reducido */
     box-sizing: border-box;
 }
 .btn-google-neon svg {
