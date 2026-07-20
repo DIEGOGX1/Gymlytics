@@ -1,8 +1,11 @@
-// Aumentamos la versión a v2 para forzar a los celulares a borrar el caché viejo
-const CACHE_NAME = 'gymlytics-v2';
+// Aumentamos la versión a v3 para forzar a los celulares a borrar el caché viejo
+const CACHE_NAME = 'gymlytics-v3';
 const urlsToCache = [
     '/',
     '/index.html',
+    '/style.css',
+    '/scripts.js',
+    '/scripts2.js',
     '/manifest.json'
 ];
 
@@ -21,7 +24,7 @@ self.addEventListener('activate', event => {
             return Promise.all(
                 cacheNames.map(cacheName => {
                     if (cacheName !== CACHE_NAME) {
-                        return caches.delete(cacheName);
+                        return caches.delete(cacheName); // Borra el CSS roto anterior
                     }
                 })
             );
@@ -46,12 +49,9 @@ self.addEventListener('fetch', event => {
                 });
                 return networkResponse;
             }).catch(() => {
-                // Si el usuario está sin señal en el gimnasio, no hacemos nada, 
-                // ya que la interfaz cargó exitosamente desde la caché.
+                // Si el usuario está sin señal en el gimnasio, no hacemos nada
             });
 
-            // Retorna la caché al INSTANTE (0.1s de carga). 
-            // Si es la primerísima vez y no hay caché, espera a la red.
             return cachedResponse || fetchPromise; 
         })
     );
