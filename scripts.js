@@ -104,11 +104,9 @@ const API_BASE = window.location.origin + "/api";
 
         // 2. FUNCIONES DE ACCESO
         function mostrarPantallaLogin() {
-            // CORREGIDO: Usamos los IDs exactos del HTML actual y borramos el fetch viejo
             document.getElementById("dashboard-principal").style.display = "none";
-            document.getElementById("login-caja").style.display = "block";
+            document.getElementById("login-caja").style.display = "flex"; // <-- ¡AQUÍ ESTABA EL ERROR!
         }
-
         function cerrarSesion() {
             // BORRAMOS LAS LLAVES DE SEGURIDAD
             localStorage.removeItem("gymlytics_token"); 
@@ -167,7 +165,7 @@ const API_BASE = window.location.origin + "/api";
                 document.getElementById("pantalla-carga").style.display = "none";
                 
                 // RED DE SEGURIDAD: Volvemos a encender el login y mostramos el error
-                document.getElementById("login-caja").style.display = "block";
+                document.getElementById("login-caja").style.display = "flex"; // <-- CAMBIADO A FLEX
                 document.getElementById("login-error").innerText = "❌ Error de conexión al cargar tu perfil. Por favor, vuelve a entrar.";
                 
                 // Borramos el token defectuoso para evitar bucles
@@ -259,12 +257,12 @@ async function enviarBiometria() {
         
         function mostrarRegistro() {
             document.getElementById("vista-login").style.display = "none";
-            document.getElementById("vista-registro").style.display = "block";
+            document.getElementById("vista-registro").style.display = "flex"; // <-- CAMBIADO A FLEX
         }
 
         function mostrarLogin() {
             document.getElementById("vista-registro").style.display = "none";
-            document.getElementById("vista-login").style.display = "block";
+            document.getElementById("vista-login").style.display = "flex"; // <-- CAMBIADO A FLEX
         }
 
         async function ejecutarRegistro() {
