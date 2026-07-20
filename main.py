@@ -201,6 +201,14 @@ class RegistroRequest(BaseModel):
 class MensajeNutricion(BaseModel):
     texto_comida: str
 
+@app.get("/scripts.js")
+def get_scripts():
+    return FileResponse("scripts.js")
+
+@app.get("/scripts2.js")
+def get_scripts2():
+    return FileResponse("scripts2.js")
+
 @app.post("/api/auth/google")
 def login_google(req: GoogleAuthRequest, db: Session = Depends(get_db)):
     try:
