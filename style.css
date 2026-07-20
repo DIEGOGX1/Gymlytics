@@ -134,22 +134,30 @@ tr:hover { background-color: #1a1a1a; }
 /* =========================================
    LOGIN: ESTRUCTURA EXACTA SIN DESBORDES
    ========================================= */
+/* =========================================
+   LOGIN: ESTRUCTURA EXACTA SIN DESBORDES
+   ========================================= */
 .log-in-cont {
     position: relative;
-    width: 100%;        /* CORRECCIÓN: 100% evita el scroll horizontal, 100vw lo causaba */
-    height: 100dvh; /* Bloqueo estricto a la altura de la pantalla */
-    overflow: hidden; /* Imposible que algo se salga y cause scroll o bloques negros */
+    width: 100%;
+    /* MAGIA 1: Usar min-height permite que el fondo crezca si la pantalla es bajita (100% zoom) */
+    min-height: 100dvh; 
+    /* ELIMINAMOS overflow: hidden; para que la página te deje hacer scroll si no cabe */
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #000000;
+    /* MAGIA 2: Creamos 120px de espacio invisible arriba y abajo.
+       Así el formulario JAMÁS se esconderá detrás de las ondas neón. */
+    padding: 120px 0; 
+    box-sizing: border-box;
 }
 
 /* LAS ONDAS NEÓN - ANCLADAS RÍGIDAMENTE A LOS EXTREMOS */
 .onda-neon {
     position: absolute;
     left: 0;
-    width: 100%;        /* CORRECCIÓN: 100% evita el scroll horizontal, 100vw lo causaba */
+    width: 100%;        
     height: 15vh;
     max-height: 120px; /* EN PC SE QUEDAN DE 120PX, NO CRECEN VERTICALMENTE */
     z-index: 1;
@@ -175,14 +183,10 @@ tr:hover { background-color: #1a1a1a; }
     z-index: 2; /* Siempre encima */
     width: 90%;
     max-width: 400px;
-    max-height: 70vh; /* ZONA SEGURA: En teléfonos pequeños, el formulario hará scroll interno, no la pantalla */
+    /* ELIMINAMOS el max-height y el overflow-y para dejar de "aplastar" el formulario por dentro */
     display: flex;
     flex-direction: column;
     align-items: center;
-    overflow-y: auto;
-}
-#contenido-login::-webkit-scrollbar {
-    display: none; /* Oculta la barra de scroll del formulario */
 }
 #vista-login, #vista-registro {
     width: 100%;
@@ -191,11 +195,11 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
 }
 
-/* EL LOGO */
+/* EL LOGO (Regresado a su tamaño imponente original) */
 .login-logoicon {
-    width: auto;
-    height: 80px; /* Controla la altura para que no desplace los inputs hacia abajo */
+    width: 300px; 
     max-width: 100%;
+    height: auto; 
     display: block;
     margin: 0 auto 20px auto; 
 }
