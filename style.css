@@ -7,7 +7,7 @@ body {
     color: #e0e0e0; 
     margin: 0; 
     padding: 0;
-    width: 100vw;
+    width: 100%;        /* CORRECCIÓN: 100% evita el scroll horizontal, 100vw lo causaba */
     overflow-x: hidden; /* MATA EL SCROLL HORIZONTAL */
     overflow-y: auto;   /* Permite scroll vertical en el dashboard */
 }
@@ -136,7 +136,7 @@ tr:hover { background-color: #1a1a1a; }
    ========================================= */
 .log-in-cont {
     position: relative;
-    width: 100vw;
+    width: 100%;        /* CORRECCIÓN: 100% evita el scroll horizontal, 100vw lo causaba */
     height: 100dvh; /* Bloqueo estricto a la altura de la pantalla */
     overflow: hidden; /* Imposible que algo se salga y cause scroll o bloques negros */
     display: flex;
@@ -149,7 +149,7 @@ tr:hover { background-color: #1a1a1a; }
 .onda-neon {
     position: absolute;
     left: 0;
-    width: 100vw;
+    width: 100%;        /* CORRECCIÓN: 100% evita el scroll horizontal, 100vw lo causaba */
     height: 15vh;
     max-height: 120px; /* EN PC SE QUEDAN DE 120PX, NO CRECEN VERTICALMENTE */
     z-index: 1;
