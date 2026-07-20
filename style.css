@@ -130,19 +130,20 @@ tr:hover { background-color: #1a1a1a; }
 .header-asistente { background-color: #1a73e8; color: white; padding: 12px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box; }
 .contador-box { background-color: #1a1a1a; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #aaa; margin-bottom: 15px; width: 100%; text-align: center; box-sizing: border-box; }
 .lista-sugerida { width: 100%; margin: 15px 0; text-align: left; background: #1a1a1a; padding: 10px; border-radius: 8px; }
-
 /* =========================================
    LOGIN: ESTRUCTURA EXACTA SIN DESBORDES
    ========================================= */
 .log-in-cont {
     position: relative;
     width: 100%;
-    min-height: 100dvh; 
+    /* 1. CANDADO MAESTRO: Pantalla fija al 100%, las ondas no se moverán */
+    height: 100dvh; 
+    overflow: hidden; 
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #000000;
-    padding: 20px 15px; 
+    padding: 0; 
     box-sizing: border-box;
 }
 
@@ -151,8 +152,8 @@ tr:hover { background-color: #1a1a1a; }
     position: absolute;
     left: 0;
     width: 100%;        
-    height: 12vh;       /* TRUCO 1: Reducido un poquito para dar aire */
-    max-height: 85px;   /* TRUCO 2: Ahora las ondas ocupan menos espacio vertical en PC */
+    height: 12vh;
+    max-height: 85px; 
     z-index: 1;
     pointer-events: none;
     display: block;
@@ -170,7 +171,7 @@ tr:hover { background-color: #1a1a1a; }
     filter: drop-shadow(0 0 8px rgba(57, 255, 20, 0.8)); 
 }
 
-/* EL FORMULARIO */
+/* EL FORMULARIO - ENCAPSULADO */
 #contenido-login {
     position: relative;
     z-index: 2; 
@@ -179,6 +180,13 @@ tr:hover { background-color: #1a1a1a; }
     display: flex;
     flex-direction: column;
     align-items: center;
+    /* 2. ZONA SEGURA: El formulario flotará en medio y hará scroll interno si la pantalla es muy chica */
+    max-height: 80dvh; 
+    overflow-y: auto;
+    padding: 10px 0;
+}
+#contenido-login::-webkit-scrollbar {
+    display: none; /* Oculta la barra de scroll para que se vea como una app nativa */
 }
 #vista-login, #vista-registro {
     width: 100%;
@@ -189,18 +197,18 @@ tr:hover { background-color: #1a1a1a; }
 
 /* EL LOGO */
 .login-logoicon {
-    width: 260px; /* TRUCO 3: Ligeramente ajustado para no empujar todo hacia abajo */
+    width: 260px; 
     max-width: 100%;
     height: auto; 
     display: block;
-    margin: 0 auto 10px auto; /* Redujimos el espacio vacío debajo del logo */
+    margin: 0 auto 10px auto; 
 }
 
 /* --- ESTILOS DE LOS INPUTS --- */
 .login-input-container {
     position: relative; 
     width: 100%;
-    margin-bottom: 12px; /* TRUCO 4: Redujimos espacios muertos entre los inputs */
+    margin-bottom: 12px; 
 }
 .login-input-container input {
     background: transparent; 
@@ -238,7 +246,7 @@ tr:hover { background-color: #1a1a1a; }
 .olvide-pass {
     text-align: right;
     width: 100%;
-    margin-bottom: 15px; /* TRUCO 5: Espacio muerto reducido */
+    margin-bottom: 15px; 
 }
 .olvide-pass a {
     color: #39ff14;
@@ -252,7 +260,7 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
     justify-content: flex-end; 
     width: 100%;
-    margin-bottom: 10px; /* TRUCO 6: Espacio muerto reducido */
+    margin-bottom: 10px; 
 }
 .login-signin-text {
     font-size: 1.5rem;
@@ -300,7 +308,7 @@ tr:hover { background-color: #1a1a1a; }
     align-items: center;
     width: 100%;
     color: #555;
-    margin: 10px 0; /* TRUCO 7: Espacio muerto reducido */
+    margin: 10px 0; 
 }
 .separador-login::before, .separador-login::after {
     content: "";
@@ -325,7 +333,7 @@ tr:hover { background-color: #1a1a1a; }
     padding: 12px;
     cursor: pointer; 
     transition: transform 0.2s; 
-    margin-bottom: 15px; /* TRUCO 8: Espacio muerto reducido */
+    margin-bottom: 15px; 
     box-sizing: border-box;
 }
 .btn-google-neon svg {
@@ -334,4 +342,30 @@ tr:hover { background-color: #1a1a1a; }
 }
 .btn-google-neon:active {
     transform: scale(0.98); 
+}
+
+/* =========================================
+   3. MAGIA RESPONSIVA (Solo para Teléfonos)
+   ========================================= */
+@media (max-height: 750px), (max-width: 480px) {
+    .login-logoicon {
+        width: 190px; /* Reducimos el logo solo en pantallas pequeñas */
+        margin-bottom: 5px;
+    }
+    .login-input-container {
+        margin-bottom: 10px;
+    }
+    .login-input-container input {
+        padding: 12px 20px 12px 50px; /* Inputs ligeramente más delgados */
+    }
+    h2 {
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+    .olvide-pass {
+        margin-bottom: 10px;
+    }
+    .btn-google-neon {
+        padding: 10px;
+    }
 }
