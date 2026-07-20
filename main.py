@@ -201,6 +201,12 @@ class RegistroRequest(BaseModel):
 class MensajeNutricion(BaseModel):
     texto_comida: str
 
+@app.get("/Assets/LogoLogin.png")
+def get_logo():
+    # NOTA: Si tu imagen LogoLogin.png está suelta en la misma carpeta que main.py,
+    # entonces debes poner return FileResponse("LogoLogin.png")
+    return FileResponse("Assets/LogoLogin.png")
+
 @app.get("/scripts.js")
 def get_scripts():
     return FileResponse("scripts.js")
