@@ -144,7 +144,7 @@ const API_BASE = window.location.origin + "/api";
                     document.getElementById("dashboard-principal").style.display = "flex";
                     
                     const nombreUsr = localStorage.getItem("gymlytics_nombre") || "Atleta";
-                    document.getElementById("bienvenida-usuario").innerText = "🦅 Hola, " + nombreUsr;
+                    document.getElementById("bienvenida-usuario").innerText = "Bienvenido, " + nombreUsr;
                     
                     await cargarEjerciciosAgrupados(); 
                     
@@ -491,7 +491,6 @@ async function enviarBiometria() {
 
         async function dibujarGrafica() {
             const usr_id = obtenerUsuarioActivo();
-            
             if (!usr_id || !ejercicioActivoID) return;
 
             try {
@@ -502,13 +501,16 @@ async function enviarBiometria() {
                     registro => registro.ejercicio_id === ejercicioActivoID && registro.numero_serie === 1
                 );
 
-                // 1. Ordenamos estrictamente por fecha (del más antiguo al más reciente)
+                // 1. Ordenamos estrictamente por fecha
                 datosFiltrados.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
+                // Para la tarjeta pequeña mientras entrenas, mostramos por defecto solo los últimos 10 para no saturar
+                const datosRango = datosFiltrados.slice(-10);
+
                 // 2. Mapeamos los datos limpios
-                const etiquetasX = datosFiltrados.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
-                const datosY_Peso = datosFiltrados.map(r => r.peso_kg);
-                const datosY_Reps = datosFiltrados.map(r => r.repeticiones);
+                const etiquetasX = datosRango.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
+                const datosY_Peso = datosRango.map(r => r.peso_kg);
+                const datosY_Reps = datosRango.map(r => r.repeticiones);
 
                 const ctx = document.getElementById('miCanvasGrafica').getContext('2d');
 
@@ -518,37 +520,11 @@ async function enviarBiometria() {
                     data: {
                         labels: etiquetasX,
                         datasets: [
-                            {
-                                label: 'Peso (kg)',
-                                data: datosY_Peso,
-                                yAxisID: 'y',
-                                borderColor: '#1a73e8',
-                                backgroundColor: '#1a73e8',
-                                borderWidth: 3,
-                                pointRadius: 5,
-                                tension: 0.3
-                            },
-                            {
-                                label: 'Reps',
-                                data: datosY_Reps,
-                                yAxisID: 'y1',
-                                borderColor: '#34a853',
-                                backgroundColor: '#34a853',
-                                borderWidth: 3,
-                                pointRadius: 5,
-                                borderDash: [5, 5],
-                                tension: 0.3
-                            }
+                            { label: 'Peso (kg)', data: datosY_Peso, yAxisID: 'y', borderColor: '#1a73e8', backgroundColor: '#1a73e8', borderWidth: 3, pointRadius: 5, tension: 0.3 },
+                            { label: 'Reps', data: datosY_Reps, yAxisID: 'y1', borderColor: '#34a853', backgroundColor: '#34a853', borderWidth: 3, pointRadius: 5, borderDash: [5, 5], tension: 0.3 }
                         ]
                     },
-                    options: {
-                        responsive: true, maintainAspectRatio: false,
-                        interaction: { mode: 'index', intersect: false },
-                        scales: {
-                            y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Kilos' } },
-                            y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Reps' }, grid: { drawOnChartArea: false }, min: 0 }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Kilos' } }, y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Reps' }, grid: { drawOnChartArea: false }, min: 0 } } }
                 });
             } catch (e) { console.error("Error dibujando la gráfica:", e); }
         }
@@ -619,17 +595,30 @@ async function enviarBiometria() {
                     return;
                 }
 
+                // LÓGICA DE FILTRADO
+                const selectFiltro = document.getElementById("filtro-biometria");
+                let limite = data.fechas.length; // Por defecto asume todos
+                if (selectFiltro && selectFiltro.value !== "todos") {
+                    limite = parseInt(selectFiltro.value);
+                }
+
+                // Extraemos solo el final del arreglo basado en el límite (los más recientes)
+                const fechasFilt = data.fechas.slice(-limite);
+                const pesoFilt = data.peso.slice(-limite);
+                const cinturaFilt = data.cintura.slice(-limite);
+                const grasaFilt = data.grasa.slice(-limite);
+
                 const ctx = document.getElementById('graficaTendenciaGlobal').getContext('2d');
                 if (miGraficaTendencia) miGraficaTendencia.destroy();
 
                 miGraficaTendencia = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: data.fechas,
+                        labels: fechasFilt, // Usamos los datos filtrados
                         datasets: [
                             {
                                 label: 'Peso Corporal (kg)',
-                                data: data.peso,
+                                data: pesoFilt,
                                 borderColor: '#1a73e8',
                                 backgroundColor: '#1a73e8',
                                 borderWidth: 3,
@@ -640,8 +629,8 @@ async function enviarBiometria() {
                             },
                             {
                                 label: 'Cintura (cm)',
-                                data: data.cintura,
-                                borderColor: '#34a853', // Verde
+                                data: cinturaFilt,
+                                borderColor: '#34a853',
                                 backgroundColor: '#34a853',
                                 borderWidth: 3,
                                 borderDash: [5, 5], 
@@ -650,14 +639,13 @@ async function enviarBiometria() {
                                 pointRadius: 4,
                                 spanGaps: true 
                             },
-                            // NUEVO: Agregamos el porcentaje de grasa
                             {
                                 label: 'Grasa (%)',
-                                data: data.grasa,
-                                borderColor: '#fbbc04', // Amarillo/Naranja
+                                data: grasaFilt,
+                                borderColor: '#fbbc04',
                                 backgroundColor: '#fbbc04',
                                 borderWidth: 3,
-                                borderDash: [2, 2], // Punteado diferente
+                                borderDash: [2, 2], 
                                 cubicInterpolationMode: 'monotone',
                                 tension: 0.4,
                                 pointRadius: 4,
@@ -670,14 +658,8 @@ async function enviarBiometria() {
                         maintainAspectRatio: false,
                         interaction: { mode: 'index', intersect: false },
                         scales: {
-                            y: { 
-                                display: true, 
-                                title: { display: true, text: 'Métricas' },
-                                grid: { color: '#e0e0e0' } // Cuadrícula clara
-                            },
-                            x: { 
-                                grid: { display: false } 
-                            }
+                            y: { display: true, title: { display: true, text: 'Métricas' }, grid: { color: '#e0e0e0' } },
+                            x: { grid: { display: false } }
                         }
                     }
                 });
@@ -1069,15 +1051,22 @@ async function enviarBiometria() {
                     registro => registro.ejercicio_id === ejercicioActivoID && registro.numero_serie === 1
                 );
 
-                // 1. Ordenamos estrictamente por fecha (del más antiguo al más reciente)
+                // 1. Ordenamos estrictamente por fecha
                 datosFiltrados.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
-                // 2. Mapeamos los datos limpios
-                const etiquetasX = datosFiltrados.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
-                const datosY_Peso = datosFiltrados.map(r => r.peso_kg);
-                const datosY_Reps = datosFiltrados.map(r => r.repeticiones);
+                // LÓGICA DE FILTRADO POR RANGO
+                const selectFiltro = document.getElementById("filtro-consulta");
+                let limite = datosFiltrados.length;
+                if (selectFiltro && selectFiltro.value !== "todos") {
+                    limite = parseInt(selectFiltro.value);
+                }
+                const datosRango = datosFiltrados.slice(-limite);
 
-                // ESTA ES LA VERSIÓN CORREGIDA:
+                // 2. Mapeamos los datos limpios
+                const etiquetasX = datosRango.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
+                const datosY_Peso = datosRango.map(r => r.peso_kg);
+                const datosY_Reps = datosRango.map(r => r.repeticiones);
+
                 const ctx = document.getElementById('miCanvasConsulta').getContext('2d');
                 if (graficaConsultaObj) graficaConsultaObj.destroy();
                 

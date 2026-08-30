@@ -127,7 +127,7 @@
     <div id="dashboard-principal" class="vista-container" style="display: none;">
         <div class="barra-superior flex-between border-box w-100">
             <span id="bienvenida-usuario" class="text-bold color-accent text-lg text-shadow"></span>
-            <button onclick="cerrarSesion()" class="btn-outline-red btn-small">🚪 Salir</button>
+            <button onclick="cerrarSesion()" class="btn-outline-red btn-small">Cerrar sesión</button>
         </div>
         <div class="card" id="tarjeta-recuperacion">
             <h2>REGISTRO DIARIO DE RECUPERACIÓN</h2>
@@ -166,11 +166,19 @@
                 <button onclick="abrirCalendario()" class="btn-purple text-md">Calendario</button>
             </div>
         </div>
+        <!-- TARJETA DE CONSULTA DE EJERCICIOS -->
         <div id="vista-consulta-grafica" class="vista-container">
             <button onclick="volverAEjerciciosConsulta()" class="btn-gray mb-15 w-100">⬅️ Volver al Catálogo</button>
             <h2 id="titulo-consulta-ejercicio" class="color-blue"></h2>
             <div class="card mt-10">
                 <h2 class="color-accent">HISTORIAL Y SOBRECARGA</h2>
+                <!-- Selector dinámico -->
+                <select id="filtro-consulta" onchange="dibujarGraficaConsultaAislada()" style="margin: 10px 0; text-align: center;">
+                    <option value="5">Últimas 5 sesiones</option>
+                    <option value="15" selected>Últimas 15 sesiones</option>
+                    <option value="30">Últimas 30 sesiones</option>
+                    <option value="todos">Historial completo</option>
+                </select>
                 <div class="grafica-container">
                     <canvas id="miCanvasConsulta"></canvas>
                 </div>
@@ -276,9 +284,17 @@
                 <p id="texto-semanal" class="color-light text-md" style="margin: 0; line-height: 1.5;"></p>
             </div>
         </div>
+        <!-- TARJETA DE ANÁLISIS BIOMÉTRICO -->
         <div class="card card-blue-border" id="tarjeta-grafica">
             <h2 class="color-blue">ANÁLISIS BIOMÉTRICO</h2>
-            <p class="text-small color-gray text-center mb-15">Evolución en datos representados gráficamente.</p>
+            <p class="text-small color-gray text-center mb-10">Evolución en datos representados gráficamente.</p>
+            <!-- Selector dinámico -->
+            <select id="filtro-biometria" onchange="cargarTendenciaGlobal()" style="margin: 10px 0; text-align: center;">
+                <option value="5">Últimos 5 registros</option>
+                <option value="15" selected>Últimos 15 registros</option>
+                <option value="30">Últimos 30 registros</option>
+                <option value="todos">Mostrar todos</option>
+            </select>
             <div class="grafica-container grafica-tendencia">
                 <canvas id="graficaTendenciaGlobal"></canvas>
             </div>
