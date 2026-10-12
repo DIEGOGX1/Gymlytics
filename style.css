@@ -131,12 +131,14 @@ tr:hover { background-color: #1a1a1a; }
    LOGIN: ESTRUCTURA EXACTA SIN DESBORDES
    ========================================= */
 .log-in-cont {
-    position: relative;
-    width: 100%;
-    /* 1. CANDADO MAESTRO: Pantalla fija al 100%, las ondas no se moverán */
+    position: fixed; /* Cambiado de relative a fixed para anclar la pantalla */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Usamos vw para asegurar el ancho total de la pantalla del dispositivo */
     height: 100dvh; 
     overflow: hidden; 
     display: flex;
+    flex-direction: column; /* Forzamos orden de columna */
     justify-content: center;
     align-items: center;
     background-color: #000000;
@@ -169,18 +171,21 @@ tr:hover { background-color: #1a1a1a; }
 }
 
 /* EL FORMULARIO - ENCAPSULADO */
+/* EL FORMULARIO - ENCAPSULADO */
 #contenido-login {
     position: relative;
     z-index: 2; 
-    width: 90%;
+    width: 100%; /* Cambiado al 100% real de la caja */
     max-width: 400px;
+    margin: 0 auto; /* Obligamos a centrarse horizontalmente */
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* 2. ZONA SEGURA: El formulario flotará en medio y hará scroll interno si la pantalla es muy chica */
+    justify-content: center; /* Alineamos contenido interno al centro */
     max-height: 80dvh; 
     overflow-y: auto;
-    padding: 10px 0;
+    padding: 20px; /* Un poco de aire lateral para pantallas muy estrechas */
+    box-sizing: border-box; /* Previene desbordes por el padding */
 }
 #contenido-login::-webkit-scrollbar {
     display: none; /* Oculta la barra de scroll para que se vea como una app nativa */
@@ -255,15 +260,15 @@ tr:hover { background-color: #1a1a1a; }
 .login-btn-container {
     display: flex;
     align-items: center;
-    justify-content: flex-end; 
+    justify-content: center; /* Cambiamos a 'center' para equilibrar texto y flecha */
     width: 100%;
-    margin-bottom: 10px; 
+    margin: 15px 0; 
 }
 .login-signin-text {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: bold;
     color: #fff;
-    margin-right: 15px;
+    margin-right: 15px; /* Espacio entre el texto y el botón neón */
 }
 .btn-neon-arrow {
     background: transparent; 

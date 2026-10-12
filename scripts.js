@@ -121,7 +121,7 @@ const API_BASE = window.location.origin + "/api";
             
             // Mantenemos la pantalla de carga visible
             pantallaCarga.style.display = "flex"; 
-            pantallaCarga.innerHTML = "Conectando con el servidor... ⏳"; 
+            pantallaCarga.innerHTML = "Iniciando sistema..."; 
             
             const usr_id = obtenerUsuarioActivo();
             if (!usr_id) return;
