@@ -118,6 +118,7 @@ class RegistroSerie(Base):
     numero_serie = Column(Integer)
     peso_kg = Column(Float)
     repeticiones = Column(Integer)
+    modalidad = Column(String, default="bilateral")
 
 class RegistroDiario(Base):
     __tablename__ = "registros_diarios"
@@ -140,6 +141,8 @@ class DatosSerieRecepcion(BaseModel):
     peso_kg: float
     repeticiones: int
     sesion_id: str
+    modalidad: str = "bilateral"
+
 def sembrar_datos_iniciales(db: Session):
     # Verificar si ya existen ejercicios
     if db.query(Ejercicio).first() is None:
@@ -502,7 +505,8 @@ def analizar_comida(req: MensajeNutricion, usuario_id: int = Depends(obtener_usu
                 numero_serie=num_serie,
                 peso_kg=peso,
                 repeticiones=reps,
-                sesion_id=f"SES-VOZ-{hoy.strftime('%Y%m%d')}"
+                sesion_id=f"SES-VOZ-{hoy.strftime('%Y%m%d')}",
+                modalidad="bilateral"
             )
             db.add(nueva_serie)
             db.commit()
@@ -547,7 +551,8 @@ def registrar_serie(datos: DatosSerieRecepcion, usuario_id: int = Depends(obtene
         numero_serie=datos.numero_serie,
         peso_kg=datos.peso_kg,
         repeticiones=datos.repeticiones,
-        sesion_id=datos.sesion_id
+        sesion_id=datos.sesion_id,
+        modalidad=datos.modalidad
     )
     db.add(nueva_serie)
     db.commit()

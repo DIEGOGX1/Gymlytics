@@ -851,6 +851,7 @@ async function enviarBiometria() {
             let pesoCapturado = parseFloat(document.getElementById("peso").value);
             const repsCapturadas = parseInt(document.getElementById("reps").value);
             const unidadElegida = document.getElementById("unidad-peso").value;
+            const modalidadElegida = document.getElementById("modalidad-ejercicio").value;
 
             if (isNaN(pesoCapturado) || isNaN(repsCapturadas)) {
                 resDiv.innerHTML = "❌ Por favor llena los campos de peso y repeticiones.";
@@ -871,7 +872,8 @@ async function enviarBiometria() {
                 sesion_id: sesionActivaID, 
                 numero_serie: parseInt(inputSerie.value),
                 peso_kg: pesoCapturado, 
-                repeticiones: repsCapturadas
+                repeticiones: repsCapturadas,
+                modalidad: modalidadElegida
             };
 
             try {
@@ -904,7 +906,8 @@ async function enviarBiometria() {
                         nombre_ejercicio: document.getElementById("asistente-ejercicio-titulo").innerText.replace("🏋️ Ejercicio: ", ""),
                         numero_serie: parseInt(inputSerie.value) - 1,
                         peso: pesoCapturado,
-                        reps: repsCapturadas
+                        reps: repsCapturadas,
+                        modalidad: modalidadElegida
                     });
                     
                     actualizarSugerencia(); 
@@ -1288,9 +1291,12 @@ async function manejarRespuestaGoogle(response) {
             [...resumenSesion.series_detalle].reverse().forEach((s, indexReverso) => {
                 const indexReal = resumenSesion.series_detalle.length - 1 - indexReverso;
                 
+                // Si es unilateral, le ponemos una etiqueta visual, si no, lo dejamos limpio
+                const etiquetaModalidad = s.modalidad === 'unilateral' ? '<span style="color:#fbbc04; font-size:0.75rem; margin-left:5px;">(Uni)</span>' : '';
+                
                 cuerpoTabla.innerHTML += `
                     <tr>
-                        <td style="color: #39ff14; font-weight: bold;">${s.nombre_ejercicio}</td>
+                        <td style="color: #39ff14; font-weight: bold;">${s.nombre_ejercicio}${etiquetaModalidad}</td>
                         <td>#${s.numero_serie}</td>
                         <td>${s.peso} kg</td>
                         <td>${s.reps}</td>
