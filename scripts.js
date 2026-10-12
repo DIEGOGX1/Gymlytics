@@ -117,60 +117,90 @@ const API_BASE = window.location.origin + "/api";
         // 3. CARGA DEL ENTORNO DE TRABAJO (Solo ocurre si hay login)
         async function iniciarDashboard() {
             document.getElementById("login-caja").style.display = "none";
+            const pantallaCarga = document.getElementById("pantalla-carga");
+            
+            // Mantenemos la pantalla de carga visible
+            pantallaCarga.style.display = "flex"; 
+            pantallaCarga.innerHTML = "Conectando con el servidor... ⏳"; 
+            
             const usr_id = obtenerUsuarioActivo();
-
             if (!usr_id) return;
 
-            try {
-                const res = await fetch(`${API_BASE}/biometria/estado/${usr_id}`);
-                if (!res.ok) {
-                    document.getElementById("pantalla-carga").style.display = "none"; // <-- APAGAR CARGA
-                    document.getElementById("dashboard-principal").style.display = "none";
-                    document.getElementById("pantalla-biometria").style.display = "none";
-                    document.getElementById("msj-biometria").innerText = "Error crítico de conexión con la base de datos.";
-                    return; 
-                }
+            let reintentos = 0;
+            const maxReintentos = 15; // Aprox 45 segundos de paciencia máxima
 
-                const estado = await res.json();
-                
-                document.getElementById("pantalla-carga").style.display = "none"; // <-- APAGAR CARGA
-
-                if (estado.requiere_pesaje) {
-                    document.getElementById("dashboard-principal").style.display = "none";
-                    document.getElementById("pantalla-biometria").style.display = "block";
-                    document.getElementById("msj-biometria").innerText = estado.mensaje;
-                } else {
-                    document.getElementById("pantalla-biometria").style.display = "none";
-                    document.getElementById("dashboard-principal").style.display = "flex";
+            while (reintentos < maxReintentos) {
+                try {
+                    const res = await fetch(`${API_BASE}/biometria/estado/${usr_id}`);
                     
-                    const nombreUsr = localStorage.getItem("gymlytics_nombre") || "Atleta";
-                    document.getElementById("bienvenida-usuario").innerText = "Bienvenido, " + nombreUsr;
-                    
-                    await cargarEjerciciosAgrupados(); 
-                    
-                    document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
-                    cargarTendenciaGlobal(); 
-
-                    // NUEVO: Cargar los macros que se habían guardado antes en el día
-                    const macrosGuardados = localStorage.getItem('gymlytics_macros_hoy');
-                    if (macrosGuardados) {
-                        const macros = JSON.parse(macrosGuardados);
-                        document.getElementById("input-cal").value = macros.cal;
-                        document.getElementById("input-pro").value = macros.pro;
-                        document.getElementById("input-car").value = macros.car;
-                        document.getElementById("input-gra").value = macros.gra;
+                    // Si Render nos manda error 502, 503 o 500, el servidor sigue arrancando
+                    if (res.status >= 500) {
+                        throw new Error("Servidor inactivo"); 
                     }
+
+                    if (!res.ok) {
+                        // Error real (ej. 404). Detenemos la carga pero NO borramos el token
+                        pantallaCarga.style.display = "none";
+                        document.getElementById("login-caja").style.display = "flex";
+                        document.getElementById("login-error").innerText = "❌ Error al leer tu perfil. Intenta iniciar sesión de nuevo.";
+                        return; 
+                    }
+
+                    // --- SI LLEGAMOS AQUÍ, EL SERVIDOR DESPERTÓ Y RESPONDIÓ BIEN ---
+                    const estado = await res.json();
+                    pantallaCarga.style.display = "none"; 
+
+                    if (estado.requiere_pesaje) {
+                        document.getElementById("dashboard-principal").style.display = "none";
+                        document.getElementById("pantalla-biometria").style.display = "block";
+                        document.getElementById("msj-biometria").innerText = estado.mensaje;
+                    } else {
+                        document.getElementById("pantalla-biometria").style.display = "none";
+                        document.getElementById("dashboard-principal").style.display = "flex";
+                        
+                        const nombreUsr = localStorage.getItem("gymlytics_nombre") || "Atleta";
+                        document.getElementById("bienvenida-usuario").innerText = "Bienvenido, " + nombreUsr;
+                        
+                        await cargarEjerciciosAgrupados(); 
+                        
+                        document.getElementById("vista-lobby-entrenamiento").style.display = "flex";
+                        cargarTendenciaGlobal(); 
+
+                        const macrosGuardados = localStorage.getItem('gymlytics_macros_hoy');
+                        if (macrosGuardados) {
+                            const macros = JSON.parse(macrosGuardados);
+                            document.getElementById("input-cal").value = macros.cal;
+                            document.getElementById("input-pro").value = macros.pro;
+                            document.getElementById("input-car").value = macros.car;
+                            document.getElementById("input-gra").value = macros.gra;
+                        }
+                    }
+                    
+                    // Salimos del bucle porque todo cargó perfectamente
+                    return;
+
+                } catch (e) {
+                    reintentos++;
+                    
+                    // Actualizamos la pantalla de carga para informar al usuario
+                    pantallaCarga.innerHTML = `
+                        <div style="text-align: center;">
+                            <span style="font-size: 1.5rem; display: block; margin-bottom: 10px;">Despertando la IA... 🚀</span>
+                            <span style="font-size: 1rem; color: #ccc;">Render está iniciando (Intento ${reintentos}/${maxReintentos})</span><br>
+                            <span style="font-size: 0.8rem; color: #888; margin-top: 5px; display: block;">Esto puede tardar hasta 40 segundos la primera vez.</span>
+                        </div>
+                    `;
+
+                    if (reintentos >= maxReintentos) {
+                        pantallaCarga.style.display = "none";
+                        document.getElementById("login-caja").style.display = "flex";
+                        document.getElementById("login-error").innerText = "❌ El servidor tardó demasiado en despertar. Por favor, recarga la página.";
+                        return;
+                    }
+                    
+                    // Pausa de 3 segundos antes de volver a preguntar al backend
+                    await new Promise(resolve => setTimeout(resolve, 3000));
                 }
-            } catch (e) {
-                document.getElementById("pantalla-carga").style.display = "none";
-                
-                // RED DE SEGURIDAD: Volvemos a encender el login y mostramos el error
-                document.getElementById("login-caja").style.display = "flex"; // <-- CAMBIADO A FLEX
-                document.getElementById("login-error").innerText = "❌ Error de conexión al cargar tu perfil. Por favor, vuelve a entrar.";
-                
-                // Borramos el token defectuoso para evitar bucles
-                localStorage.removeItem("gymlytics_token");
-                console.error("Error validando el estado de biometría:", e);
             }
         }
 
