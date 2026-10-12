@@ -153,7 +153,7 @@
                 <div class="burbuja-ia"><strong class="color-accent">IA:</strong> ¡Hola! Soy tu asistente virtual, ¿quieres que analice tu comida?</div>
             </div>
             <div class="flex-row-center">
-                <button id="btn-microfono" onclick="iniciarDictado()" class="btn-micro" title="Hablar">🎤</button>
+                <!-- <button id="btn-microfono" onclick="iniciarDictado()" class="btn-micro" title="Hablar">🎤</button> -->
                 <input type="text" id="input-comida" placeholder="Ej: De desayuno comí..." style="margin: 0; flex-grow: 1;" onkeypress="if(event.key === 'Enter') analizarComidaEnUI()">
                 <button id="btn-enviar-comida" onclick="analizarComidaEnUI()" class="btn-enviar">Enviar</button>
             </div>
@@ -238,6 +238,12 @@
             </div>
             <div class="card mt-10">
                 <h2 class="color-accent">MI PROGRESO (SOBRECARGA)</h2>
+                <select id="filtro-entrenamiento" onchange="dibujarGrafica()" style="margin: 10px 0; text-align: center;">
+                    <option value="5">Últimas 5 sesiones</option>
+                    <option value="10" selected>Últimas 10 sesiones</option>
+                    <option value="20">Últimas 20 sesiones</option>
+                    <option value="todos">Historial completo</option>
+                </select>
                 <div class="grafica-container">
                     <canvas id="miCanvasGrafica"></canvas>
                 </div>

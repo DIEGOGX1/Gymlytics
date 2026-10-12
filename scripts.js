@@ -504,10 +504,21 @@ async function enviarBiometria() {
                 // 1. Ordenamos estrictamente por fecha
                 datosFiltrados.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
 
-                // Para la tarjeta pequeña mientras entrenas, mostramos por defecto solo los últimos 10 para no saturar
-                const datosRango = datosFiltrados.slice(-10);
+                // 2. LÓGICA DE FILTRADO DINÁMICO
+                const selectFiltro = document.getElementById("filtro-entrenamiento");
+                let limite = 10; // Mostrará 10 por defecto si apenas carga
+                if (selectFiltro) {
+                    if (selectFiltro.value === "todos") {
+                        limite = datosFiltrados.length;
+                    } else {
+                        limite = parseInt(selectFiltro.value);
+                    }
+                }
+                
+                // Recortamos los datos basándonos en lo que elegiste
+                const datosRango = datosFiltrados.slice(-limite);
 
-                // 2. Mapeamos los datos limpios
+                // 3. Mapeamos los datos limpios
                 const etiquetasX = datosRango.map(r => new Date(r.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }));
                 const datosY_Peso = datosRango.map(r => r.peso_kg);
                 const datosY_Reps = datosRango.map(r => r.repeticiones);
