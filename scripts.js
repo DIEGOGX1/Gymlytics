@@ -1,4 +1,7 @@
-const API_BASE = window.location.origin + "/api";
+// Detecta automáticamente si estás en VS Code (Local) o en Render (Nube)
+const API_BASE = (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") 
+    ? "http://localhost:8000/api" 
+    : window.location.origin + "/api";
         let diccionarioEjercicios = {}; 
         let miGraficaDeLineas = null;
         let miGraficaTendencia = null; // Control para la gráfica global
