@@ -10,3 +10,5 @@ bcrypt==3.2.0
 google-auth
 requests
 google-generativeai
+psycopg-binary
+psycopg2-binary
