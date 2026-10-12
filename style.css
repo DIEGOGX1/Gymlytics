@@ -90,10 +90,7 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
    COMPONENTES ESPECÍFICOS DEL DASHBOARD
    ========================================= */
 .barra-superior { background: #121212; border: 1px solid #222; padding: 10px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(57, 255, 20, 0.1); margin-bottom: 20px; }
-.card-yellow-border { border: 2px solid #fbbc04; }
-.card-purple-border { border: 2px solid #673ab7; }
-.card-blue-border { border: 2px solid #1a73e8; }
-.card-gray-border { border: 2px solid #6c757d; }
+.card-green-border { border: 2px solid #39ff14; }
 
 .pantalla-carga { text-align: center; margin-top: 30vh; font-weight: bold; color: #1a73e8; font-size: 1.2rem; }
 .login-footer-text { text-align: center; font-size: 0.9rem; margin-top: 15px; }
