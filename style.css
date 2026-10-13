@@ -65,6 +65,8 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-icon { background: transparent; border: none; font-size: 1rem; box-shadow: none; width: auto; padding: 0; margin: 0; }
 .btn-icon:hover { background: transparent; box-shadow: none; transform: scale(1.1); }
 .btn-small { padding: 8px 15px; font-size: 0.9rem; width: auto; margin: 0; }
+.btn-blanconegro { width: 100%; padding: 12px; background-color: #ffffff; color: #000000; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 0 10px rgba(116, 116, 116, 0.2); box-sizing: border-box; }
+.btn-blanconegro:hover { background-color: #dadada; box-shadow: 0 0 15px rgba(97, 97, 97, 0.4); }
 
 /* =========================================
    LAYOUTS Y ESPACIOS
