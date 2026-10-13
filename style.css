@@ -124,7 +124,7 @@ tr:hover { background-color: #1a1a1a; }
 
 /* --- Resumen y Calendario --- */
 .resultado-dia { width: 100%; text-align: left; background: #1a1a1a; padding: 15px; border-radius: 8px; border-left: 5px solid #39ff14; color: #e0e0e0; box-sizing: border-box; }
-.meta-dinamica { background-color: #0e1e2d; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #1a73e8; font-size: 0.9rem; }
+.meta-dinamica { background-color: #122212; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #34a853; font-size: 0.9rem; }
 .resumen-box-green { background: #122212; padding: 15px; border-radius: 10px; border-left: 5px solid #34a853; margin: 10px 0; box-sizing: border-box; }
 .resumen-box-yellow { background: #221c05; padding: 15px; border-radius: 10px; border-left: 5px solid #fbbc04; margin: 10px 0; box-sizing: border-box; }
 .panel-semanal { background-color: #1a1025; padding: 15px; border-radius: 8px; border-left: 5px solid #673ab7; margin-top: 15px; display: none; }
