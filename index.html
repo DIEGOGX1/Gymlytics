@@ -203,13 +203,13 @@
             <h2 class="color-purple">Rutina Sugerida Detectada</h2>
             <p id="texto-sugerencia-rutina" class="text-md color-gray text-center"></p>
             <div id="lista-ejercicios-sugeridos" class="lista-sugerida"></div>
-            <button onclick="aceptarRutinaSugerida()" class="btn-purple mb-10">Aceptar Rutina</button>
+            <button onclick="aceptarRutinaSugerida()" class="mb-10">Aceptar Rutina</button>
             <button onclick="rechazarYBuscarManualmente()" class="btn-outline-gray">Elegir manualmente</button>
         </div>
         <div id="vista-lista-ejercicios" class="vista-container">
-            <h2 id="titulo-grupo-seleccionado" class="color-blue text-center"></h2>
+            <h2 id="titulo-grupo-seleccionado" class="color-green text-center"></h2>
             <div id="contenedor-tarjetas-ejercicios" class="flex-wrap-center mb-15"></div>
-            <button onclick="volverAGrupos()" class="btn-gray mb-10 w-100">⬅️ Volver a Músculos</button>
+            <button onclick="volverAGrupos()" class="btn-blanconegro mb-10 w-100">⬅️ Volver a Músculos</button>
             <button id="btn-terminar-sesion-lista" onclick="finalizarSesiónTotal()" class="btn-red text-bold p-15 w-100">🛑 Terminar Sesión</button>
         </div>
         <div id="vista-asistente-tracking" class="vista-container">
@@ -220,7 +220,7 @@
                 <label>Número de serie</label>
                 <input type="number" id="num_serie" value="1" onchange="actualizarSugerencia()" onkeyup="actualizarSugerencia()">
                 <div id="meta-dinamica" class="meta-dinamica" style="display: none;">
-                    <span class="color-blue text-bold">Objetivo Sugerido:</span>
+                    <span class="color-green text-bold">Objetivo Sugerido:</span>
                     <div id="meta-texto" class="mt-5 color-light" style="line-height: 1.4;"></div>
                 </div>
                 <label>Modalidad de ejecución:</label>
@@ -238,7 +238,7 @@
                 </div>
                 <label>Reps logradas:</label>
                 <input type="number" id="reps" placeholder="Ej: 8">
-                <button onclick="enviarSerieAsistente()" class="btn-blue">Guardar Serie</button>
+                <button onclick="enviarSerieAsistente()">Guardar Serie</button>
                 <div id="mensaje"></div>
             </div>
             <div class="card mt-10">
@@ -253,7 +253,7 @@
                     <canvas id="miCanvasGrafica"></canvas>
                 </div>
             </div>
-            <button onclick="preguntarSiguientePaso()" class="btn-yellow text-bold p-15 mt-10">Terminar Ejercicio Actual</button>
+            <button onclick="preguntarSiguientePaso()" class="text-bold p-15 mt-10">Terminar Ejercicio Actual</button>
             <div class="card card-green-border mt-15">
                 <h2 class="color-gray text-lg">REGISTROS DE SESIÓN</h2>
                 <table>
