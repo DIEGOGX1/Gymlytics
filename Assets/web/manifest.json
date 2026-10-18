@@ -3,7 +3,7 @@
   "short_name": "AppIcon",
   "icons": [
     {
-      "src": "/favicon.ico",
+      "src": "/favicon.icon",
       "type": "image/x-icon",
       "sizes": "16x16 32x32"
     },
