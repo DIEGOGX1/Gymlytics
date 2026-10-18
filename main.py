@@ -64,6 +64,9 @@ class Usuario(Base):
     correo = Column(String, unique=True, index=True)
     contrasena = Column(String) # <--- NUEVO CAMPO
     meta = Column(String)
+    sexo = Column(String, default="Hombre")
+    edad = Column(Integer, default="20")
+    estatura = Column(Float, default="170.0")
 
 class Biometria(Base):
     __tablename__ = "biometrias"
@@ -200,6 +203,9 @@ class RegistroRequest(BaseModel):
     correo: str
     contrasena: str
     meta: str
+    sexo: str
+    edad: int
+    estatura: float
 
 class MensajeNutricion(BaseModel):
     texto_comida: str
@@ -265,7 +271,10 @@ def registrar_usuario(req: RegistroRequest, db: Session = Depends(get_db)):
         nombre=req.nombre,
         correo=req.correo.lower(), # Guardamos en minúsculas para evitar errores
         contrasena=contrasena_encriptada,
-        meta=req.meta
+        meta=req.meta,
+        sexo=req.sexo,
+        edad=req.edad,
+        estatura=req.estatura
     )
     
     try:
@@ -276,6 +285,21 @@ def registrar_usuario(req: RegistroRequest, db: Session = Depends(get_db)):
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="Este correo ya está registrado.")
+
+def calcular_calorias_objetivo(peso, estatura, edad, sexo, meta):
+    if sexo.lower()=="mujer":
+        bmr = (10*peso) + (6.25 * estatura) - (5 * edad) - 161
+    else:
+        bmr = (10*peso) + (6.25 * estatura) - (5 * edad) + 5
+
+    tdee = bmr * 1.55
+
+    meta_clean = meta.lower()
+    if "hipertrofia" in meta_clean or  "fuerza" in meta_clean:
+        return tdee + 300
+    elif "perdida" in meta_clean or "grasa" in meta_clean:
+        return tdee
+    
 
 @app.post("/api/login")
 def iniciar_sesion(req: LoginRequest, db: Session = Depends(get_db)):
@@ -714,13 +738,15 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
             "mensaje": f"No hay historial previo para la Serie {numero_serie}.",
             "objetivo_hoy": "Usa una carga pesada (RIR 2)."
         }
-
-    recuperacion = db.query(RegistroDiario).filter(
-        RegistroDiario.usuario_id == usuario_id
-    ).order_by(RegistroDiario.fecha.desc()).first()
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    biometria = db.query(Biometria).filter(Biometria.usuario_id == usuario_id).order_by(Biometria.fecha.desc()).first()
+    recuperacion = db.query(RegistroDiario).filter(RegistroDiario.usuario_id == usuario_id).order_by(RegistroDiario.fecha.desc()).first()
 
     if not recuperacion:
-        return {"mensaje": "No hay datos de recuperación hoy."}
+        return {"mensaje": "Faltan datos corporales o de recuperación para hacer la predicción."}
+
+    #Calculo de cuanto consumió el día anterior
+    calorias_meta = calcular_calorias_objetivo(biometria.peso_corporal, usuario.estatura, usuario.edad, usuario.sexo, usuario.meta)
 
     # CÁLCULO DEL READINESS SCORE
     puntaje = 100.0
@@ -728,12 +754,15 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
         puntaje -= 15.0
     elif recuperacion.horas_sueno < 7:
         puntaje -= 5.0
-    elif recuperacion.horas_sueno >= 8:
-        puntaje += 5.0
 
-    if recuperacion.carbohidratos < 30:
-        puntaje -= 10.0
-    
+    #Evaluar el deficit real contra la meta del usuario
+    diferencia_calorica = recuperacion.calorias - calorias_meta
+
+    if diferencia_calorica < -400: #Si está comiendo 400 calorías por debajo de lo que debería
+        puntaje -=15.0
+    elif diferencia_calorica > 300:
+        puntaje +=5.0
+
     recomendacion_texto = ""
     objetivo_hoy_texto = ""
 
@@ -746,15 +775,14 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
         else:
             # Flexibilidad: Dar a elegir entre subir peso o sacar 1 rep extra
             recomendacion_texto = f"¡Recuperación óptima! Elige tu progresión para la Serie {numero_serie}:"
-            objetivo_hoy_texto = f"Opción A: {ultima_serie.peso_kg + 2.5}kg x {ultima_serie.repeticiones} reps \nOpción B: {ultima_serie.peso_kg}kg x {ultima_serie.repeticiones + 1} reps"
-            
+            objetivo_hoy_texto = f"Opción A: {ultima_serie.peso_kg + 2.5}kg x {ultima_serie.repeticiones} reps \nOpción B: {ultima_serie.peso_kg}kg x {ultima_serie.repeticiones + 1} reps"            
     elif puntaje >= 85:
         recomendacion_texto = f"Recuperación normal. Iguala la carga de la Serie {numero_serie} anterior."
         objetivo_hoy_texto = f"{ultima_serie.peso_kg}kg x {ultima_serie.repeticiones} reps"
     else:
         recomendacion_texto = "Fatiga acumulada. Reduce la intensidad en esta serie para proteger el SNC."
         peso_reducido = ultima_serie.peso_kg - (ultima_serie.peso_kg * 0.10)
-        reps_reducidas = ultima_serie.repeticiones - 1
+        reps_reducidas = max(1, ultima_serie.repeticiones - 1)
         objetivo_hoy_texto = f"{peso_reducido}kg x {reps_reducidas} reps"
 
     return {
@@ -763,11 +791,7 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
         "sesion_anterior": f"{ultima_serie.peso_kg}kg x {ultima_serie.repeticiones} reps",
         "puntaje_recuperacion": f"{puntaje}%",
         "recomendacion_algoritmo": recomendacion_texto,
-        "objetivo_hoy": objetivo_hoy_texto,
-        "factores": {
-            "sueño": recuperacion.horas_sueno,
-            "carbs_pre_entreno": recuperacion.carbohidratos
-        }
+        "objetivo_hoy": objetivo_hoy_texto
     }
 
 # ==========================================
@@ -789,71 +813,59 @@ def analisis_correlacion(usuario_id: int, ejercicio_id: int, db: Session = Depen
     ant_train = sesiones[1]
 
     # 2. Buscar los últimos 2 registros de recuperación correspondientes
-    recuperaciones = db.query(RegistroDiario).filter(
-        RegistroDiario.usuario_id == usuario_id
-    ).order_by(RegistroDiario.fecha.desc()).limit(2).all()
+    rec_hoy = db.query(RegistroDiario).filter(
+        RegistroDiario.usuario_id == usuario_id, RegistroDiario.fecha < hoy_train.fecha
+    ).order_by(RegistroDiario.fecha.desc()).first()
 
-    # Extraemos los datos de hoy y de la sesión anterior con candados por si no existen
-    sueno_hoy = recuperaciones[0].horas_sueno if len(recuperaciones) > 0 else 0
-    sueno_ant = recuperaciones[1].horas_sueno if len(recuperaciones) > 1 else 0
+    rec_ant = db.query(RegistroDiario).filter(
+        RegistroDiario.usuario_id == usuario_id, RegistroDiario.fecha < ant_train.fecha
+    ).order_by(RegistroDiario.fecha.desc()).first()
 
-    calorias_hoy = recuperaciones[0].calorias if len(recuperaciones) > 0 else 0
-    calorias_ant = recuperaciones[1].calorias if len(recuperaciones) > 1 else 0
+    sueno_hoy = rec_hoy.horas_sueno if rec_hoy else 0
+    calorias_hoy = rec_hoy.calorias if rec_hoy else 0
+    sueno_ant = rec_ant.horas_sueno if rec_ant else 0
+    calorias_ant = rec_ant.calorias if rec_ant else 0
 
-    carbs_hoy = recuperaciones[0].carbohidratos if len(recuperaciones) > 0 else 0
-    carbs_ant = recuperaciones[1].carbohidratos if len(recuperaciones) > 1 else 0
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    biometria = db.query(Biometria).filter(Biometria.usuario_id == usuario_id).order_by(Biometria.fecha.desc()).first()
 
-    # 3. Matemáticas de Comparación (Deltas)
+    calorias_meta = 2000
+    if biometria:
+        calorias_meta = calcular_calorias_objetivo(biometria.peso_corporal, usuario.estatura, usuario.edad, usuario.sexo, usuario.meta)
+
     dif_peso = hoy_train.peso_kg - ant_train.peso_kg
     dif_reps = hoy_train.repeticiones - ant_train.repeticiones
-    dif_sueno = round(sueno_hoy - sueno_ant, 1)
-    dif_calorias = int(calorias_hoy - calorias_ant)
-    dif_carbs = int(carbs_hoy - carbs_ant)
 
     # 4. Construcción del desglose de cambios para el usuario
-    cambios_recuperacion = f"• Sueño: {sueno_hoy}h ({'+' if dif_sueno >= 0 else ''}{dif_sueno}h vs sesión anterior)<br>" \
-                           f"• Energía: {calorias_hoy} kcal ({'+' if dif_calorias >= 0 else ''}{dif_calorias} kcal vs sesión anterior)<br>" \
-                           f"• Carbohidratos Pre: {carbs_hoy}g ({'+' if dif_carbs >= 0 else ''}{dif_carbs}g vs sesión anterior)"
+    cambios_recuperacion = f"• Sueño: {sueno_hoy}h<br>" \
+                           f"• Energía (24h previas): {calorias_hoy} kcal (Tu objetivo personal es {int(calorias_meta)} kcal)<br>"
 
     # 5. Lógica del Dictamen de Causa-Efecto
     dictamen = ""
-    
     # Caso A: Hubo mejora (en peso o en repeticiones)
     if dif_peso > 0 or (dif_peso == 0 and dif_reps > 0):
-        logro = f"subiste {dif_peso}kg" if dif_peso > 0 else f"lograste {dif_reps} reps extra"
-        if dif_sueno >= 0 and dif_calorias >= 0:
-            dictamen = f"Aumento de rendimiento detectado ({logro}). El análisis demuestra que esto se debe a un superávit de recursos: consumiste más calorías (+{dif_calorias} kcal) y dormiste mejor (+{dif_sueno}h)."
-        elif dif_calorias > 150:
-            dictamen = f"Aumento de rendimiento detectado ({logro}). La carga extra de glucógeno y energía (+{dif_calorias} kcal) compensó cualquier otra variable. ¡Excelente recarga!"
+        if calorias_hoy >= calorias_meta:
+            dictamen =f"Aumento de rendimiento. Alcanzaste tu cuota energética personal ({int(calorias_meta)} Kcal) en las 24 horas previas, lo que llenó de energía tu cuerpo y te dió la fuerza necesaria"
         else:
-            dictamen = f"Aumento de rendimiento detectado ({logro}). Tu eficiencia neuromuscular o motivación compensó las fluctuaciones de tu descanso."
-
-    # Caso B: Hubo un retroceso o estancamiento
-    elif dif_peso < 0 or (dif_peso == 0 and dif_reps < 0):
-        perdida = f"caíste {abs(dif_peso)}kg" if dif_peso < 0 else f"perdiste {abs(dif_reps)} reps"
-        if dif_sueno < 0 or dif_calorias < 0:
-            dictamen = f"Pérdida de rendimiento detectada ({perdida}). El culpable está claro en tus métricas de recuperación: "
-            if dif_sueno < 0:
-                dictamen += f"Dormiste {-dif_sueno}h MENOS de lo habitual afectando tu SNC. "
-            if dif_calorias < 0:
-                dictamen += f"Entraste con un déficit energético de {-dif_calorias} kcal respecto a la sesión pasada."
+            dictamen = f"Aumento de rendimiento. Lograste subir tu fuerza a pesar de estar por debajo de tu objetivo calórico de ayer. Tu SNC y eficiencia neuromuscular están mejorando drásticamente."
+    elif dif_peso < 0 or (dif_peso == 0 and dif_reps <0):
+        if calorias_hoy < calorias_meta -300:
+            dictamen = f"Pérdida de rendimiento. Ayer consumiste {calorias_hoy} kcal, estando {int(calorias_meta - calorias_hoy)} kcal por debajo de lo que TU cuerpo necesita para rendir. Entraste sin combustible."
+        elif sueno_hoy < 6:
+            dictamen = f"Pérdida de rendimiento. Tu cuota calórica estuvo bien, pero tus {sueno_hoy}h de sueño destruyeron la recuperación de tu sistema nervioso central."
         else:
-            dictamen = f"Pérdida de rendimiento detectada ({perdida}). Tus factores de descanso se mantuvieron estables, por lo que este bajón apunta a fatiga acumulada del volumen semanal o estrés externo."
-            
-    # Caso C: Rendimiento idéntico
+            dictamen = "Pérdida de rendimiento. Tus macros y sueño previos estuvieron alineados con tu perfil, esto apunta a fatiga acumulada excesiva en el mesociclo."
     else:
-        dictamen = "Rendimiento idéntico. Mantuviste los kilos y las repeticiones bajo las mismas condiciones de recuperación."
+        dictamen = "Rendimiento idéntico. Mantuviste los kilos y las repeticiones respecto a tu sesión anterior."
 
     return {
         "analisis_ia": dictamen,
         "desglose_numerico": cambios_recuperacion,
-        "estadisticas": {
-            "peso_delta": dif_peso,
-            "reps_delta": dif_reps,
-            "sueno_delta": dif_sueno,
-            "calorias_delta": dif_calorias
-        }
+        "estadisticas": {"peso_delta": dif_peso, "reps_delta": dif_reps}
     }
+
+    
+        
 
 # ==========================================
 # 4. MÓDULO DE COMPOSICIÓN CORPORAL Y BLOQUEOS

@@ -303,10 +303,13 @@ async function enviarBiometria() {
             const correo = document.getElementById("reg_correo").value;
             const pass = document.getElementById("reg_pass").value;
             const meta = document.getElementById("reg_meta").value;
+            const sexo = document.getElementById("reg_sexo").value;
+            const edad = parseInt(document.getElementById("reg_edad").value);
+            const estatura = parseFloat(document.getElementById("reg_estatura").value);
             const msjDiv = document.getElementById("registro-msj");
             const btn = document.getElementById("btn-registro");
 
-            if(!nombre || !correo || !pass) {
+            if(!nombre || !correo || !pass || !edad || !estatura) {
                 msjDiv.innerHTML = "❌ Llena todos los campos.";
                 msjDiv.style.color = "#dc3545";
                 return;
@@ -319,7 +322,15 @@ async function enviarBiometria() {
                 const res = await fetch(`${API_BASE}/registro`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nombre: nombre, correo: correo, contrasena: pass, meta: meta })
+                    body: JSON.stringify({ 
+                        nombre: nombre, 
+                        correo: correo, 
+                        contrasena: pass, 
+                        meta: meta, 
+                        sexo: sexo,
+                        edad: edad,
+                        estatura: estatura
+                    })
                 });
 
                 if (res.ok) {
