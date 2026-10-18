@@ -128,7 +128,7 @@ tr:hover { background-color: #1a1a1a; }
 .meta-dinamica { background-color: #122212; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #34a853; font-size: 0.9rem; }
 .resumen-box-green { background: #122212; padding: 15px; border-radius: 10px; border-left: 5px solid #34a853; margin: 10px 0; box-sizing: border-box; }
 .resumen-box-yellow { background: #221c05; padding: 15px; border-radius: 10px; border-left: 5px solid #fbbc04; margin: 10px 0; box-sizing: border-box; }
-.panel-semanal { background-color: #1a1025; padding: 15px; border-radius: 8px; border-left: 5px solid #673ab7; margin-top: 15px; display: none; }
+.panel-semanal { background-color: #122212; padding: 15px; border-radius: 8px; border-left: 5px solid #39ff14; margin-top: 15px; display: none; }
 .buscador { border: 2px solid #39ff14; border-radius: 20px; padding: 12px 15px; width: 100%; box-sizing: border-box; outline: none; transition: 0.3s; }
 .header-asistente { background-color: #39ff14; color: white; padding: 12px; border-radius: 8px; width: 100%; text-align: center; box-sizing: border-box; }
 .contador-box { background-color: #1a1a1a; padding: 8px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; color: #aaa; margin-bottom: 15px; width: 100%; text-align: center; box-sizing: border-box; }

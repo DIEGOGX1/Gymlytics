@@ -196,17 +196,17 @@
         </div>
         <div id="vista-calendario" class="vista-container card">
             <button onclick="location.reload()" class="mb-15 w-100">⬅️ Volver al Inicio</button>
-            <h2 class="color-purple">Calendario de Entrenamientos</h2>
+            <h2 class="color-green">Calendario de Entrenamientos</h2>
             <p class="text-small color-gray text-center">Selecciona un día para ver tus métricas.</p>
             <input type="date" id="selector-fecha" onchange="consultarDiaEspecifico()" class="mb-15 text-bold color-gray" style="cursor: pointer;">
             <div id="resultado-dia" class="resultado-dia" style="display:none;"></div>
         </div>
         <div id="vista-pregunta-musculo" class="vista-container">
             <h2 id="titulo-vista-musculos" class="text-center">¿Qué vas a entrenar hoy?</h2>
-            <input type="text" id="buscador-global" placeholder="🔍 Buscar ejercicio..." onkeyup="buscarEjercicioGlobal()" class="buscador mb-15">
+            <input type="text" id="buscador-global" placeholder="Buscar ejercicio..." onkeyup="buscarEjercicioGlobal()" class="buscador mb-15">
             <div id="contenedor-botones-musculos" class="flex-wrap-center mb-15"></div>
             <div id="contenedor-resultados-busqueda" class="flex-wrap-center mb-15" style="display: none;"></div>
-            <button onclick="volverAlLobby()" class="mb-10 w-100" style="border-radius: 12px;">⬅️ Volver al Inicio</button>
+            <button onclick="volverAlLobby()" class="mb-10 w-100" style="border-radius: 12px;">Volver al Inicio</button>
             <button id="btn-terminar-sesion-musculos" onclick="finalizarSesiónTotal()" class="btn-red text-bold p-15 w-100" style="border-radius: 12px;">Terminar Sesión y Ver Resumen</button>
         </div>
         <div id="vista-decision-plantilla" class="vista-container card">

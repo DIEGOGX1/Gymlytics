@@ -1020,26 +1020,26 @@ def analisis_semanal(usuario_id: int, db: Session = Depends(get_db)):
 
     # 5. DIAGNÓSTICO ESTRUCTURADO DE LA IA
     meta = usuario.meta.upper()
-    dictamen = f"🎯 <strong>Evaluando tu meta de {meta}:</strong><br><br>"
+    dictamen = f"<strong>Evaluando tu meta de {meta}:</strong><br><br>"
 
     # Bloque A: Análisis de Composición (Peso vs Calorías)
     if dif_peso > 0:
-        dictamen += f"⚖️ <strong>Peso:</strong> Subiste {dif_peso} kg. "
+        dictamen += f"<strong>Peso:</strong> Subiste {dif_peso} kg. "
         if dif_calorias > 0:
             dictamen += f"Es una respuesta matemática lógica porque aumentaste tu energía media diaria en {dif_calorias} kcal. "
         else:
             dictamen += f"Tu peso subió a pesar de mantener/bajar tus calorías medias ({int(prom_cal_actual)} kcal). Revisa la retención de líquidos o si estás midiendo mal tus porciones. "
     elif dif_peso < 0:
-        dictamen += f"⚖️ <strong>Peso:</strong> Bajaste {abs(dif_peso)} kg. "
+        dictamen += f"<strong>Peso:</strong> Bajaste {abs(dif_peso)} kg. "
         if dif_calorias < 0:
             dictamen += f"Tu recorte de {abs(dif_calorias)} kcal diarias está dando frutos exactos en la báscula. "
         else:
             dictamen += f"Perdiste peso sin bajar tus calorías ({int(prom_cal_actual)} kcal). Tu metabolismo basal o gasto por actividad (NEAT) aumentó esta semana. "
     else:
-        dictamen += f"⚖️ <strong>Peso:</strong> Sin cambios. Tus {int(prom_cal_actual)} kcal actuales son exactamente tu caloría de mantenimiento. "
+        dictamen += f"<strong>Peso:</strong> Sin cambios. Tus {int(prom_cal_actual)} kcal actuales son exactamente tu caloría de mantenimiento. "
 
     # Bloque B: Análisis de Rendimiento (Fuerza real vs Fatiga)
-    dictamen += "<br><br>🏋️ <strong>Rendimiento Global:</strong> "
+    dictamen += "<br><br><strong>Rendimiento Global:</strong> "
     
     if total_comparados == 0:
         dictamen += "No hay suficientes datos de ejercicios coincidentes entre esta semana y la anterior para evaluar tu progreso real de fuerza."
@@ -1059,7 +1059,7 @@ def analisis_semanal(usuario_id: int, db: Session = Depends(get_db)):
         dictamen += "Fuerza estancada. Levantaste exactamente los mismos pesos y repeticiones promedio que la semana pasada."
 
     # Bloque C: Calidad de Sueño
-    dictamen += f"<br><br>🌙 <strong>Descanso:</strong> Promedio de {round(prom_sueno_actual, 1)}h por noche. "
+    dictamen += f"<br><br><strong>Descanso:</strong> Promedio de {round(prom_sueno_actual, 1)}h por noche. "
     if prom_sueno_actual >= 7:
         dictamen += "Óptimo para reparación de fibras musculares."
     else:
