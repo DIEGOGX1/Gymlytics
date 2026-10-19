@@ -94,7 +94,26 @@ const API_BASE = (window.location.hostname === "127.0.0.1" || window.location.ho
         }
         // Usamos DOMContentLoaded para que la interfaz se dibuje INSTANTÁNEAMENTE
         document.addEventListener('DOMContentLoaded', function() {
-            const tokenSeguro = localStorage.getItem("gymlytics_token"); 
+            const tokenSeguro = localStorage.getItem("gymlytics_token");
+            // --- CANDADO PWA: Evitar recargas accidentales ---
+            // Detecta si la app está instalada en el dispositivo (Modo Standalone)
+            const esPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+            if (esPWA) {
+                // 1. Bloquea el gesto de "Deslizar hacia abajo para recargar" típico de los celulares
+                document.body.style.overscrollBehaviorY = 'none';
+                document.documentElement.style.overscrollBehaviorY = 'none';
+
+                // 2. Si logran invocar una recarga o intentan cerrar la app, lanza una alerta de confirmación
+                window.addEventListener('beforeunload', function (e) {
+                    // Solo detenemos la recarga si hay una sesión de entrenamiento activa
+                    if (typeof sesionActivaID !== 'undefined' && sesionActivaID !== null) {
+                        e.preventDefault();
+                        e.returnValue = 'Tienes un entrenamiento en curso. ¿Seguro que quieres salir y perder el progreso no guardado?';
+                    }
+                });
+            }
+            // ------------------------------------------------- 
             
             if (tokenSeguro) {
                 document.getElementById("login-caja").style.display = "none";
