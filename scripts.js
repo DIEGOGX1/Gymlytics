@@ -526,7 +526,7 @@ async function enviarBiometria() {
 
                 if (data.objetivo_hoy) {
                     divMeta.style.display = "block";
-                    textoMeta.innerHTML = data.objetivo_hoy.replace(/\n/g, '<br>');
+                    textoMeta.innerHTML = `<span style="color: #e0e0e0; font-size: 0.9rem; display: block; margin-bottom: 8px;">${data.recomendacion_algoritmo}</span>${data.objetivo_hoy.replace(/\n/g, '<br>')}`;
                 } else {
                     divMeta.style.display = "none";
                 }
