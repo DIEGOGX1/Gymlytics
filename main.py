@@ -757,8 +757,9 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
 
     #Evaluar el deficit real contra la meta del usuario
     diferencia_calorica = recuperacion.calorias - calorias_meta
-
-    if diferencia_calorica < -400: #Si está comiendo 400 calorías por debajo de lo que debería
+    if diferencia_calorica < -800:
+        puntaje -=30.0
+    elif diferencia_calorica < -400: #Si está comiendo 400 calorías por debajo de lo que debería
         puntaje -=15.0
     elif diferencia_calorica > 300:
         puntaje +=5.0
@@ -776,7 +777,7 @@ def predecir_rendimiento(usuario_id: int, ejercicio_id: int, numero_serie: int, 
             # Flexibilidad: Dar a elegir entre subir peso o sacar 1 rep extra
             recomendacion_texto = f"¡Recuperación óptima! Elige tu progresión para la Serie {numero_serie}:"
             objetivo_hoy_texto = f"Opción A: {ultima_serie.peso_kg + 2.5}kg x {ultima_serie.repeticiones} reps \nOpción B: {ultima_serie.peso_kg}kg x {ultima_serie.repeticiones + 1} reps"            
-    elif puntaje >= 85:
+    elif puntaje >= 90:
         recomendacion_texto = f"Recuperación normal. Iguala la carga de la Serie {numero_serie} anterior."
         objetivo_hoy_texto = f"{ultima_serie.peso_kg}kg x {ultima_serie.repeticiones} reps"
     else:
